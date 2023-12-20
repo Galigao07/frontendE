@@ -1,0 +1,43 @@
+<!-- receipt.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Receipt</title>
+  <!-- Include necessary CSS and scripts -->
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    // Extract cartItems from URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const cartItemsString = urlParams.get('cartItems');
+    const cartItems = JSON.parse(decodeURIComponent(cartItemsString));
+
+    // Your receipt generation logic
+    const generateReceipt = (cartItems) => {
+      // Implement your receipt generation logic based on cartItems
+      let receiptContent = 'Receipt\n\n';
+      // Add logic to generate receipt content based on cartItems
+      // Example: 
+      receiptContent += `Total Items: ${cartItems.length}\n`;
+
+      return receiptContent;
+    };
+
+    // Generate the receipt content
+    const receiptContent = generateReceipt(cartItems);
+
+    // Render the receipt content in the #root element
+    document.getElementById('root').innerHTML = `<pre>${receiptContent}</pre>`;
+
+    // Automatically trigger printing when the page loads
+    window.onload = () => {
+      window.print();
+      // Close the window after printing (optional)
+      window.close();
+    };
+  </script>
+</body>
+</html>

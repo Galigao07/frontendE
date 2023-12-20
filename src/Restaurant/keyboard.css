@@ -1,0 +1,48 @@
+/* Keyboard.css */
+
+.keyboard {
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* Adjust spacing between rows */
+    width: fit-content;
+    margin: 0 auto;
+  }
+  
+  .keyboard-row {
+    display: flex;
+    gap: 5px; /* Adjust spacing between keys */
+  }
+  
+  .keyboard-key {
+    padding: 10px 15px;
+    font-size: 20px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Additional styles for specific keys or rows */
+  
+  .keyboard-key:nth-child(11) {
+    flex-grow: 1; /* Expand the Enter/Shift/Control key to fill the row */
+  }
+  
+  /* Define specific styles for different keys */
+  
+  .keyboard-key[aria-label="Backspace"],
+  .keyboard-key[aria-label="Enter"],
+  .keyboard-key[aria-label="Shift"],
+  .keyboard-key[aria-label="Clear"] ,
+    .keyboard-key[aria-label="Control"] {
+    background-color: #ccc;
+    font-weight: bold;
+    font-size: 15px;
+  }
+  
+  /* Add hover effect */
+  
+  .keyboard-key:hover {
+    background-color: #e9e9e9;
+  }
+  

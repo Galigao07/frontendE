@@ -1,0 +1,306 @@
+/* External CSS file or within a style tag */
+
+/* Style for the input fields with the custom-input class */
+input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  label {
+    color:black;
+    font-weight: bold;
+  }
+  
+  /* Style when input field is focused */
+  input:focus {
+    outline: none;
+    border-color: #007bff; /* Change color on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Example of a box-shadow effect */
+  }
+  /* Inside your CSS file or React component */
+.customer-type {
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.customer-type-label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.radio-buttons {
+  display: flex;
+flex-direction: column;
+}
+
+.radio-label {
+  margin-right: 10px;
+  cursor: pointer;
+  /* Additional styling if needed */
+}
+input[type="radio"] {
+    transform: scale(1.5); /* Adjust the scale factor to increase/decrease the size */
+    margin-right: 5px; /* Optional: Add some space between radio button and label */
+  }
+
+/* 
+  .num-pad {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+  }
+  
+  .num-pad-row {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 5px;
+  }
+  
+  
+  .num-pad-row button{
+  padding: 32px;
+  }
+  
+  .num-pad-key {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    font-size: 30px;
+    cursor: pointer;
+    width: 90%;
+    transition: background-color 0.3s ease;
+  } */
+
+.keyboardScreen{
+width: 100%;
+border: 1px solid #ccc;
+border-radius: 5px;
+height: 100%;
+
+}
+.keyboard-row{
+  margin-bottom: 2px;
+}
+
+  .keyboard-key{
+    margin:3px;
+    border: solid;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    font-size: 30px;
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .num-pad-key:hover {
+    background-color: #e0e0e0;
+  }
+  
+  
+  
+  .button-group {
+    display: flex;
+    justify-content: space-between; /* Add space between items */
+  }
+  
+  .radio-button {
+    border: 1px solid #ccc;
+    padding: 2px;
+    width: 50%;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 40px;
+    font-size: large;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #ffffff;
+    background-color:#007bff ;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    text-align: center;
+  }
+  
+  .radio-button.checked {
+    background-color:rgb(4, 20, 137);
+    
+    /* You can add additional styles for checked state */
+  }
+  
+  .radio-button:hover {
+    background-color:rgb(4, 20, 137);
+    /* You can add additional styles for hover state */
+  }
+
+
+  .modal-contentCustomerDine{
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    MAX-width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+
+  }
+  
+  .button-ok {
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 60px;
+    font-size: large;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #ffffff;
+    background-color:#007bff ;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .button-cancel {
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 60px;
+    font-size: large;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #ffffff;
+    background-color:red ;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    text-align: center;
+  }
+.Customerlist-Container{
+
+  width:300px;
+  overflow: auto;
+  height: 380px;
+  position: absolute;
+ bottom: 52px;
+}
+
+.CustomerlistPayment-Container {
+  width:300px;
+  overflow: auto;
+  height: 380px;
+  position: absolute;
+ bottom: 30px;
+}
+
+  .ul-list.customer{
+    width:100%;
+    border:1px solid;
+    border-color: var(--second-color);
+
+}
+
+.Waiter-Container{
+  border-color: var(--second-color);
+  width:300px;
+  overflow: auto;
+  height: 380px;
+  position: absolute;
+ bottom: 52px;
+}
+
+  .ul-list.Waiter{
+    width:19%;
+    border:1px solid;
+    border-color: var(--second-color);
+
+}
+
+
+
+
+
+.ul-list{
+
+    font-size: 1rem;
+    font-weight: 400;
+    color: #495057;
+    background-color: white;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    border-color: -internal-light-dark(rgb(118, 118, 118), rgb(133, 133, 133));
+    border-image: initial;
+    border-radius: 0px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.075);
+    position: absolute;
+    z-index: 9999;
+    padding: 0.375rem;
+}
+
+.ul-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.ul-list li{
+    text-rendering: auto;
+    color: fieldtext;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 270px; 
+    padding: 5PX;
+    margin: 0;
+}
+
+.ul-list li:focus{
+    outline: none;
+    background-color: var(--second-color);
+}
+
+.ul-list li:hover{
+    background-color: var(--second-color);
+    cursor: pointer;
+}
+
+.selectedItemIndex.selected{
+    background-color: var(--second-color);
+}
+
+.selected{
+  background-color: var(--second-color);
+}
+
+#list:empty{
+    display: none;
+}
+
+
+
+@keyframes blink {
+  0% { background-color:rgb(4, 20, 137); } /* blinking color */
+  50% {  background-color:red ; } /* back to initial background color */
+}
+
+.blinking {
+  animation: blink 1.0s infinite; /* adjust animation duration as needed */
+}
