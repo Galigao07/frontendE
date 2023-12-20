@@ -1,0 +1,32 @@
+.num-pad {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+  }
+  
+  .num-pad-row {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 5px;
+  }
+  
+  
+  .num-pad-row button{
+  padding: 30px;
+  }
+  
+  .num-pad-key {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    font-size: 30px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+  }
+
+  

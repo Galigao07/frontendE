@@ -1,0 +1,367 @@
+::-webkit-scrollbar {
+    width: 8px;
+    background-color: #f5f5f5; /* Change to your desired background color */
+}
+
+/* Style of the scrollbar thumb */
+::-webkit-scrollbar-thumb {
+    background-color: rgb(13, 18, 161);  /* Change to your desired thumb color */
+    border-radius: 10px;
+}
+
+/* On hover, style of the scrollbar thumb */
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(13, 18, 161); /* Change to your desired hover color */
+}
+
+/* Width and color of the scrollbar track when it's in an active state (being clicked or dragged) */
+::-webkit-scrollbar-thumb:active {
+    background-color: rgb(13, 18, 161);  /* Change to your desired active color */
+}
+
+/* CSS for styling the order list table */
+
+.Transaction {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid;
+    margin: 10px;
+    height: 100%; /* Ensure it takes full height */
+  }
+  
+  .OrderList {
+
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  /* .OrderList th,
+  .OrderList td {
+    border: 1px solid #ddd;
+    padding: 4px;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  } */
+  
+  .OrderList th,
+.OrderList td {
+  border: 1px solid #ddd;
+  padding: 4px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  /* text-overflow: ellipsis; */
+  max-width: 120px;
+  cursor: pointer;
+}
+
+  .OrderList th {
+    background-color: #f2f2f2;
+  }
+  
+  .OrderList tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .OrderList tbody tr:hover {
+    background-color: #e9e9e9;
+  }
+  /* Updated CSS with styles for action buttons */
+
+/* Previous styles remain the same */
+
+.actionButtons {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    margin-top: auto; /* Push to the bottom */
+    gap: 10px; /* Adjust this value as needed for the desired spacing */
+    margin-left: 10px;
+  }
+  
+.actionButtons button {
+  padding: 10px 20px;
+  margin-right: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background-color: #4CAF50;
+  color: white;
+}
+
+
+
+.actionButtons button:hover {
+  background-color: #45a049;
+}
+
+/* Modal styles */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 400px;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+  
+
+  .modal-contentTable {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 1000px;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .modal-content-cashpayment{
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 50%;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+
+  }
+
+
+  
+
+
+  .modal-content img {
+    display: block; /* Change the image display to block */
+    margin: 0 auto; /* Set horizontal margin to auto for centering */
+  }
+  /* Close button style */
+  .modal-content button {
+    margin-top: 20px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .modal-content button:hover {
+    background-color: #45a049;
+  }
+  
+  /* Additional styling for modal header */
+  .modal-content h2 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  /* Additional styling for modal image */
+  .modal-content img {
+    width: 80%;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  }
+  
+/* Example styles */
+.input-group {
+    width: 100%;
+    position: relative;
+    margin-bottom: 15px;
+  }
+  
+  .input-group input[type="number"] {
+    padding: 10px;
+    width: calc(100% - 40px);
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .input-group-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+  }
+  
+  .btn-close,
+  .btn-add-cart {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .btn-close:hover,
+  .btn-add-cart:hover {
+    background-color: #45a049;
+  }
+  
+  .btn-close svg,
+  .btn-add-cart svg {
+    margin-right: 5px;
+  }
+
+
+  /* Example styles */
+/* Adjusted styles for better color and 3D effect */
+h1 {
+    color: rgb(13, 18, 161);
+    text-align: center;
+  }
+  
+  .threeDText {
+    color: #0d12a1;
+     text-shadow: 1px 1px 2px rgba(13, 18, 161, 0.7);
+    text-align: center;
+  }
+  
+p.TotalDue {
+    width: 100%;
+    color: #0d12a1;
+    text-align: center;
+    font-weight: 700;
+    font-size: 25px;
+    border: 2px solid #0d12a1; /* Set a solid border */
+    border-radius: 6px; /* Add border radius for rounded corners */
+    padding: 10px; /* Add padding to separate text from the border */
+    display: inline-block; /* Ensures the border fits the text width */
+    background-color: #f9f9f9; /* Optional: add a background color */
+  }
+  
+  
+  p.Price {
+    color: #0d12a1;
+    font-weight: 700;
+    font-size: 20px;
+    /* Add other properties for the 3D effect */
+    /* For example: */
+    /* You can experiment with gradients, borders, or transformations for a 3D effect */
+  }
+  
+  /* CSS for 3D button design */
+.btn-add-cart {
+    background-color: blue;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-add-cart::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 300%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.5s;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  
+  .btn-add-cart:hover::before {
+    transform: translate(-50%, -50%) scale(10);
+  }
+  
+  .btn-add-cart:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  p {
+    caret-color: transparent;
+  }
+
+
+
+  /* Define button styles */
+/* Add 3D text effect to the button text */
+.button-dine-in,
+.button-take-out {
+  /* Your existing styles */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add 3D text effect */
+  font-weight: bold;
+  font-size: xx-large !important;
+  width: 100%;
+  height: 100px;
+
+}
+
+/* Dine In Button */
+.button-dine-in {
+  background-color: #007bff !important; /* Green */
+  box-shadow: 0 5px #007bff/* Darker green */
+}
+
+.button-take-out {
+  background-color: red !important; 
+  box-shadow: 0 3px red ;
+}
+
+
+
+/* .num-pad {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+
+.num-pad-row {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 5px;
+}
+
+
+.num-pad-row button{
+padding: 30px;
+}
+
+.num-pad-key {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  font-size: 25px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.num-pad-key:hover {
+  background-color: #e0e0e0;
+} */
+
+
+
