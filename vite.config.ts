@@ -34,4 +34,7 @@ export default defineConfig({
       renderer: {},
     }),
   ],
+  server: {
+    host: '0.0.0.0',
+  },
 })

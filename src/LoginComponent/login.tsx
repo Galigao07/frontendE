@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import  {useRef, useState, useEffect, ChangeEvent } from 'react';
 import { useNavigate  } from 'react-router-dom';
 import axios from 'axios';
@@ -5,7 +6,8 @@ import './index.css';
 import logo from './logo.png';
 import Swal from 'sweetalert2';
 import BASE_URL from '../config';
-
+import { isMobile, isTablet } from 'react-device-detect';
+import { width } from '@fortawesome/free-solid-svg-icons/fa0';
 
   const LoginForm: React.FC  = () => {
     const usernameRef = useRef(null);
@@ -18,6 +20,34 @@ import BASE_URL from '../config';
         password: ''
     });
 
+
+
+
+    const [deviceType, setDeviceType] = useState<string>('');
+
+    useEffect(() => {
+      const checkDeviceType = () => {
+        if (isMobile) {
+          setDeviceType('Mobile');
+        } else if (isTablet) {
+          setDeviceType('Tablet');
+        } else {
+          setDeviceType('Desktop');
+        }
+      };
+  
+      checkDeviceType();
+  
+      const handleResize = () => {
+        checkDeviceType();
+      };
+  
+      window.addEventListener('resize', handleResize);
+  
+      return () => {
+        window.removeEventListener('resize', handleResize);
+      };
+    }, []);
 
     useEffect(() => {
       const channel = new BroadcastChannel('my-channel');
@@ -59,7 +89,16 @@ import BASE_URL from '../config';
     // };
   
     // const body = JSON.stringify({ username, password });
-  
+  if (isMobile){
+    localStorage.setItem('isLogin', 'true');
+    localStorage.setItem('UserRank', 'SalesMan');
+    localStorage.setItem('FullName', 'FullName');
+    localStorage.setItem('UserID', '99999');
+    localStorage.setItem('UserName', 'SalesMan');
+    localStorage.setItem('TerminalNo', '1');
+    localStorage.setItem('SiteCode', '121');
+    window.location.reload();
+  }
     try {
       const response = await axios.get(`${BASE_URL}/api/login/`, {
         params:{
@@ -156,14 +195,27 @@ try{
   return (
     <form>
       
-      <div className="container">
-  <div className="login-form">
+  <div className="container" style={deviceType === 'Mobile' ? { width: '100%', height: '100vh' } : {}}>
+  <div className="login-form" style={deviceType === 'Desktop' ? { width: '450px' } : { width: '320px',height: '100vh' }}>
     <div className="login-row" style={{display:'flex',flexDirection:'column'}}>
-      <div className="login-header">
+      {/* <div className="login-header">
         <div className="header-img">
           <img className="header-logo" src={logo} alt="Logo" />
         </div>
+      </div> */}
+
+<div>
+      <p>Device type: {deviceType}</p>
+      {/* Your component's content */}
+    </div>
+      <div className="login-header">
+      <div className="header-img">
+        <img src={logo} alt="Logo"
+          style={{  maxWidth: '90%', height: 'auto',
+            display: 'block', marginLeft: 'auto', marginRight: 'auto',
+          }}/>
       </div>
+    </div>
       
       <div className="login-body">
         <div className="header-name">

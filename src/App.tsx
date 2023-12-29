@@ -11,7 +11,10 @@ import { Routes, useNavigate, Link,Route} from "react-router-dom";
 import Restaurant from './Restaurant/restaurant';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDollarSign, faListAlt, faPowerOff, faReceipt } from '@fortawesome/free-solid-svg-icons'
+import { faDollarSign, faListAlt, faPowerOff, faReceipt } from '@fortawesome/free-solid-svg-icons';
+import UserProfile from './Reference/UserProfile'
+import WaiterProfile from './Reference/WaiterProfile'
+import TableList from './Reference/TableList'
 // import OnlineTestApp from './OnlineTestApp';
 // import electron, { BrowserWindow } from 'electron';
 
@@ -261,7 +264,7 @@ const logoutClick = async () => {
   return (
     <div>
       {isLogin ? (
-        userRank === 'Cashier' ? (
+        userRank === 'Cashier' || userRank === 'SalesMan' ? (
             <Restaurant/>
         ) : (
           <main className={show ? 'space-toggle' : ''}>
@@ -322,10 +325,10 @@ const logoutClick = async () => {
                  <button className="dropbtn">Reference <i className="fas fa-caret-down"></i></button>
                  <div className="dropdown-content">
                      <Link  to="/Profile" target="_blank">Product Profile</Link>
-                     <Link  to="/chartofaccounts" target="_blank">Waiter List</Link>
+                     <Link  to="WaiterProfile">Waiter List</Link>
                      <Link  to="/chartofaccounts" target="_blank">Customer Details</Link>
                      <Link  to="/chartofaccounts" target="_blank">Supplier Details</Link>
-                     <Link  to="/chartofaccounts" target="_blank">Table List</Link>
+                     <Link  to="TableList">Table List</Link>
                      <Link  to="/chartofaccounts" target="_blank">Product Print Category</Link>
                      <Link  to="/chartofaccounts" target="_blank">POS Site Code</Link>
                  
@@ -335,7 +338,7 @@ const logoutClick = async () => {
                <div className="dropdown">
                    <button className="dropbtn">Adminitration <i className="fas fa-caret-down"></i></button>
                    <div className="dropdown-content">
-                       <Link to="{% url 'UserDeatials' %}">User Account Control</Link> 
+                       <Link to="userProfile">User Account Control</Link> 
                        <Link to="{% url 'UserDeatials' %}">POS Transaction</Link> 
    
                      <div className="nested7-dropdown" >
@@ -497,6 +500,10 @@ function Content() {
 return <div>
     <Routes>
     <Route path="/Profile" element={<Profile />}></Route>
+    <Route path="/userProfile" element={<UserProfile />}></Route>
+    <Route path="/WaiterProfile" element={<WaiterProfile />}></Route>
+    <Route path="/TableList" element={<TableList />}></Route>
+    TableList
     </Routes> 
 </div>
 }

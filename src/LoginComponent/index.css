@@ -5,7 +5,7 @@
     --first-color: #8CB4E3;
     --first-color-alt: #363638;
     --second-color: #5B9BD5;
-    --white-color: #ddeaff;
+    --white-color:white;
 }
 
 *{
@@ -28,8 +28,7 @@ ul{
 
 
 .container{
-    background-color: hsl(0, 0%, 96%);
-    width: 100%;
+    background-color: white;
     padding-right: 7.5px;
     padding-left: 7.5px;
     padding-top: 2rem;
@@ -42,14 +41,12 @@ ul{
 }
 
 .login-form{
-    /* background-color: linear-gradient(to right, #2076d3, #fff ) ; */
     background-color: #fff ;
     box-shadow: 11px 12px 13px 12px rgba(207,207,207);
-    margin-bottom: 1rem;
+    /* margin-bottom: 1rem; */
     display: flex;
     justify-content: center;
     height: 550px;
-    width: 30%;
     border: 0 solid rgba(0,0,0,.125);
     border-radius: 1.5rem;
     padding: 1rem;

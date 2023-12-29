@@ -155,11 +155,15 @@ main{
 }
 
 .nav-header-name {
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.958);
     position: relative;
     font-weight: 500;
     font-size: .5rem;
-    color: var(--first-color);
+    color: var(--white-color);
     padding: 0 0 0 1rem;
+    font-weight: bold;
+
+    
 }
 
 .nav-main-header-name{
@@ -309,9 +313,9 @@ main{
 
     .show.nav-header-name {
         position: relative;
-        font-weight: 500;
-        font-size: 15px;
-        color: var(--first-color-alt);
+        font-weight: bold;
+        font-size: 20px;
+        color: var(--white-color);
         padding: 0 0 0 1rem;
     }
 
@@ -343,8 +347,8 @@ main{
 .swal2-confirm {
  padding: 10px;
  border: thin;
-    margin-left: 40px;
-    width: 50px;
+    margin-left: 10px;
+    width: 150px;
    border-radius: 4px;
     background-color: #49ef4f !important; /* Change background color */
     color: white; /* Change text color */
@@ -361,11 +365,11 @@ main{
   
   /* Style for cancel button */
   .swal2-cancel {
-    width: 50px;
+    width: 150px;
     border-radius: 4px;
     border: thin;
     padding: 10px;
-    margin-right: 40px;
+    margin-right: 10px;
     background-color: #f44336 !important; /* Change background color */
     color: white; /* Change text color */
     /* Add more styles as needed */
