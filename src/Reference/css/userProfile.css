@@ -1,0 +1,35 @@
+/* .Userlist th,
+.td {
+
+  border: 1px solid #ddd;
+  padding: 4px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+
+} */
+
+  .Userlist th {
+    width: 400px;
+    text-align: center;
+    background-color: #f2f2f2;
+  }
+  
+  .Userlist tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .Userlist tbody tr:hover {
+    background-color: #e9e9e9;
+  }
+  
+  .Userlist th,
+  .Userlist td {
+    border: 1px solid #ddd;
+    padding: 4px;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  } 
+  

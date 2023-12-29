@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -39,14 +38,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt} from '@fortawesome/free-solid-svg-icons';
 // import CustomerDineIn from './customerEntryDineIn';
 import QRCode from 'qrcode-generator';
-import { Button, Dialog, DialogContent, DialogTitle, Grid, Typography } from '@mui/material';
-import { createTheme, ThemeProvider,Theme,makeStyles, useTheme  } from '@mui/material/styles';
-import { useMediaQuery } from '@mui/material';
-import Box from '@mui/material/Box';
-import styled from 'styled-components';
-import { isDesktop, isMobile,isTablet } from 'react-device-detect';
-import { css } from '@emotion/react';
-import { ClipLoader } from 'react-spinners';
+
+
 
 
 ///**************PRODUCT GRID DESIGN*******************//
@@ -61,12 +54,11 @@ interface ProductList {
 interface ProductData {
   products :ProductList[];
   addtocart:any;
-  selectedProductData:any;
 }
 
 
 
-const ProductGrid: React.FC<ProductData> = ({ products , addtocart ,selectedProductData}) => {
+const ProductGrid: React.FC<ProductData> = ({ products , addtocart }) => {
   const [quantity, setQuantity] = useState<number | 1>(1); // Adjust the initial state value
 
     const [Price, setPrice] = useState<number>(1);
@@ -105,25 +97,18 @@ interface SelectedDatas{
 
 const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(null);
 
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [open, setOpen] = useState<boolean>(false);
-
-
-
+    const [isModalOpen, setIsModalOpen] = useState(false);
+  
     const handleproductclick = (product:any) => {
-
-      selectedProductData({product})
-
-      // setSelectedProduct(product);
-      // setIsModalOpen(true);
-      // setOpen(true);
-      // setPrice(product.reg_price);
-      //  setQuantity(1);
-      //  setTimeout(() => {
-      //   if (inputRef.current) {
-      //     inputRef.current.focus();
-      //   }
-      // }, 100); // 1000 millisecond
+      setSelectedProduct(product);
+      setIsModalOpen(true);
+      setPrice(product.reg_price);
+       setQuantity(1);
+       setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100); // 1000 millisecond
 
        
     };
@@ -173,10 +158,9 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
       };
 
 
-
   return (
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '5px' ,margin:'10px'}}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(150px, 1fr))', gap: '5px' ,margin:'10px'}}>
           {products.map((product: { bar_code: React.Key | null | undefined; long_desc: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; reg_price: string; }) => (
               <div key={product.bar_code}
               //  style={{ border: '1px solid #ccc', padding: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center' , borderRadius:'10px',cursor:'pointer',caretColor:'transparent'}}
@@ -195,12 +179,7 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
               }}
              onClick={() => handleproductclick(product)}> 
              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-
-   
-
               <p style={{ fontWeight: 'bold', textAlign: 'center', marginBottom: '10px', flex: '1 1 100%',height:'40px' }}>{product.long_desc}</p>
-
-
               <img src={image} style={{ maxWidth: '80%', maxHeight: '150px', marginBottom: '10px', flex: '0 0 auto' }} />
               <p style={{ fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%' }}>Price: {parseFloat(product.reg_price).toFixed(2)}</p>
             </div>
@@ -210,41 +189,17 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
               </div>
           ))}
        {isModalOpen && (
-    
-        <div className="modal">
-      <div className="modal-content" style={{height:'100%'}}>
-
-
-         <Typography      
-            sx={{
-            fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.2rem', lg: '1.4rem', xl: '1.6rem' },
-            color: '#0d12a1',
-            textShadow: '1px 1px 2px rgba(13, 18, 161, 0.7)',
-            borderRadius: '5px',
-            fontWeight: 'bold', textAlign: 'center',}}>
-          {selectedProduct?.long_desc}
-          </Typography>
-
-
-
-      {/* <h1 className="threeDText">{selectedProduct?.long_desc}</h1> */}
+      <div className="modal">
+      <div className="modal-content">
+      <h1 className="threeDText">{selectedProduct?.long_desc}</h1>
         <img src={image} alt={selectedProduct?.bar_code} style={{ maxWidth: '200px', maxHeight: '150px', marginBottom: '10px' }} />
-
-        
-        <Typography      
-            sx={{
-            fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
-            color: '#0d12a1',
-            borderRadius: '5px',
-            fontWeight: 'bold', textAlign: 'center',}}>
-          Price: {parseFloat(selectedProduct?.reg_price).toFixed(2)}
-          </Typography>
-        {/* <p className='Price'>Price: {parseFloat(selectedProduct?.reg_price).toFixed(2)}</p> */}
+        <p className='Price'>Price: {parseFloat(selectedProduct?.reg_price).toFixed(2)}</p>
         <div className="input-group">
         <button className="btn" style={{backgroundColor:'white',color:'red' ,border:'solid'}} onClick={MinusQuantity} ><FontAwesomeIcon icon={faMinus}/> </button>
           <input type="number" ref={inputRef}  inputMode="numeric"  placeholder="Quantity" value={quantity} onChange={handleQuantityChange} 
-           style={{width:'60%' ,margin:'10px', fontSize:'20px',fontWeight:'bold',textAlign:'center'}}/>
-          <button className="btn" style={{backgroundColor:'white',color:'blue' ,border:'solid'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  style={{ verticalAlign: 'middle' }}/></button>
+        style={{width:'60%' ,margin:'10px', fontSize:'20px',fontWeight:'bold',textAlign:'center'}}/>
+          <button className="btn" style={{backgroundColor:'white',color:'blue' ,border:'solid'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  /></button>
+         
         </div>
         <p className='TotalDue'>Total Due: {calculateTotal()}</p>
         <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
@@ -253,8 +208,6 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
       </div>
       </div>
     </div>
- 
-
       )}
       </div>
   );
@@ -270,10 +223,9 @@ interface TransactionData {
   cartitems :any;
   setcartitems:any;
   totaldue:any;
-  EditOrderList:any;
 }
 
-const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totaldue,EditOrderList  }) => {
+const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totaldue  }) => {
     const [IsOpenTransModal, setIsOpenTransModal] = useState<boolean>(false);
     const [selectedItemIndex, setSelectedItemIndex] = useState<any>(null);
     const [quantity, setQuantity] = useState<number>(1);
@@ -328,19 +280,18 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
 
     const openModaltrans = (index: any) => {
       const selectedItem = cartitems[index];
-      EditOrderList({selectedItem,index})
-      // setQuantity(selectedItem.quantity);
-      // setSelectedItemIndex(index); // Store the index directly, not the item itself
-      // setPrice(selectedItem.price);
-      // setDescription(selectedItem.description)
-      // setBarcode(selectedItem.barcode)
-      // // setLineNo(selectedItem.index)
-      // setIsOpenTransModal(true);
-      // setTimeout(() => {
-      //   if (inputRef.current) {
-      //     inputRef.current.focus();
-      //   }
-      // }, 100); // 1000 millisecond
+      setQuantity(selectedItem.quantity);
+      setSelectedItemIndex(index); // Store the index directly, not the item itself
+      setPrice(selectedItem.price);
+      setDescription(selectedItem.description)
+      setBarcode(selectedItem.barcode)
+      // setLineNo(selectedItem.index)
+      setIsOpenTransModal(true);
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100); // 1000 millisecond
 
     };
     
@@ -362,20 +313,6 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
       }
     };
 
-       
-    const onUpdateToCart = () => {
-      if (selectedItemIndex !== null && selectedItemIndex >= 0 && selectedItemIndex < cartitems.length) {
-        const updatedItems = [...cartitems];
-        updatedItems[selectedItemIndex].quantity = quantity;
-        updatedItems[selectedItemIndex].totalAmount = calculateTotal();  // Update the quantity to the new value
-        setcartitems(updatedItems);
-        closeModal();
-      } else {
-        console.error('Invalid selectedItemIndex or out of range:', selectedItemIndex);
-        // Handle the situation when the index is invalid or out of range
-        // For example, show an error message or handle it in another appropriate way
-      }
-    };
 
       const handleQuantityChange = (newValue: any) => {
         setQuantity(newValue);
@@ -413,10 +350,23 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
         const onClose = () => {
             setIsOpenTransModal(false);
         };
- 
+    
+        const onUpdateToCart = () => {
+          if (selectedItemIndex !== null && selectedItemIndex >= 0 && selectedItemIndex < cartitems.length) {
+            const updatedItems = [...cartitems];
+            updatedItems[selectedItemIndex].quantity = quantity;
+            updatedItems[selectedItemIndex].totalAmount = calculateTotal();  // Update the quantity to the new value
+            setcartitems(updatedItems);
+            closeModal();
+          } else {
+            console.error('Invalid selectedItemIndex or out of range:', selectedItemIndex);
+            // Handle the situation when the index is invalid or out of range
+            // For example, show an error message or handle it in another appropriate way
+          }
+        };
 
     return (
-      <div className="Transaction" style={{ overflowY: 'auto', maxHeight: '55%' , border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
+      <div className="Transaction" style={{ overflowY: 'auto', maxHeight: '55%', border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
         <table className="OrderList">
           <thead>
             <tr>
@@ -449,10 +399,9 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
           </tbody>
         </table>
       
-        {/* {IsOpenTransModal && (
+        {IsOpenTransModal && (
             <div className="modal">
             <div className="modal-content">
-              
             <h1 className="threeDText">{description}</h1>
             <img src={image} style={{ maxWidth: '200px', maxHeight: '150px', marginBottom: '10px' }} />
             <p className='Price'>Price: {parseFloat(Price).toFixed(2)}</p>
@@ -462,7 +411,9 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
                 <FontAwesomeIcon icon={faMinus}  />
 
                 </button>
-  
+                {/* <input type="number" inputMode="numeric"  placeholder="Quantity" value={quantity}
+                callbackFunction={(value) => handleQuantityChange({ target: { value } })}
+                style={{width:'60%' ,margin:'10px', fontSize:'20px' , fontWeight:'bold',textAlign:'center'}}/> */}
                 <input ref={inputRef}
                       type="number"
                       inputMode="numeric"
@@ -493,7 +444,7 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
             </div>
             </div>
         </div>
-        )} */}
+        )}
 
 
       </div>
@@ -551,11 +502,8 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
         }
       }
     };
-  
     
-    const theme = useTheme();
-    const matchesXs = useMediaQuery(theme.breakpoints.down('xs'));
-    const matchesSm = useMediaQuery(theme.breakpoints.down('sm'));
+
 
     return (
         // <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(200px, 1fr))', gap: '5px' ,margin:'10px'}}>
@@ -571,98 +519,35 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
         //     ))}
         // </div>
 
-      //   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(200px, 1fr))', gap: '5px', margin: '10px' }}>
-      //   {category.map((categoryItem: { category: any; }) => (
-      //     <div
-      //       key={categoryItem.category}
-      //       onClick={() => fetchData(categoryItem.category)}
-      //       style={{
-      //         border: '1px solid #ccc',
-      //         padding: '5px',
-      //         justifyContent: 'center',
-      //         display: 'flex',
-      //         flexDirection: 'column',
-      //         alignItems: 'center',
-      //         height: '60px',
-      //         borderRadius: '10px',
-      //         cursor: 'pointer',
-      //         color: '#ffffff',
-      //         backgroundColor:
-      //         selectedCategory === categoryItem.category ? '#ff9800' : '#007bff', // Change background color conditionally
-      //         textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-      //         fontWeight: 'bold',
-      //         textAlign: 'center',
-      //       }}
-      //     >
-      //       <p style={{ margin: '10px', textAlign: 'center' }}>{categoryItem.category.toUpperCase()}</p>
-      //     </div>
-      //   ))}
-      // </div>
-
-
-
-
-<Box
- component="div"
- sx={{
-    // display: 'grid',
-    // gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    // gap: '5px',
-    margin: '10px',
- }}
->
-
- {category.map((categoryItem: { category: any; }) => (
-    <Box
-      key={categoryItem.category}
-      onClick={() => fetchData(categoryItem.category)}
-      sx={{
-        border: '1px solid #ccc',
-        padding: '5px',
-        justifyContent: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        height: '60px',
-        borderRadius: '10px',
-        cursor: 'pointer',
-        color: '#ffffff',
-        backgroundColor:
-          selectedCategory === categoryItem.category ? '#ff9800' : '#007bff', // Change background color conditionally
-        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-        fontWeight: 'bold',
-        textAlign: 'center',
-        fontSize: '1rem', // Make the font responsive
-        width: matchesXs ? '100%' : matchesSm ? '100%' : '100%', // Adjust width based on breakpoints
-      }}
-    >
-   <Typography
-      variant="body1"
-      sx={{
-        margin: '10px',
-        textAlign: 'center',
-        fontSize: {
-          xs: '0.8rem', // Default font size for extra-small screens
-          sm: '0.5rem', // Font size for small screens
-          md: '0.6rem', // Font size for medium screens
-          lg: '0.8rem', // Font size for large screens
-          xl: '1rem', // Font size for extra-large screens
-        },
-        fontWeight: 'bold',
-        '@media (min-width:600px)': { // Additional responsive font size using @media query
-          fontSize: '1rem',
-        },
-        // Add more @media queries for other breakpoints if necessary
-      }}
-    >
-      {categoryItem.category.toUpperCase()}
-    </Typography>
-    </Box>
-  ))}
-</Box>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(200px, 1fr))', gap: '5px', margin: '10px' }}>
+        {category.map((categoryItem: { category: any; }) => (
+          <div
+            key={categoryItem.category}
+            onClick={() => fetchData(categoryItem.category)}
+            style={{
+              border: '1px solid #ccc',
+              padding: '5px',
+              justifyContent: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              height: '60px',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              color: '#ffffff',
+              backgroundColor:
+              selectedCategory === categoryItem.category ? '#ff9800' : '#007bff', // Change background color conditionally
+              textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+              fontWeight: 'bold',
+              textAlign: 'center',
+            }}
+          >
+            <p style={{ margin: '10px', textAlign: 'center' }}>{categoryItem.category.toUpperCase()}</p>
+          </div>
+        ))}
+      </div>
     );
   };
-
 
 
 
@@ -676,12 +561,9 @@ const Restaurant: React.FC = () => {
   const [SOCustomerName, setSOCustomer] = useState<any>([]);
   const [GuestCount, setGuestCount] = useState<number>(0);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const TableNoRef = useRef<HTMLInputElement>(null);
 
-  const [EditOrderModal, setEditOrderModal] = useState<boolean>(false);
-  
-  const [AddOrderModal, setAddOrderModal] = useState<boolean>(false);
+
+
   const [OrderTypeModal, setOrderTypeModal] = useState<boolean>(true);
   const [tableNoModal, setTableNoModal] = useState<boolean>(false);
   const [PaymentOpenModal, setPaymentOpenModal] = useState<boolean>(false);
@@ -696,180 +578,41 @@ const Restaurant: React.FC = () => {
 
   const [PrintReceiptModal,setPrintReceiptModal] = useState<boolean>(false);
 
-  const [refreshCart, setRefreshCart] = useState(false);
+  // const siteCode = useSiteCode();
+
+  // Access user data values from the store
+
+  
   const [SalesOrderListOpenModal, setSalesOrderListOpenModal] = useState<boolean>(false);
     const [products, setProducts] = useState<any>([]);
     const [category, setCategory] = useState<any>([]);
     const [cartItems, setCartItems] = useState<any>([]);
-    const [cartItems1, setCartItems1] = useState<any[]>([]);
-  // const siteCode = useSiteCode();
-  const [loading, setLoading] = useState(true);
-
-
-  const [loadingPrint, setLoadingPrint] = useState(false);
-  // Access user data values from the store
-  interface TypeAndTableState {
-    ordertTYpe: string;
-    tableNo: string;
-  }
-  
-  // Initialize the state with empty strings for ordertTYpe and tableNo
-  const [TypeAndTable, setTypeAndTable] = useState<TypeAndTableState>({ ordertTYpe: '', tableNo: '' });
-  const [CustomerOrderInfo, setCustomerOrderInfo] = useState<any>([]);
-  // const onlineTestApp = new OnlineTestApp();
-  const [AmountTendered,setAmountTendered] = useState<number>(0)
-  const [ChangeAmount,setChangeAmount] = useState<number>(0)
-
-  const [showIframe, setShowIframe] = useState<boolean>(false);
-  const SideCode = localStorage.getItem('SiteCode');
-
-
-  interface TableItem {
-    table_count: number;
-    Paid: string;
-    // Define other properties as needed
-  }
-  
-  // Initialize the state variable TableList with an empty array of TableItem type
-  const [TableList, setTableList] = useState<TableItem[]>([]);
-
-
-
-  // *************** TRANSACRION FOR ADD ORDER **********************
-  //#region 
-  const [quantity, setQuantity] = useState<number | 1>(1); // Adjust the initial state value
-
-  interface SelectedDatas{
-    product:any
-    long_desc: any;
-    reg_price: any;
-    bar_code: any;
-  }
-
-  const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(null);
-  const [Price, setPrice] = useState<number>(0);
- const selectedProductData = (data:any) => {
-  setAddOrderModal(true)
-      setSelectedProduct(data)
-      setPrice(data.product.reg_price);
-      setQuantity(1);
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 100); // 1000 millisecond
-
-
- }
-
-
-
-  const CloseAddOrderModal = () => {
-    setAddOrderModal(false)
-  }
-
-  const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(event.target.value, 10);
-    setQuantity(isNaN(value) ? 1 : value);
-    calculateTotal();
-  };
-
-  const calculateTotal = () => {
-    const total = isNaN(quantity) ? 0 : quantity * Price;
-    return total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  };
-  const addQuantity = () => {
-    setQuantity(prevQuantity => prevQuantity + 1);
-  };
-
-  const MinusQuantity = () => {
-    setQuantity(prevQuantity => {
-      const newQuantity = prevQuantity - 1;
-      return newQuantity <= 0 ? 1 : newQuantity;
-    });
-  };
-
-  
-  const addtocarts = () => {
-    if (selectedProduct !== null) {
-      const productToAdd = {
-        quantity: quantity,
-        description: selectedProduct.product.long_desc,
-        price: parseFloat(selectedProduct.product.reg_price).toFixed(2),
-        totalAmount: calculateTotal(),
-        barcode: selectedProduct.product.bar_code,
-      };
-  
-      addToCart(productToAdd);
-      setAddOrderModal(false);
-    } else {
-      // Handle the case where selectedProduct is null (optional)
-      // For example, you could show an error message or perform alternative logic
-      console.error("selectedProduct is null");
-    }
-    
-    };
-
-
-    interface selecteditemData {
-      selectedItem:any;
-      index:any;
-    }
-    const [selectedItemIndex, setSelectedItemIndex] = useState<any>(null);
-    const [selectedItemIndexData, setSelectedItemIndexData] = useState<selecteditemData | null>(null);
-
-    const closeModal = () => {
-
-      setSelectedItemIndex(null);
-      setEditOrderModal(false);
-    };
-    
-    const onDelete = () => {
-      if (selectedItemIndex !== null && selectedItemIndex >= 0 && selectedItemIndex < cartItems.length) {
-        const updatedItems = [...cartItems];
-        updatedItems.splice(selectedItemIndex, 1);
-        setCartItems(updatedItems);
-        closeModal();
-
-      } else {
-        console.error('Invalid selectedItemIndex or out of range:', selectedItemIndex);
-        // Handle the situation when the index is invalid or out of range
-        // For example, show an error message or handle it in another appropriate way
-      }
-    };
-      
-    const onUpdateToCart = () => {
-      if (selectedItemIndex !== null && selectedItemIndex >= 0 && selectedItemIndex < cartItems.length) {
-        const updatedItems = [...cartItems];
-        updatedItems[selectedItemIndex].quantity = quantity;
-        updatedItems[selectedItemIndex].totalAmount = calculateTotal();  // Update the quantity to the new value
-        setCartItems(updatedItems);
-        closeModal();
-      } else {
-        console.error('Invalid selectedItemIndex or out of range:', selectedItemIndex);
-        // Handle the situation when the index is invalid or out of range
-        // For example, show an error message or handle it in another appropriate way
-      }
-    };
-
-    const EditOrderList = (data:any) => {
-      setSelectedItemIndex(data.index)
-      setSelectedItemIndexData(data)
-      setEditOrderModal(true)
-    }
-
-    const onClose = () => {
-      setEditOrderModal(false);
-  };
-  //#endregion
-
-  // ************************** END HERE ********************
-
-
-
-
+    const [cartItems1, setCartItems1] = useState<any>([]);
  
+    interface TypeAndTableState {
+      ordertTYpe: string;
+      tableNo: string;
+    }
+    
+    // Initialize the state with empty strings for ordertTYpe and tableNo
+    const [TypeAndTable, setTypeAndTable] = useState<TypeAndTableState>({ ordertTYpe: '', tableNo: '' });
+    const [CustomerOrderInfo, setCustomerOrderInfo] = useState<any>([]);
+    // const onlineTestApp = new OnlineTestApp();
+    const [AmountTendered,setAmountTendered] = useState<number>(0)
+    const [ChangeAmount,setChangeAmount] = useState<number>(0)
 
+    const [showIframe, setShowIframe] = useState<boolean>(false);
+    const SideCode = localStorage.getItem('SiteCode');
+
+
+    interface TableItem {
+      table_count: number;
+      Paid: string;
+      // Define other properties as needed
+    }
+    
+    // Initialize the state variable TableList with an empty array of TableItem type
+    const [TableList, setTableList] = useState<TableItem[]>([]);
 
 
 
@@ -954,7 +697,6 @@ const Restaurant: React.FC = () => {
       if (OrderType == 'TAKE OUT'){
         setOrderType('DINE IN')
         setTableNoModal(true)
-        setDineIn(true)
       }
     }
 
@@ -1102,7 +844,6 @@ const CloseReprintTransactionModal = () => {
 setReprintTransactionModal(false)
 }
 
-
 const ReprintTransactionReceipt = async (data: { DocNO: any; DocType: any; }) => {
 
   console.log('asdasd',data)
@@ -1117,11 +858,9 @@ const ReprintTransactionReceipt = async (data: { DocNO: any; DocType: any; }) =>
       }})
     if (response.status==200) {
       console.log('Success',response.status)
-
       setCartItems(response.data.Data)
-      localStorage.setItem('cartData', JSON.stringify(response.data.Data));
-      localStorage.setItem('DataInfo', JSON.stringify(response.data.DataInfo));
-      setRefreshCart(prevState => !prevState);
+
+      PrintCashPaymentReceipt(response.data.DataInfo)
     }
     
   } catch (error) {
@@ -1316,10 +1055,8 @@ else {
 
 
 
+
  const fecthTableList = () => {
-  if (TableList.length != 0){
-  setLoading(false)
-  }
       const apiUrl = `${BASE_URL}/api/table/count/?site_code=${SideCode}`; // Replace with your actual site code
       fetch(apiUrl)
         .then(response => {
@@ -1329,8 +1066,7 @@ else {
           return response.json();
         })
         .then(data => {
-          setTableList(data.tables);
-          setLoading(false) // Assuming the response data has a 'tables' key
+          setTableList(data.tables); // Assuming the response data has a 'tables' key
         })
         .catch(error => {
           console.error('There was a problem fetching the data:', error);
@@ -1340,7 +1076,8 @@ else {
     const addToCart = (item: any) => {
         // Create a new array by spreading the existing cartItems and adding the new item to it
         const updatedCartItems = [...cartItems, item];
-    
+      
+        // Set the state to the updated cartItems array
         setCartItems(updatedCartItems);
       };
 
@@ -1458,29 +1195,10 @@ else {
       return () => clearInterval(interval);
     }, []); // Empty dependency array ensures the effect runs only once on mount
   
-    useEffect(() => {
-
-
-      const storedCartDataString = localStorage.getItem('cartData');
-      const storeDataInfo = localStorage.getItem('DataInfo');
-
-    
-      if (storedCartDataString !== null && storeDataInfo !== null) {
-        const storedCartData = JSON.parse(storedCartDataString);
-
-        const DataInfo = JSON.parse(storeDataInfo);
-        setCartItems(storedCartData);
-        RePrintCashPaymentReceipt(DataInfo)
-      } else {
-        console.error('No cart data found in localStorage');
-      }
-    }, [refreshCart]); // Trigger effect when refreshCart changes
-    
+  
 
 //******** PRINT DESCRIPTION AND ITEMS QTY******** */
     const generateReceipt = () => {
-
-
       if (!cartItems || cartItems.length === 0) {
         console.error('Cart items data is empty or invalid');
         return ''; // Return an empty string if data is empty or invalid
@@ -1494,7 +1212,7 @@ else {
 
 
     receiptContent += '<div>-----------------------------------------------------</div>'
-    receiptContent += '<div>QTY  |              DESCRIPTION       |   AMOUNT </div>'
+    receiptContent += '<div>QTY  |              DESCRIPTION       </div>'
     receiptContent += '<div>-----------------------------------------------------</div>'
  
     function wrapDescription(description: string, maxLength: number) {
@@ -1520,7 +1238,7 @@ else {
         const itemDescription = item.description; // Replace with your actual item description
         const wrappedDescription = wrapDescription(itemDescription, maxLength);
     
-        const formattedQuantity = String(parseInt(item.quantity)).padEnd(4, ' ')
+        const formattedQuantity = String(item.quantity).padEnd(4, ' ')
         if (item.description.length < 25){
          const lengthShort = 25 - item.description.length
           maxLengthChar =  maxLengthChar + lengthShort
@@ -1784,26 +1502,16 @@ else {
             // Remove the iframe after printing
                setTimeout(async () => {
                 iframeWindow.focus();
-   
-              // Print the content
+
               iframeWindow.print();
-              // iframeWindow.print();
-    
-              // setTimeout(() => {
-              //   iframeWindow.close();
-              // }, 1000);
+              setTimeout(() => {
+                iframeWindow.close();
+              }, 1000);
      
 
 
               if (SOInfo.PaymentType ==='Sales Order'){
-                setOrderType('')
-                setOrderTypeModal(true)
-                setShowIframe(false)
-                iframe.style.display = 'none';
-                setCartItems([])
-                setTableNo('')
-
-                // window.location.reload(); 
+                window.location.reload(); 
               }
               else{
                 if (iframe) {
@@ -1845,311 +1553,13 @@ else {
     };
     
 
-
-
 //************ PRINT RECEIPT CASH PAYMENT*****************//
-const RePrintCashPaymentReceipt = async (dataInfo:any) => {
-  const generateReceiptIframe = (receiptContent: string, logoSrc: { logo: string; }) => {
 
 
-
-
-    // Create a hidden iframe to prepare for printing
-    // const iframe = document.createElement('iframe');
-    // iframe.style.display = 'none';
-    // document.body.appendChild(iframe);
-
-
-    const iframe = document.getElementById('myIframe') as HTMLIFrameElement | null;
-    // IframeContainer.appendChild(iframe)
-
-
-if (iframe !== null) {
-
-  setShowIframe(true)
-  if (iframe) {
-    iframe.style.display = 'block';
-  // Set display property to 'block' to show the iframe
-  }
-
-  iframe.onload = () => {
-    const currentDate = new Date();   
-
-// Format the date and time as needed
-   const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: 'UTC' });
-    // Write the receipt content to the iframe document
-    // const doc = iframe.contentDocument || iframe.contentWindow.document;
-
-    const iframeWindow = iframe.contentWindow;
-
-    if (iframeWindow !== null) {
-      const doc = iframeWindow.document;
-
-      doc.open();
-    // doc.write('<style>body { font-family: "Courier New", Courier, monospace; }</style>');
-    doc.write('<style>body {  font-family: Consolas, monaco, monospace; }</style>');
-
-    doc.write('<div style="width: 350px; margin:none; font-size:12px">');
-    doc.write('<div>'); // Start a container div for content
-
-    // Embed the logo image using an <img> tag
-    doc.write('<div style="text-align: center;">');
-    doc.write(`<img src="${logo}" alt="Logo Image" style="max-width: 50px; display: inline-block;" />`);
-    doc.write('</div>');
-
-
-
-    doc.write('<div style="text-align: center;">');
-    doc.write('<div> -----------------------------------------------------</div>');
-
-  
-
-    doc.write(`<div> ${dataInfo.CustomerCompanyName}</div>`);
-
-
-    doc.write(`<div> ${dataInfo.CustomerCompanyAddress}</div>`);
-    doc.write(`<div> ${dataInfo.TelNo}</div>`);
-    doc.write(`<div> ${dataInfo.CustomerTIN}</div>`);
-    doc.write(`<div> ${dataInfo.SerialNO}</div>`);
-    doc.write(`<div> ${dataInfo.MachineNo}</div>`);
-
-
-
-    doc.write('<p>Re-Print Copy</p>');
-    doc.write(`<div> SI# ${parseFloat(dataInfo.OR)}</div>`);
-    doc.write(`<div> ${formattedDateTime} </div>`);
-    doc.write('</div>')
-    // Write the receipt content
-    doc.write('<pre>' + receiptContent + '</pre>');
-    // doc.write('<div style="text-align: center;">');
-    // doc.write('<div> -----------------------------------------------------</div>');
-    // doc.write('</div>')
-
-
-
-
-
-      let receiptContent1 = '';
-
-      const AlignmentSpace = (description: string | any[], data: string | any[]) => {
-        const totalLength = 47; // Total desired length for alignment
-        const contentLength = description.length + data.length; // Calculate the length of the combined content
-        const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
-      
-        return ' '.repeat(spacesNeeded); // Return the string with required spaces
-      };
-        
-        //********************************************************* */
-        let description = '';
-        let data = ''
-        // Get the value or initialize an empty string if it's null
-        let spaces = null
-            data = dataInfo.ServiceCharge || '';
-            description = 'SERVICE CHARGES:'
-            spaces = AlignmentSpace(description, data);
-            receiptContent1 = `<div style="margin-top:-7px; padding: 0;">${description}${spaces}${data}</div>`;
-            receiptContent1 += '<div style="margin-top:-3px; padding: 0;">=====================================================</div>'
-           
-            doc.write('<pre>' + receiptContent1 + '</pre>');
-
-            description = 'TOTAL DUE:';
-            data = formattedTotalDue || ''; 
-            spaces = AlignmentSpace(description, data);
-            receiptContent1 = `<div style="margin-top:-9px; padding: 0;font-weight: bold;">${description}${spaces}${data}</div>`;
-            receiptContent1 += '<div style="margin:-3px; padding: 0;">-----------------------------------------------------</div>'
-            doc.write('<pre>' + receiptContent1 + '</pre>');
-
-
-
-            description = 'VATable:';
-            data = dataInfo.VATable || ''; 
-            spaces = AlignmentSpace(description, data);
-            receiptContent1 = `<div>${description}${spaces}${data}</div>`;
-
-            description = 'VAT Exempt:';
-            data = dataInfo.VatExcempt || ''; 
-            spaces = AlignmentSpace(description, data);
-            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
-
-
-            description = 'Non VAT:';
-            data = dataInfo.NonVat|| ''; 
-            spaces = AlignmentSpace(description, data);
-            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
-
-            
-            description = 'VAT Zero Rated: ';
-            data = dataInfo.VatZeroRated|| ''; 
-            spaces = AlignmentSpace(description, data);
-            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
-
-
-            description = 'VAT:';
-            data = dataInfo.VAT || ''; 
-            spaces = AlignmentSpace(description, data);
-            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
-            doc.write('<pre>' + receiptContent1 + '=====================================================</pre>');
-            //                    doc.write('<div> =====================================================</div>');
-
-            description = 'TOTAL DUE:';
-            data = formattedTotalDue || ''; 
-            spaces = AlignmentSpace(description, data);
-            receiptContent1 = `<div style="margin-top:-9px; padding: 0;font-weight: bold;">${description}${spaces}${data}</div>`;
-
-            doc.write('<pre>' + receiptContent1 + '</pre>');
-
-            doc.write('<div style="text-align: center;">');
-            doc.write('<div>-----------------------------------------------------</div>');
-            doc.write('</div>')
-
-
-
-    description = 'CASH:';
-    const amountTenderedFormatted = Number(AmountTendered).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    data = String(amountTenderedFormatted) || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 = `<div style="font-weight: bold;">${description}${spaces}${amountTenderedFormatted}</div>`;
-
-
-
-    description = 'CHANGE:';
-    const changeAmountFormatted = Number(ChangeAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    data = String(changeAmountFormatted) || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${changeAmountFormatted}</div>`;
-
-    doc.write('<pre>' + receiptContent1 + '</pre>');
-
-    
-    doc.write('<div style="text-align: center;">');
-    doc.write('<div> -----------------------------------------------------</div>');
-    doc.write('</div>')
-
-    
-    description = 'CASHIER:';
-    data = localStorage.getItem('FullName') || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 = `<div>${description}${spaces}${data}</div>`;
-    
-
-
-    description = 'WAITER:';
-    data = dataInfo.WaiterName || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
-
-
-    description = 'TERMINAL# ';
-    data = dataInfo.TerminalNo
-    data += '-'
-    data +=  String(parseFloat(dataInfo.OR)).padStart(8,'0') || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 += `<div>${spaces}${description}${data}</div>`;
-
-    doc.write('<pre>' + receiptContent1 + '</pre>');
-
-
-    
-    doc.write('<div style="text-align: center;">');
-    doc.write('<div>-----------------------------------------------------</div>');
-    doc.write('</div>')
-
-
-
-
-    description = 'CUSTOMER NAME:';
-    data = dataInfo.CustomerName || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 = `<div>${description}${spaces}${data}</div>`;
-
-    description = 'COMPANY ADDRESS:';
-    data = dataInfo.CusAddress || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
-
-    description = 'TIN:';
-    data = dataInfo.CusTIN || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
-
-
-    description = 'BUSINESS STYLE:';
-    data = dataInfo.CusBusiness || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
-
-    doc.write('<pre>' + receiptContent1 + '</pre>');
-
-    doc.write('<div style="text-align: center;">');
-    doc.write('<div> --------------------------------------------------</div>');
-    doc.write('<div> THANK YOU COME AGAIN: </div>');
-    doc.write('<div> --------------------------------------------------</div>');
-    
-    doc.write('<div> LEAD SOLUTIONS INC. </div>');
-
-    doc.write('<div> DOOR 1 DWTC BLDG RIZAL EXTENSION </div>');
-    doc.write('<div> DAVAO CITY </div>');
-    doc.write('<div> 274-027-986-000</div>');
-    doc.write('<div> ACCRED # 1132740279862015060320</div>');
-    doc.write('<div> DATE ISSUED: 06-04-2015 </div>');
-    doc.write('<div> VALID UNTIL: 07-31-2025 </div>');
-    doc.write('<div> PTU NO. FP112022-110-0358595-000001 </div>');
-    doc.write('<div> DATE ISSUED: 10-03-2022 </div>');
-
-    doc.write('</div>')
-
-
-
-  
-    const qr = QRCode(0, 'H'); // QR code type and error correction level
-    qr.addData('Your data for QR code'); // Replace with the data you want in the QR code
-    qr.make();
-
-    // Get the generated QR code as a data URI
-    const qrDataURI = qr.createDataURL();
-
-    // Insert the QR code image into the document
-    doc.write('<div style="text-align: center;">');
-    doc.write(`<img src="${qrDataURI}" alt="QR Code"  style="max-width: 120px; display: inline-block;" />`);
-    doc.write('</div>'); // Close the container div
-    doc.close();
-  // Remove the iframe after printing
-  setTimeout(() => {
-    iframeWindow.print();
-    localStorage.removeItem('cartData');
-    setOrderType('')
-    setOrderTypeModal(true)
-    setShowIframe(false)
-    iframe.style.display = 'none';
-    setCartItems([])
-    setTableNo('')
-  }, 1000); 
-    // Print the receipt
-  
-
-    // Remove the iframe after printing
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-
-    }, 20000); // Adjust timeout as needed for printing to complete
-  } };
-    iframe.src = 'about:blank';
-  return iframe;
-  }};
-
-  // Example data (replace with actual receipt content and logo source)
-  const receiptContent = generateReceipt();
-// Replace with the actual path to your logo image
-
-  const iframe = generateReceiptIframe(receiptContent, {logo});
-};
-
-
-//************ PRINT RECEIPT CASH PAYMENT*****************//
 const PrintCashPaymentReceipt = async (dataInfo:any) => {
   const generateReceiptIframe = (receiptContent: string, logoSrc: { logo: string; }) => {
+
+
 
 
     // Create a hidden iframe to prepare for printing
@@ -2416,14 +1826,7 @@ if (iframe !== null) {
   // Remove the iframe after printing
   setTimeout(() => {
     iframeWindow.print();
-    // window.location.reload(); 
-
-    setOrderType('')
-    setOrderTypeModal(true)
-    setShowIframe(false)
-    iframe.style.display = 'none';
-    setCartItems([])
-    setTableNo('')
+    window.location.reload(); 
   }, 1000); 
     // Print the receipt
   
@@ -2513,285 +1916,156 @@ const overlayStyle: React.CSSProperties  = {
   zIndex: showIframe ? '9999' : '-1', // Set a higher zIndex to cover iframe when shown
   pointerEvents: showIframe ? 'auto' : 'none', // Enable or disable click events
 };
-
-
-
-const theme = useTheme();
-const matchesSm = useMediaQuery(theme.breakpoints.down('sm'));
-const matchesXs = useMediaQuery(theme.breakpoints.down('xs'));
-
-const [deviceType, setDeviceType] = useState<string>('');
-
-useEffect(() => {
-  const checkDeviceType = () => {
-    if (isMobile) {
-      setDeviceType('Mobile');
-    } else if (isTablet) {
-      setDeviceType('Tablet');
-    } else {
-      setDeviceType('Desktop');
-    }
-  };
-
-  checkDeviceType();
-
-  const handleResize = () => {
-    checkDeviceType();
-  };
-
-  window.addEventListener('resize', handleResize);
-
-  return () => {
-    window.removeEventListener('resize', handleResize);
-  };
-}, []);
-
-
   return (
-    <>
-    
+  
 
-
-    <Grid
-      container
-      className='Restaurant-trans'
-      style={{ height: '100vh' }}
-      spacing={1}
-      justifyContent="space-between" // Adjust alignment as needed
-    >
+<div className='Restaurant-trans' style={{ display: 'grid', gridTemplateColumns: '250px 1fr 1fr', gap: '5px', height: '90vh'}}>
 
 <div style={overlayStyle} />
 
-<Grid item xs={12} md={2} style={{ height: '100%',width:'35%'}}>
-      <div className="Category">
-          <Typography      
-            sx={{
-            fontSize: { xs: '1rem', sm: '0.9rem', md: '0.9rem', lg: '1.1rem', xl: '1.2rem' },
-            color: '#ffffff',backgroundColor: '#007bff',
-            padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-            borderRadius: '5px',margin: '10px',
-            fontWeight: 'bold', textAlign: 'center',}}>
-              Category Section
-          </Typography>
-          <div className='Category-container' style={{ overflowY: 'auto', maxHeight: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
-            <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} />
-          </div>
+<iframe id="myIframe" style={{position:'absolute',display:'none',backgroundColor:'#ffff',height:'90%',width:'25%',
 
-      </div>
-    </Grid>
+     marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.com"></iframe>
 
 
-    <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
-      <div className="Product">
-          <Typography      
-        sx={{
-          fontSize: { xs: '1rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
-        color: '#ffffff',backgroundColor: '#007bff',
-        padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-        borderRadius: '5px',margin: '10px',
-        fontWeight: 'bold', textAlign: 'center',}}>
-      Product Section
-          </Typography>
-          <div className='Product-container' style={{ overflowY: 'auto', height: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
-            <ProductGrid products={products} addtocart={addToCart} selectedProductData={selectedProductData} />
-          </div>
+    <div className="Category">
+    <h2 style={{ color: '#ffffff', backgroundColor: '#007bff', padding: '10px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center' }}>Category Section</h2>
+
+        <div className='Category-container'style={{ overflowY: 'auto', maxHeight: '90vh' ,border:' 1px solid #ccc',borderRadius:'10px',boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)',margin:'10px'}}>
+          {/* <CategoryGrid category={category} />   */}
+          <CategoryGrid  category={category}  onReceiveProducts={handleProductsFromCategory} />
         </div>
-    </Grid>
+      
+    </div>
+    
+    <div className="Product">
+    <h2 style={{ color: '#ffffff', backgroundColor: '#007bff', padding: '10px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
+        borderRadius: '5px', margin: '10px',
+        fontWeight: 'bold', textAlign: 'center'
+      }}>Product Section</h2>
 
-    <iframe id="myIframe" style={{position:'absolute',display:'none',backgroundColor:'#ffff',height:'90%',marginTop:'10px',width:'25%',
+        <div className='Product-container'style={{ overflowY: 'auto', height: '90vh' ,border:' 1px solid #ccc',borderRadius:'10px',boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)',margin:'10px'}}>
+        {/* <iframe id="myIframe" style={{position:'absolute',display:'none',backgroundColor:'#ffff',height:'90%',width:'30%',
+        marginLeft:'50px',borderRadius:'10px',   zIndex: '9999'}} src="https://example.com"></iframe> */}
+        <ProductGrid products={products} addtocart={addToCart} />
+        </div>
 
-      marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.com"></iframe>
+  
+    </div>
 
+    
+    <div className='Transaction-container' style={{ height: '100vh'}}>
+    {/* <div style={{height:'100px',width:'400px',position:'absolute',border:'solid',top:'200px',right:'30px',backgroundColor:'transparent',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', borderRadius: '5px',display:'none'}}>
 
-      <Grid item xs={12} md={3} style={{ height: '100%',width:'60%' }}>
-      <div className='Transaction-container' style={{ height: '95%'}}>
-          <Typography      
-              sx={{
-                fontSize: { xs: '1.2rem', sm: '1.2rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
-              color: '#ffffff',backgroundColor: '#007bff',
-              padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-              borderRadius: '5px',margin: '10px',
-              fontWeight: 'bold', textAlign: 'center',}}>
-                  {OrderType === 'TAKE OUT' ? 'TAKE OUT' : `${OrderType} Table No. ${TableNo}`}
-          </Typography>
-         
-          <Transaction cartitems={cartItems} setcartitems={setCartItems} totaldue={calculateTotalDue()} EditOrderList={EditOrderList} />
+  </div> */}
+    {/* <div className='Transaction-container'style={{ overflowY: 'auto', maxHeight: '725px' ,border:' 1px solid #ccc',borderRadius:'10px',boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)',margin:'10px'}}> */} 
+    <h2 style={{ color: '#ffffff', backgroundColor: '#007bff', padding: '10px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center' }}>{OrderType === 'TAKE OUT' ? 'TAKE OUT' : `${OrderType} Table No. ${TableNo}`}</h2>
+    <Transaction cartitems={cartItems}  setcartitems={setCartItems}  totaldue={calculateTotalDue()}  />
 
-          <Typography sx={{
-           fontSize: { xs: '0.5rem', sm: '0.7rem', md: '.8rem', lg: '.9rem', xl: '1.2rem' },
-           fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue', color: 'blue',
-            padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)', borderRadius: '5px'
-          }}>Total Amount Due: Php {formattedTotalDue}</Typography>
+      <p style={{ fontSize: '20px', fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue',  color: 'blue', 
+        padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  }}>Total Amount Due: Php {formattedTotalDue}</p>
 
-          {/* <div className="actionButtons"> */}
-          <div style={{ display: 'flex', flexDirection:'column', gap: '5px', margin: '5px',height:'32%'}}>
-              <div style={{ display: 'flex', flexDirection:'row',height:'50%' }}>
+      {/* <div className="actionButtons"> */}
+      <div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px' ,maxHeight:'50%'}}>
 
+        {DineIn ? (
+                <div     
+                style={{border: '1px solid #4a90e2',padding: '5px',
+                backgroundSize: 'cover',height: '115px', display: 'flex',flexDirection: 'column',
+                alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                }}
+                onClick={SaveOrderClick}>
 
-                  {DineIn ? (
+                <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+                Save Order</p>
+                <img src= {SaveOrder} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                </div>
+          //  <button className="paymentButton" onClick={SaveOrderClick}><FontAwesomeIcon icon={faAdd}/>Save Order</button>
+          ):(
+          // <button className="paymentButton" onClick={PaymentClick}><FontAwesomeIcon icon={faDollarSign} /> Payment</button>
+                    <div     
+                    style={{border: '1px solid #4a90e2',padding: '5px',
+                    backgroundSize: 'cover',height: '115px', display: 'flex',flexDirection: 'column',
+                    alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                    borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                    }}
+                    onClick={PaymentClick}>
 
-                      <Button
-                        style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
-                          display: 'flex',flexDirection: 'column',alignItems: 'center',
-                          borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                          borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
-                        onClick={SaveOrderClick}
-                        fullWidth >
-                        <Typography
-                          variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
-                          fontSize: { xs: '1rem', sm: '1rem', md: '.6rem', lg: '.7rem', xl: '.8rem' },
-                          fontWeight: 'bold', color: 'blue',textAlign: 'center',
-                          }}>   Save Order
-                        </Typography>
-                        <img src={SaveOrder} alt="Sales Order"
-                          style={{
-                            maxWidth: '80%', maxHeight: '50%',marginBottom: '10px', flex: '0 0 auto',
-                          }}
-                        />
-                      </Button>
-                 
-                
+                    <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+                    Payment</p>
+                    <img src= {Selectpayment} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                  </div>
+                    )}
+                <div     
+                    style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
+                    alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                    borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                    }}
+                    onClick={OpenTableNoModal}>
 
-                  ) : (
+                    <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+                    Sales Order</p>
+                    <img src= {SalesOrderImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                  </div>
+                  <div     
+                    style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
+                    alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                    borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                    }}
+                    onClick={OtherCommand}>
 
+                    <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+                    Other Command</p>
+                    <img src= {OtherCommandImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                  </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px',maxHeight:'50%'}}>
+        
+        
+        <div     
+          style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
+          alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+          borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+          }}
+          onClick={ChangeOrderType}>
+          <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+            Change Type</p>
+          <img src= {ChangeOderTypeImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+        </div>
 
-                  
-                      <Button
-                        style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
-                          display: 'flex',flexDirection: 'column',alignItems: 'center',
-                          borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                          borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
-                        onClick={PaymentClick}
-                        fullWidth >
-                        <Typography
-                          variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
-                          fontSize: { xs: '1rem', sm: '1rem', md: '.6rem', lg: '.7rem', xl: '.8rem' },
-                       fontWeight: 'bold', color: 'blue',textAlign: 'center',
-                          }}> Payment
-                        </Typography>
-                        <img src={Selectpayment} alt="Sales Order"
-                          style={{
-                            maxWidth: '80%', maxHeight: '50%',marginBottom: '10px', flex: '0 0 auto',
-                          }}
-                        />
-                      </Button>
-             
+        <div     
+          style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
+          alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+          borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+          }}
+          onClick={ReprintList}>
 
-                  )}
-         
-                        <Button
-                          style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
-                            display: 'flex',flexDirection: 'column',alignItems: 'center',
-                            borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                            borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
-                          onClick={OpenTableNoModal}
-                          fullWidth >
-                          <Typography
-                            variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
-                            fontSize: { xs: '1rem', sm: '1rem', md: '.6rem', lg: '.7rem', xl: '.8rem' },
-                           fontWeight: 'bold', color: 'blue',textAlign: 'center',
-                            }}> Sales Order
-                          </Typography>
-                          <img src={SalesOrderImage} alt="Sales Order"
-                            style={{
-                              maxWidth: '80%', maxHeight: '50%',marginBottom: '10px', flex: '0 0 auto',
-                            }}
-                          />
-                        </Button>
- 
-                        <Button
-                          style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
-                            display: 'flex',flexDirection: 'column',alignItems: 'center',
-                            borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                            borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
-                          onClick={OtherCommand}
-                          fullWidth >
-                          <Typography
-                            variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
-                            fontSize: { xs: '1rem', sm: '1rem', md: '.6rem', lg: '.7rem', xl: '.8rem' },
-                             fontWeight: 'bold', color: 'blue',textAlign: 'center',
-                            }}> Other Command
-                          </Typography>
-                          <img src={OtherCommandImage} alt="Sales Order"
-                            style={{
-                              maxWidth: '80%', maxHeight: '50%',marginBottom: '10px', flex: '0 0 auto',
-                            }}
-                          />
-                        </Button>
-                    
-              </div> 
-                
-              <div style={{ display: 'flex', flexDirection:'row',height:'50%'}}>
+          <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+            Re-Print</p>
+          <img src= {ReprintImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+        </div>
+        
+        <div     
+          style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
+          alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+          borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+          }}
+          onClick={RefreshModule}>
 
-                    <Button
-                      style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
-                        display: 'flex',flexDirection: 'column',alignItems: 'center',
-                        borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                        borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
-                      onClick={ChangeOrderType}
-                      fullWidth >
-                      <Typography
-                        variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
-                        fontSize: { xs: '1rem', sm: '1rem', md: '.6rem', lg: '.7rem', xl: '.8rem' },
-                        fontWeight: 'bold', color: 'blue',textAlign: 'center',
-                        }}>   Change Type
-                      </Typography>
-                      <img src={ChangeOderTypeImage} alt="Sales Order"
-                        style={{
-                          maxWidth: '80%', maxHeight: '50%',marginBottom: '10px', flex: '0 0 auto',
-                        }}
-                      />
-                    </Button>
-             
+          <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+          Refresh</p>
+          <img src= {RefreshImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+        </div>
 
-           
-                    <Button
-                      style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
-                        display: 'flex',flexDirection: 'column',alignItems: 'center',
-                        borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                        borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
-                      onClick={ReprintList}
-                      fullWidth >
-                      <Typography
-                        variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
-                        fontSize: { xs: '1rem', sm: '1rem', md: '.6rem', lg: '.7rem', xl: '.8rem' },
-                      fontWeight: 'bold', color: 'blue',textAlign: 'center',
-                        }}> Reprint
-                      </Typography>
-                      <img src={ReprintImage} alt="Sales Order"
-                        style={{
-                          maxWidth: '80%', maxHeight: '50%',marginBottom: '10px', flex: '0 0 auto',
-                        }}
-                      />
-                    </Button>
-              
-                    <Button
-                      style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
-                        display: 'flex',flexDirection: 'column',alignItems: 'center',
-                        borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                        borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
-                      onClick={RefreshModule}
-                      fullWidth >
-                      <Typography
-                        variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
-                        fontSize: { xs: '1rem', sm: '1rem', md: '.6rem', lg: '.7rem', xl: '.8rem' },
-                          fontWeight: 'bold', color: 'blue',textAlign: 'center',
-                        }}> Refresh
-                      </Typography>
-                      <img src={RefreshImage} alt="Sales Order"
-                        style={{
-                          maxWidth: '80%', maxHeight: '50%',marginBottom: '10px', flex: '0 0 auto',
-                        }}
-                      />
-                    </Button>
-                 
-              </div>
-          </div>
+        </div>
       </div>
 
-      </Grid>  
-      
-       
+        {/* <button className="updateButton"><FontAwesomeIcon icon={faBowlFood} /> Sales Order</button>
+        <button className="deleteButton" style={{ backgroundColor: 'red' }} onClick={OtherCommand}><FontAwesomeIcon icon={faDoorOpen} /> Other Command</button> */}
+      </div>
 {/* </div> */}
 {CustomerDineInModal && <CustomerDineIn handleclose={CloseCustomerDineInModal} typeandtable={TypeAndTable}  handlemodaldata={CutomerInfoEntry} />}
 {SalesOrderListOpenModal && <ListOfDineInSalesOrder handleclose={CloseSalesOrderListOpenModal}  settlebillData = {settlebillData} tableno={TableNo} />}
@@ -2801,159 +2075,79 @@ useEffect(() => {
 {ReprintTransactionModal && <ReprintTransaction handleClose={CloseReprintTransactionModal} PrintTransactionData={ReprintTransactionReceipt}/>}
 
 
-
 {OrderTypeModal && (
-          <div className="modal">
-            <div className="modal-content" style={deviceType === 'Desktop' ? { width: '450px' ,display:'flex',flexDirection:'column' } : { width: '320px',display:'flex',flexDirection:'column' }}>
-              {/* <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px', color: 'red' }}>
-                Choose Order Type
-              </h2> */}
-
-        <Typography
-            variant="h2" // Adjust variant as needed (h1, h2, h3, etc.)
-            align="center"
-            sx={{
-              fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-              textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-              border: '2px solid #4a90e2',
-              borderRadius: '10px',
-              padding: '10px',
-              color: 'red !important',
-              fontWeight:'bold'
-            }}
-          >
-          Choose Order Type
-        </Typography>
-
-              <Button className="button-dine-in"onClick={handleDineIn} >
-                <Typography      
-                  sx={{
-                  fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                  color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                  borderRadius: '5px',
-                  fontWeight: 'bold', textAlign: 'center',}}>
-                   Dine In
-                </Typography>
-                
-              </Button>
-
-              {isDesktop && (
-              <Button className="button-take-out"onClick={handleTakeOut} >
-              <Typography      
-                sx={{
-                fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                color: '#ffffff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                borderRadius: '5px',
-                fontWeight: 'bold', textAlign: 'center',}}>
-               Take Out
-              </Typography>
-            </Button>
-              )}
-
-            </div>
+        <div className="modal" >
+          <div className="modal-content" style={{width:'50%'}}>
+          <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'red'}}>
+              Choose Order Type
+            </h2>
+            <button className="button-dine-in" onClick={handleDineIn}>Dine In</button>
+            <button className="button-take-out" onClick={handleTakeOut}>Take Out</button>
           </div>
-        )}
+        </div>
+  )}
 
 { tableNoModal && (
   <div className="modal" >
     <div className="modal-contentTable" >
-    {isDesktop ? (        
-       <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
-                    SELECT TABLE {TableNo}</h2> 
-                ):(
-                    <><h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px', color: 'Blue' }}>
+        <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
                     SELECT TABLE {TableNo}</h2>
 
-                    <div style={{margin:'5px',display:'flex',flexDirection:'row'}}>
+        <div className='containertable' style={{display:'flex',flexDirection:'row'}}>
 
-                    <input type="number" ref={TableNoRef} inputMode="numeric" placeholder="Table No" style={{width:'100%' ,margin:'5px'}} defaultValue={TableNo}  onChange={(e) => setTableNo(e.target.value)}/>
-                    <button className="btn" style={{width:'100%',height:'40px',margin:'5px'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
-                    </div></>
-                   
-                )}
-
-
-      
-
-  <div className='containertable' style={{display:'flex',flexDirection:'row'}}>
-
-    <div style={{overflow:'auto',height: '75%' }}>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px',overflow:'auto',height: '550px',
-              border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'10px',borderRadius:'10px' }}>
-     {loading && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '37%',
-            transform: 'translate(-50%, -50%)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
-            zIndex: 999,
-          }}
-        >
-          <ClipLoader color="#4a90e2" loading={loading} size={50} />
-        </div>
-      )}
+          <div style={{overflow:'auto',height: '75%' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px'}}>
               {TableList.map(item => (
                   <div key={item.table_count} className={item.Paid} onClick={() => SelectTable(item)}
+                    //  style={{ border: '1px solid #ccc', padding: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center' , borderRadius:'10px',cursor:'pointer',caretColor:'transparent'}}
                     style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
                       alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                       borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
                       backgroundColor:item.Paid  === 'N' ? 'RED' : '', }}>
 
-                      <p key={item.table_count} style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'20px' ,fontWeight:'bold' ,color:'blue'}}>
+                          <p key={item.table_count} style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'20px' ,fontWeight:'bold' ,color:'blue'}}>
                               {item.table_count}</p>
-                      <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
 
                   </div>
           ))}
         </div>
-    </div>
+      </div>
 
-      {isDesktop && (
-        
-  <div className="num-pad" style={{margin:'5px'}}>
-  <div className="num-pad-row">
-    <button className="num-pad-key" onClick={() => handleInput('1')}>1</button>
-    <button className="num-pad-key" onClick={() => handleInput('2')}>2</button>
-    <button className="num-pad-key" onClick={() => handleInput('3')}>3</button>
-  </div>
-  <div className="num-pad-row">
-    <button className="num-pad-key" onClick={() => handleInput('4')}>4</button>
-    <button className="num-pad-key" onClick={() => handleInput('5')}>5</button>
-    <button className="num-pad-key" onClick={() => handleInput('6')}>6</button>
-  </div>
-  <div className="num-pad-row">
-    <button className="num-pad-key" onClick={() => handleInput('7')}>7</button>
-    <button className="num-pad-key" onClick={() => handleInput('8')}>8</button>
-    <button className="num-pad-key" onClick={() => handleInput('9')}>9</button>
-  </div>
-  <div className="num-pad-row">
-  <button className="num-pad-key"style={{ width: '33%'}} onClick={() => handleBackspace()}>Back</button>
-    <button className="num-pad-key" onClick={() => handleInput('0')}>0</button>
 
-  </div>
-  <div className="num-pad-row">
-    <button className="num-pad-key" onClick={CloseTableNo} style={{width:'33%'}}>Close</button>
-    <button className="num-pad-key" style={{width:'33%'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
-    <button className="num-pad-key" style={{ width: '33%'}} onClick={clearInput}> Clear </button>
-  </div>
-</div>
-)}
+      <div className="num-pad">
+            <div className="num-pad-row">
+            <button className="num-pad-key" onClick={() => handleInput('1')}>1</button>
+        <button className="num-pad-key" onClick={() => handleInput('2')}>2</button>
+        <button className="num-pad-key" onClick={() => handleInput('3')}>3</button>
+      </div>
+      <div className="num-pad-row">
+        <button className="num-pad-key" onClick={() => handleInput('4')}>4</button>
+        <button className="num-pad-key" onClick={() => handleInput('5')}>5</button>
+        <button className="num-pad-key" onClick={() => handleInput('6')}>6</button>
+      </div>
+      <div className="num-pad-row">
+        <button className="num-pad-key" onClick={() => handleInput('7')}>7</button>
+        <button className="num-pad-key" onClick={() => handleInput('8')}>8</button>
+        <button className="num-pad-key" onClick={() => handleInput('9')}>9</button>
+            </div>
+            <div className="num-pad-row">
+            <button className="num-pad-key"style={{ width: '33%'}} onClick={() => handleBackspace()}>Back</button>
+              <button className="num-pad-key" onClick={() => handleInput('0')}>0</button>
 
+            </div>
+            <div className="num-pad-row">
+              <button className="num-pad-key" onClick={CloseTableNo} style={{width:'33%'}}>Close</button>
+              <button className="num-pad-key" style={{width:'33%'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
+              <button className="num-pad-key" style={{ width: '33%'}} onClick={clearInput}> Clear </button>
+            </div>
+          </div>
 </div>
 
 
-
-  
+      
       {/* <button className="closeTable" onClick={CloseTableNo} style={{width:'100%',backgroundColorcolor:'red'}}>Cancel</button> */}
     </div>
-
-   
   </div>
 )}
 
@@ -3216,123 +2410,26 @@ useEffect(() => {
 {SelectTypeOfTransaction && (
         <div className="modal" >
              
-          <div className="modal-content" style={{width:'50%' ,display:'flex',flexDirection:'column' }}>
+          <div className="modal-content" style={{width:'50%'}}>
           <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'red'}}>
               Select Type of Transaction
             </h2>
             <button className="button-dine-in" onClick={AddOrdertable}>Add Order</button>
-          { isDesktop &&(
             <button className="button-take-out" onClick={SettleOrdertable}>Settle Order</button>
-          )}
-
-
             <button className="button-dine-in" onClick={TransferOrdertable}>Transfer table</button>
             <button className="button-dine-in" onClick={CloseModal}>Close</button>
           </div>
         </div>
       )}
 
-{AddOrderModal && (
-  
-    <div className="modal">
-  <div className="modal-content" style={{height:'auto'}}>
 
-     <Typography      
-        sx={{
-        fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.2rem', lg: '1.4rem', xl: '1.6rem' },
-        color: '#0d12a1',
-        textShadow: '1px 1px 2px rgba(13, 18, 161, 0.7)',
-        borderRadius: '5px',
-        fontWeight: 'bold', textAlign: 'center',}}>
-      {selectedProduct?.product.long_desc}
-      </Typography>
+      {/* {PrintReceiptModal && (
+        <iframe id="myIframe" style={{position:'absolute',display:'none',backgroundColor:'#ffff',height:'90%',width:'25%',marginLeft:'50px',borderRadius:'10px'}} src="https://example.com"></iframe>
+      )} */}
 
 
-
-  {/* <h1 className="threeDText">{selectedProduct?.long_desc}</h1> */}
-    <img src={image} alt={selectedProduct?.product.bar_code} style={{ maxWidth: '200px', maxHeight: '150px', marginBottom: '10px' }} />
-
-    
-    <Typography      
-        sx={{
-        fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
-        color: '#0d12a1',
-        borderRadius: '5px',
-        fontWeight: 'bold', textAlign: 'center',}}>
-      Price: {parseFloat(selectedProduct?.product.reg_price).toFixed(2)}
-      </Typography>
-
-    <div className="input-group">
-    <button className="btn" style={{backgroundColor:'white',color:'red' ,border:'solid'}} onClick={MinusQuantity} ><FontAwesomeIcon icon={faMinus}/> </button>
-      <input type="number" ref={inputRef}  inputMode="numeric"  placeholder="Quantity" value={quantity} onChange={handleQuantityChange} 
-       style={{width:'60%' ,margin:'10px', fontSize:'20px',fontWeight:'bold',textAlign:'center'}}/>
-      <button className="btn" style={{backgroundColor:'white',color:'blue' ,border:'solid'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  style={{ verticalAlign: 'middle' }}/></button>
-    </div>
-
-    <p className='TotalDue'>Total Due: {calculateTotal()}</p>
-
-    
-
-    <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-    <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={CloseAddOrderModal} className="btn-close"> <FontAwesomeIcon icon={faClose} />Close</button>
-    <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={addtocarts}>  <FontAwesomeIcon icon={faShoppingCart} /> Add to Cart</button>
-  
-  
-  </div>
-  </div>
 </div>
 
-
-  )}
-
-{EditOrderModal && (
-            <div className="modal">
-            <div className="modal-content">
-              
-            <h1 className="threeDText">{selectedItemIndexData?.selectedItem.description}</h1>
-            <img src={image} style={{ maxWidth: '200px', maxHeight: '150px', marginBottom: '10px' }} />
-            <p className='Price'>Price: {parseFloat(selectedItemIndexData?.selectedItem.price).toFixed(2)}</p>
-            <div className="input-group">
-        
-            <button className="btn" style={{backgroundColor:'white',color:'red' ,border:'solid'}} onClick={MinusQuantity} >
-                <FontAwesomeIcon icon={faMinus}  />
-
-                </button>
-  
-                <input ref={inputRef}
-                      type="number"
-                      inputMode="numeric"
-                      placeholder="Quantity"
-                      value={quantity}
-                      onChange={handleQuantityChange}
-                      style={{
-                        width: '60%',
-                        margin: '10px',
-                        fontSize: '20px',
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                      }}
-                    />
-                <button className="btn" style={{backgroundColor:'white',color:'blue' ,border:'solid'}} onClick={addQuantity}>
-                <FontAwesomeIcon icon={faPlus} />
-
-                </button>
-                
-            </div>
-            <p className='TotalDue'>Total Due: {calculateTotal()}</p>
-
-            <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'100%',textAlign:'center', display: 'inline-block'}} onClick={onUpdateToCart}> 
-                <FontAwesomeIcon icon={faShoppingCart} />Update to Cart </button>
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-              <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={onClose} className="btn-close"> <FontAwesomeIcon icon={faClose} /> Close</button>
-              <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={onDelete} className="btn-close"> <FontAwesomeIcon icon={faTrashAlt} /> Delete </button>
-            </div>
-            </div>
-        </div>
-        )}
-  
-</Grid>
-</>
 );
 };
 
