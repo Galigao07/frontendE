@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 import BASE_URL from '../config';
 import { isMobile, isTablet } from 'react-device-detect';
 import { width } from '@fortawesome/free-solid-svg-icons/fa0';
-
+import { ipcRenderer } from 'electron';
   const LoginForm: React.FC  = () => {
     const usernameRef = useRef(null);
     const passwordRef = useRef(null);
@@ -188,10 +188,13 @@ try{
   }
 };
 
-
-
-
-  
+const closeApp = () => {
+  if (window.electronAPI) {
+    window.electronAPI.closeApp();
+  } else {
+    console.error('electronAPI is not available');
+  }
+};
   return (
     <form>
       
@@ -255,6 +258,10 @@ try{
           <button className="btn-login" type='button' ref={loginBtnRef} onClick={handleLogin}>
             Login
           </button>
+          <button className="btn-login" style={{backgroundColor:'red'}} type='button'  onClick={closeApp}>
+            Exit
+          </button>
+          
         </div>
       </div>
       <div className="login-footer">

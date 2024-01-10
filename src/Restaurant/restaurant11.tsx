@@ -2035,6 +2035,12 @@ useEffect(() => {
 }, []);
 
 
+const closeCashPayment = () => {
+  setCashPaymentEntryModal(false)
+  setOrderTypeModal(true)
+  setCartItems('')
+  setTableNo('')
+}
 
   return (
   
@@ -2296,7 +2302,7 @@ useEffect(() => {
 
     {CustomerDineInModal && <CustomerDineIn handleclose={CloseCustomerDineInModal} typeandtable={TypeAndTable} handlemodaldata={CutomerInfoEntry} />}
         {SalesOrderListOpenModal && <ListOfDineInSalesOrder handleclose={CloseSalesOrderListOpenModal} settlebillData={settlebillData} tableno={TableNo} />}
-        {CashPaymentEntryModal && <CashPaymentEntry amountdue={formattedTotalDue} amounttendered={SaveCashPayment} />}
+        {CashPaymentEntryModal && <CashPaymentEntry  handleClose={closeCashPayment} amountdue={formattedTotalDue} amounttendered={SaveCashPayment} />}
         {CustomeryPaymentModal && <CustomerPayment handlemodaldata={CutomerInfoEntryPaymnet} />}
         {ReprintTransactionModal && <ReprintTransaction handleClose={CloseReprintTransactionModal} PrintTransactionData={ReprintTransactionReceipt} />}
 

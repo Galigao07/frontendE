@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-inner-declarations */
-import { app, BrowserWindow,dialog} from 'electron'
+import { app, BrowserWindow,dialog,ipcMain} from 'electron'
 import path from 'node:path'
 
 // The built directory structure
@@ -24,31 +26,31 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    // icon: path.join(process.env.VITE_PUBLIC, 'logo.svg'),
     show: false,
-    webPreferences: {
+    webPreferences : {
+      nodeIntegration: false,
+      contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
+      sandbox: true, // Enable sandbox mode for additional security
+
     },
     fullscreen: true, 
+    frame:false,
     
   })
 
+  ipcMain.on('print-dialog', (event: any, args: any) => {
+    console.log('Print dialog shown.');
+
+    // auto click print button after 1 second
+    setTimeout(() => {
+        console.log('Auto clicking print button.');
+        win!.webContents.send('auto-print');
+    }, 1000);
+});
 
 
-
-
-
-  win.webContents.print({ silent: true }, (success, errorType) => {
-    if (!success) {
-      console.error(`Failed to print: ${errorType}`);
-      // Handle printing failure if needed
-    } else {
-      win!.webContents.print({ silent: true });
-      console.log('Print successful');
-      // Handle successful printing
-    }
-  });
-
-  // console.log('wwwwwwwwwwwwwwwwwwwwwvvvvvvvvvvvvvvvvvvvw')
 
   win.on('close', async () => {
     const isLogin = await win?.webContents.executeJavaScript('window.localStorage.getItem("isLogin")');
@@ -92,8 +94,6 @@ function createWindow() {
   // });
 
 
-  
-
 
 
   app.on('before-quit', async (event) => {
@@ -116,11 +116,11 @@ function createWindow() {
   });
   
   
+
+  
   // win.on('closed', () => {
   //   win = null;
   // });
-
-
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
@@ -147,29 +147,29 @@ function createWindow() {
 
 
 
-function createSplashScreen() {
-  splashScreen = new BrowserWindow({
-    width: 400,
-    height: 300,
-    frame: false,
-    transparent: true,
-    alwaysOnTop: true,
-    // Other window properties for the splash screen...
-  });
+// function createSplashScreen() {
+//   splashScreen = new BrowserWindow({
+//     width: 400,
+//     height: 300,
+//     frame: false,
+//     transparent: true,
+//     alwaysOnTop: true,
+//     // Other window properties for the splash screen...
+//   });
 
-  splashScreen.loadFile('splash.html');
+//   splashScreen.loadFile('splash.html');
 
-  splashScreen.once('ready-to-show', () => {
-    splashScreen?.show();
-    createWindow();
-  });
+//   splashScreen.once('ready-to-show', () => {
+//     splashScreen?.show();
+//     createWindow();
+//   });
 
-  splashScreen.on('closed', () => {
-    splashScreen = null;
-  });
-}
+//   splashScreen.on('closed', () => {
+//     splashScreen = null;
+//   });
+// }
 
-app.on('ready', createSplashScreen);
+// app.on('ready', createSplashScreen);
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
@@ -181,6 +181,26 @@ app.on('window-all-closed', () => {
   }
 })
 
+ipcMain.on('closeApp', () => {
+  app.quit();
+});
+
+ipcMain.on('silentPrint', () => {
+
+
+  const win = new BrowserWindow({ show: false }); // Create a hidden window for printing
+
+  win.webContents.on('did-finish-load', () => {
+    win.webContents.print({ silent: true }, (success, errorType) => {
+      if (!success) {
+        dialog.showErrorBox('Print Error', `Failed to print: ${errorType}`);
+      }
+      win.close(); // Close the window after printing (optional)
+    });
+  });
+});
+
+
 app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
@@ -189,4 +209,52 @@ app.on('activate', () => {
   }
 })
 
+
+// ipcMain.on('printIframeContent', (event, content) => {
+//   const printWindow = new BrowserWindow({ show: false });
+
+//   printWindow.loadURL(`data:text/html,${encodeURIComponent(content)}`);
+
+//   printWindow.webContents.on('did-finish-load', () => {
+//     printWindow.webContents.print({ silent: true }, (success, failureReason) => {
+//       if (!success) {
+//         console.error('Failed to print:', failureReason);
+//       }
+//       printWindow.close();
+
+//       // Optionally, you can send an event back to the renderer process
+//       // event.sender.send('printingCompleted', success);
+//     });
+//   });
+// });
+
+// ipcMain.on('print-receipt', (event, receiptData) => {
+//   // Trigger printing operation using receiptData
+//   console.log('Received receipt data in main process:', receiptData);
+
+//   // Use default printer directly for printing
+//   Printer.getPrinters((printers: any[]) => {
+//     const defaultPrinter = printers.find((printer) => printer.isDefault);
+
+//     if (!defaultPrinter) {
+//       // Handle the case where no default printer is found
+//       console.error('No default printer found.');
+//       return;
+//     }
+
+//     const printOptions = {
+//       silent: true, // Perform a silent print without displaying the print dialog
+//       deviceName: defaultPrinter.name,
+//       pageSize: '200', // Adjust page size if needed
+//     };
+
+//     // Perform silent printing using the default printer
+//     Printer.print(printOptions, (success, errorType) => {
+//       if (!success) {
+//         // Handle printing failure
+//         console.error(`Failed to print: ${errorType}`);
+//       }
+//     });
+//   });
+// });
 app.whenReady().then(createWindow)

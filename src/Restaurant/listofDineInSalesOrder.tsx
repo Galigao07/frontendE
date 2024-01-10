@@ -4,7 +4,7 @@
 
 /* eslint-disable no-undef */
 import React, { useState,useEffect } from 'react';
-import './listofDineInSalesOrder.css'; // Import CSS file for styling
+import './css/listofDineInSalesOrder.css'; // Import CSS file for styling
 import axios, { AxiosError } from 'axios';
 import BASE_URL from '../config';
 

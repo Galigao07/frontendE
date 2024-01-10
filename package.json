@@ -2,7 +2,7 @@
   "name": "pos",
   "description": "POS Restaurant System",
   "private": true,
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": "Hernanie Galigao Jr",
   "scripts": {
     "dev": "vite",
@@ -29,6 +29,7 @@
     "sweetalert2": "^11.10.1"
   },
   "devDependencies": {
+    "@types/electron": "^1.6.10",
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.6.0",

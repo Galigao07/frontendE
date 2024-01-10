@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -28,12 +29,14 @@ import ChangeOderTypeImage from '../assets/ChangeOrder.jpg';
 import CloseImage from '../assets/close.png';
 import RefreshImage from '../assets/RefreshImage.png';
 import logo from '../assets/logo.png'
-import './restaurant.css';
+import './css/restaurant.css';
 import CustomerDineIn from './customerEntryDineIn';
 import ListOfDineInSalesOrder from './listofDineInSalesOrder';
 import CashPaymentEntry from './CashPaymentEntry';
 import CustomerPayment from './CustomerEntryPayment';
 import ReprintTransaction from './RepirintTransaction';
+import CashBreakDown from './CashBreakDown';
+import ChargeTo from './Charge';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt} from '@fortawesome/free-solid-svg-icons';
@@ -47,8 +50,9 @@ import styled from 'styled-components';
 import { isDesktop, isMobile,isTablet } from 'react-device-detect';
 import { css } from '@emotion/react';
 import { ClipLoader } from 'react-spinners';
-
-
+import { BrowserWindow,ipcRenderer } from 'electron';
+import { webContents } from 'electron';
+import { IpcRendererEvent } from 'electron/renderer';
 ///**************PRODUCT GRID DESIGN*******************//
 
 
@@ -678,9 +682,15 @@ const Restaurant: React.FC = () => {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const TableNoRef = useRef<HTMLInputElement>(null);
-
+  const [CashBreakDownModal, setCashBreakDownModal] = useState<boolean>(false);
+  const [CloseTerminalModal, setCloseTerminalModal] = useState<boolean>(false);
   const [EditOrderModal, setEditOrderModal] = useState<boolean>(false);
   
+
+
+
+    
+  const [ChargeToModal, setChargeToModal] = useState<boolean>(false);
   const [AddOrderModal, setAddOrderModal] = useState<boolean>(false);
   const [OrderTypeModal, setOrderTypeModal] = useState<boolean>(true);
   const [tableNoModal, setTableNoModal] = useState<boolean>(false);
@@ -698,10 +708,10 @@ const Restaurant: React.FC = () => {
 
   const [refreshCart, setRefreshCart] = useState(false);
   const [SalesOrderListOpenModal, setSalesOrderListOpenModal] = useState<boolean>(false);
-    const [products, setProducts] = useState<any>([]);
-    const [category, setCategory] = useState<any>([]);
-    const [cartItems, setCartItems] = useState<any>([]);
-    const [cartItems1, setCartItems1] = useState<any[]>([]);
+  const [products, setProducts] = useState<any>([]);
+  const [category, setCategory] = useState<any>([]);
+  const [cartItems, setCartItems] = useState<any>([]);
+  const [cartItems1, setCartItems1] = useState<any[]>([]);
   // const siteCode = useSiteCode();
   const [loading, setLoading] = useState(true);
 
@@ -868,14 +878,6 @@ const Restaurant: React.FC = () => {
 
 
 
- 
-
-
-
-
-
-
-
 
     // let receiptContentainer = 'Receipt\n\n';
 
@@ -887,7 +889,10 @@ const Restaurant: React.FC = () => {
       },
       buttonsStyling: false
     })
-  
+  const CloseLogout = () =>{
+    setCloseTerminalModal(false)
+    setOrderTypeModal(true)
+  }
 
     const logoutClick = async () => {
 
@@ -939,6 +944,49 @@ const Restaurant: React.FC = () => {
 
     };
 
+
+    const CloseTerminal = () => {
+      setCloseTerminalModal(true)
+      setOtherCommandOpenModal(false)
+    }
+
+    /// ************************* CASH BREAK DOWN *************************************** //
+
+    const EndShiftHandleClick = () => {
+    setCashBreakDownModal(true)
+    setCloseTerminalModal(false)
+    }
+
+
+    const CloseCashBreakDownModal = () => {
+      setCashBreakDownModal(false)
+      setOrderTypeModal(true)
+    }
+
+    /// ************************* END *************************************** //
+
+const CashBreakDownDataList = async (data:any) => {
+  setCashBreakDownModal(false)
+
+
+  try {
+    const response = await axios.get(`${BASE_URL}/api/company-details/`)
+
+    if (response.status==200){
+      PrintCashBreakDown(data,response.data.DataInfo)
+      // localStorage.clear();
+      // window.location.reload();
+    }
+  
+  } catch {
+    console.log('error')
+  }
+
+
+
+
+
+}
   
 
     const ChangeOrderType = () => {
@@ -1029,6 +1077,7 @@ setTableNoModal(true)
 
    const CutomerInfoEntry = async (dataFromModal:any) => {
     // Handle the data received from the modal
+    setLoadingPrint(true)
     console.log('Data received from modal:', dataFromModal);
     setCustomerOrderInfo(dataFromModal);
     setCustomerDineInModal(false);
@@ -1053,6 +1102,7 @@ setTableNoModal(true)
     try {
       const response = await axios.post(`${BASE_URL}/api/add-sales-order/`,{data:cartItems,data2:dictionary,TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo});
       if (response.status === 200) {
+        setLoadingPrint(false)
         if (dictionary.PaymentType === 'Sales Order')
         setSOCustomer(dictionary)
         printReceipt(dataFromModal,response.data.SOdata);
@@ -1135,7 +1185,7 @@ const ReprintTransactionReceipt = async (data: { DocNO: any; DocType: any; }) =>
 ///********************THIS SAVE THE DATA FOR CASH PAYMENT*****************************/
 const CutomerInfoEntryPaymnet = async (data: any) =>{
 setCustomeryPaymentModal(false)
-
+setLoadingPrint(true)
 
   const CashierID = localStorage.getItem('UserID');
   const CashierName = localStorage.getItem('FullName');
@@ -1150,6 +1200,7 @@ setCustomeryPaymentModal(false)
           TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType});
         if (response1.status === 200) {
     
+          setLoadingPrint(false)
           PrintCashPaymentReceipt(response1.data);
         } else {
           // Handle other response statuses if needed
@@ -1253,6 +1304,15 @@ const settlebillData = async (data: { tableno: React.SetStateAction<string>; }) 
 }};
 
 ////***************** END ****************/
+
+
+///************ CHARGE TO ROOM, CUSTOMER AND EVENT TRANSACTION*************** */
+const OpenChargeModal = () => {
+setChargeToModal(true)
+setPaymentOpenModal(false)
+}
+
+
 
   const AddOrdertable = () => 
   {
@@ -1372,6 +1432,13 @@ else {
     };
 
 
+
+
+   
+
+
+
+   
     //***************PRODUCT***************** */
     useEffect(() => {
       const fetchData = async () => {
@@ -1477,6 +1544,120 @@ else {
     }, [refreshCart]); // Trigger effect when refreshCart changes
     
 
+
+    
+
+const handleBackspace = () => {
+  if (TableNo.length === 0) return;
+
+  setTableNo((TableNo) => TableNo.slice(0, -1))
+};
+const clearInput = () => {
+  setTableNo('');
+};
+
+const handleInput = (value: string | number) => {
+  setTableNo((prevValue:any) => {
+
+    if (value === '0' && parseFloat(prevValue) === 0) {
+      return value;
+    } else {
+
+
+      // Check if the value is a decimal point
+      if (value === '.') {
+          const res = parseFloat(prevValue) + value;
+          return res;
+      }
+      const stringValue = prevValue.toString();
+        // Check if the previous value already contains a decimal point
+        if (stringValue.includes('.')) {
+          const res = prevValue + value;
+          return res;
+        }
+  
+
+      // Perform addition based on the input value
+
+      if (prevValue === 0) {
+        const res =  value;
+        return res.toString();
+      }
+      const res = prevValue + value;
+      return res.toString();
+    }
+  });
+
+  if (parseFloat(TableNo + value) > TableList.length) {
+    Swal.fire({
+      title: 'Error',
+      text: `Selected table is Not Existed Please Select Table from 1 to ${TableList.length}`,
+      icon: 'info',
+      confirmButtonText: 'OK'
+    });
+  
+    setTableNo('')
+  }
+
+  
+};
+
+const overlayStyle: React.CSSProperties  = {
+  position: 'absolute',
+  top: '0',
+  left: '0',
+  width: '100%',
+  height: '100%',
+  display : showIframe ? 'block' : 'none',
+  backgroundColor:showIframe ? 'rgba(0, 0, 0, 0.5)' : 'white', // Semi-transparent overlay
+  zIndex: showIframe ? '9999' : '-1', // Set a higher zIndex to cover iframe when shown
+  pointerEvents: showIframe ? 'auto' : 'none', // Enable or disable click events
+};
+
+
+const theme = useTheme();
+const matchesSm = useMediaQuery(theme.breakpoints.down('sm'));
+const matchesXs = useMediaQuery(theme.breakpoints.down('xs'));
+
+const [deviceType, setDeviceType] = useState<string>('');
+
+useEffect(() => {
+  const checkDeviceType = () => {
+    if (isMobile) {
+      setDeviceType('Mobile');
+    } else if (isTablet) {
+      setDeviceType('Tablet');
+    } else {
+      setDeviceType('Desktop');
+    }
+  };
+
+  checkDeviceType();
+
+  const handleResize = () => {
+    checkDeviceType();
+  };
+
+  window.addEventListener('resize', handleResize);
+
+  return () => {
+    window.removeEventListener('resize', handleResize);
+  };
+}, []);
+
+
+useEffect(() => {
+  localStorage.removeItem('cartData');
+  setOrderType('')
+  setOrderTypeModal(true)
+  setShowIframe(false)
+  setCartItems([])
+  setTableNo('')
+}, []);
+
+
+
+
 //******** PRINT DESCRIPTION AND ITEMS QTY******** */
     const generateReceipt = () => {
 
@@ -1493,9 +1674,9 @@ else {
     let totalqty = 0
 
 
-    receiptContent += '<div>-----------------------------------------------------</div>'
-    receiptContent += '<div>QTY  |              DESCRIPTION       |   AMOUNT </div>'
-    receiptContent += '<div>-----------------------------------------------------</div>'
+    receiptContent += '<div>------------------------------------------------</div>'
+    receiptContent += '<div>QTY  |              DESCRIPTION       |   AMOUNT</div>'
+    receiptContent += '<div>------------------------------------------------</div>'
  
     function wrapDescription(description: string, maxLength: number) {
       if (description.length <= maxLength) {
@@ -1631,41 +1812,20 @@ else {
         const formattedQuantity = String(totalQTY).padEnd(4, ' ')
 
 
-        receiptContent += '<div>=====================================================</div>'
+        receiptContent += '<div>================================================</div>'
 
         receiptContent +=  `${formattedQuantity} ${spaces}${amountDue}`;
      
 //#endregion
-       }
-
-    
+       }    
       return receiptContent;
     };
-
-
-
-
-
 
 
 //******** PRINT SALES ORDER AREA******** */
     const printReceipt = async (SOInfo: any,SONumber: any) => {
       const generateReceiptIframe = (receiptContent: string, logoSrc: { logo: string; }) => {
-
-
-  
-     
-     
-        // const IframeContainer = iframeContainerRef.current
-
-        // const iframe = document.createElement('iframe');
-        // iframe.style.display = 'none';
-        // document.body.appendChild(iframe);
-
         const iframe = document.getElementById('myIframe') as HTMLIFrameElement | null;
-
-
-    
         if (iframe !==null){
 
           setShowIframe(true)
@@ -1688,7 +1848,7 @@ else {
 
               doc.open();
               doc.write('<style>body {  font-family: Consolas, monaco, monospace; }</style>');
-              doc.write('<div style="width: 350px; margin:none; font-size:12px">');
+              doc.write('<div style="width: 300px; margin:none; font-size:10px">');
               doc.write('<div>'); // Start a container div for content
         
               // Embed the logo image using an <img> tag
@@ -1702,8 +1862,7 @@ else {
               doc.write(`<DIV>Customer: ${SOInfo.Customer} </DIV>`);
               doc.write(`<div>Table No: ${TableNo}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              &nbsp;&nbsp;&nbsp;&nbsp;
               &nbsp; Guest Count: ${SOInfo.GuestCount}</div>`);
               doc.write('<div style="text-align: center;">');
               doc.write(`<p> ${OrderType}</p>`);
@@ -1711,17 +1870,15 @@ else {
     
     
               doc.write('<div style="text-align: center;">');
-              doc.write('<div> -----------------------------------------------------</div>');
+              doc.write('<div>---------------------------------------------</div>');
               doc.write(`<div> SO# ${SONumber.SO_NO}</div>`);
               doc.write(`<div> ${formattedDateTime} </div>`);
               doc.write('</div>')
     
-    
               // Write the receipt content
               doc.write('<pre>' + receiptContent + '</pre>');
     
-    
-    
+
               let receiptContent1 = '';
     
               
@@ -1780,21 +1937,8 @@ else {
               doc.write('</div>'); // Close the container div
               doc.close();
   
-              
-            // Remove the iframe after printing
-               setTimeout(async () => {
-                iframeWindow.focus();
-   
-              // Print the content
-              iframeWindow.print();
-              // iframeWindow.print();
-    
-              // setTimeout(() => {
-              //   iframeWindow.close();
-              // }, 1000);
-     
-
-
+              setTimeout(async () => {
+                  iframeWindow.print();
               if (SOInfo.PaymentType ==='Sales Order'){
                 setOrderType('')
                 setOrderTypeModal(true)
@@ -1815,19 +1959,8 @@ else {
               }
       
             }, 1000); 
-              // Print the receipt
-            
-        
-              // Remove the iframe after printing
-              setTimeout(() => {
-                document.body.removeChild(iframe);
-              // Reload the page after printing
-              }, 20000); // Adjust timeout as needed for printing to complete
                     } };
-     
-          // Set iframe src to initiate loading
           iframe.src = 'about:blank';
-       
           return iframe;
         }
       
@@ -1835,52 +1968,33 @@ else {
     
       // Example data (replace with actual receipt content and logo source)
       const receiptContent = generateReceipt();
-
- 
-
     // Replace with the actual path to your logo image
     
       const iframe = generateReceiptIframe(receiptContent, {logo});
+
+      // ipcRenderer.send('print-receipt', ReceiptContentAll); 
   
     };
     
-
-
 
 //************ PRINT RECEIPT CASH PAYMENT*****************//
 const RePrintCashPaymentReceipt = async (dataInfo:any) => {
   const generateReceiptIframe = (receiptContent: string, logoSrc: { logo: string; }) => {
 
-
-
-
-    // Create a hidden iframe to prepare for printing
-    // const iframe = document.createElement('iframe');
-    // iframe.style.display = 'none';
-    // document.body.appendChild(iframe);
-
-
-    const iframe = document.getElementById('myIframe') as HTMLIFrameElement | null;
-    // IframeContainer.appendChild(iframe)
-
+  const iframe = document.getElementById('myIframe') as HTMLIFrameElement | null;
 
 if (iframe !== null) {
 
   setShowIframe(true)
   if (iframe) {
     iframe.style.display = 'block';
-  // Set display property to 'block' to show the iframe
   }
 
   iframe.onload = () => {
-    const currentDate = new Date();   
+  const currentDate = new Date();   
+  const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: 'UTC' });
 
-// Format the date and time as needed
-   const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: 'UTC' });
-    // Write the receipt content to the iframe document
-    // const doc = iframe.contentDocument || iframe.contentWindow.document;
-
-    const iframeWindow = iframe.contentWindow;
+  const iframeWindow = iframe.contentWindow;
 
     if (iframeWindow !== null) {
       const doc = iframeWindow.document;
@@ -1889,7 +2003,7 @@ if (iframe !== null) {
     // doc.write('<style>body { font-family: "Courier New", Courier, monospace; }</style>');
     doc.write('<style>body {  font-family: Consolas, monaco, monospace; }</style>');
 
-    doc.write('<div style="width: 350px; margin:none; font-size:12px">');
+    doc.write('<div style="width: 200px; margin:none; font-size:8px">');
     doc.write('<div>'); // Start a container div for content
 
     // Embed the logo image using an <img> tag
@@ -1900,7 +2014,7 @@ if (iframe !== null) {
 
 
     doc.write('<div style="text-align: center;">');
-    doc.write('<div> -----------------------------------------------------</div>');
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
 
   
 
@@ -1915,7 +2029,7 @@ if (iframe !== null) {
 
 
 
-    doc.write('<p>Re-Print Copy</p>');
+    doc.write('<p style="font-size:12px">Re-Print Copy</p>');
     doc.write(`<div> SI# ${parseFloat(dataInfo.OR)}</div>`);
     doc.write(`<div> ${formattedDateTime} </div>`);
     doc.write('</div>')
@@ -1932,7 +2046,7 @@ if (iframe !== null) {
       let receiptContent1 = '';
 
       const AlignmentSpace = (description: string | any[], data: string | any[]) => {
-        const totalLength = 47; // Total desired length for alignment
+        const totalLength = 48; // Total desired length for alignment
         const contentLength = description.length + data.length; // Calculate the length of the combined content
         const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
       
@@ -1948,7 +2062,7 @@ if (iframe !== null) {
             description = 'SERVICE CHARGES:'
             spaces = AlignmentSpace(description, data);
             receiptContent1 = `<div style="margin-top:-7px; padding: 0;">${description}${spaces}${data}</div>`;
-            receiptContent1 += '<div style="margin-top:-3px; padding: 0;">=====================================================</div>'
+            receiptContent1 += '<div style="margin-top:-3px; padding: 0;">================================================</div>'
            
             doc.write('<pre>' + receiptContent1 + '</pre>');
 
@@ -1956,7 +2070,7 @@ if (iframe !== null) {
             data = formattedTotalDue || ''; 
             spaces = AlignmentSpace(description, data);
             receiptContent1 = `<div style="margin-top:-9px; padding: 0;font-weight: bold;">${description}${spaces}${data}</div>`;
-            receiptContent1 += '<div style="margin:-3px; padding: 0;">-----------------------------------------------------</div>'
+            receiptContent1 += '<div style="margin:-3px; padding: 0;">-------------------------------------------------</div>'
             doc.write('<pre>' + receiptContent1 + '</pre>');
 
 
@@ -1988,7 +2102,7 @@ if (iframe !== null) {
             data = dataInfo.VAT || ''; 
             spaces = AlignmentSpace(description, data);
             receiptContent1 += `<div>${description}${spaces}${data}</div>`;
-            doc.write('<pre>' + receiptContent1 + '=====================================================</pre>');
+            doc.write('<pre>' + receiptContent1 + '================================================</pre>');
             //                    doc.write('<div> =====================================================</div>');
 
             description = 'TOTAL DUE:';
@@ -1996,36 +2110,32 @@ if (iframe !== null) {
             spaces = AlignmentSpace(description, data);
             receiptContent1 = `<div style="margin-top:-9px; padding: 0;font-weight: bold;">${description}${spaces}${data}</div>`;
 
-            doc.write('<pre>' + receiptContent1 + '</pre>');
-
-            doc.write('<div style="text-align: center;">');
-            doc.write('<div>-----------------------------------------------------</div>');
-            doc.write('</div>')
+            doc.write('<pre>' + receiptContent1 + '------------------------------------------------</pre>');
+            // doc.write('<div>-----------------------------------------------</div>');
 
 
 
-    description = 'CASH:';
-    const amountTenderedFormatted = Number(AmountTendered).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    data = String(amountTenderedFormatted) || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 = `<div style="font-weight: bold;">${description}${spaces}${amountTenderedFormatted}</div>`;
+              description = 'CASH:';
+              const amountTenderedFormatted = Number(AmountTendered).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+              data = String(amountTenderedFormatted) || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 = `<div style="font-weight: bold;">${description}${spaces}${amountTenderedFormatted}</div>`;
 
 
 
-    description = 'CHANGE:';
-    const changeAmountFormatted = Number(ChangeAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              description = 'CHANGE:';
+              const changeAmountFormatted = Number(ChangeAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    data = String(changeAmountFormatted) || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${changeAmountFormatted}</div>`;
+              data = String(changeAmountFormatted) || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${changeAmountFormatted}</div>`;
 
-    doc.write('<pre>' + receiptContent1 + '</pre>');
+              doc.write('<pre>' + receiptContent1 + '------------------------------------------------</pre>');
 
-    
-    doc.write('<div style="text-align: center;">');
-    doc.write('<div> -----------------------------------------------------</div>');
-    doc.write('</div>')
+    // doc.write('<div>-----------------------------------------------</div>');
+
 
     
     description = 'CASHIER:';
@@ -2048,13 +2158,12 @@ if (iframe !== null) {
     spaces = AlignmentSpace(description, data);
     receiptContent1 += `<div>${spaces}${description}${data}</div>`;
 
-    doc.write('<pre>' + receiptContent1 + '</pre>');
+    doc.write('<pre>' + receiptContent1 + '------------------------------------------------</pre>');
 
 
     
-    doc.write('<div style="text-align: center;">');
-    doc.write('<div>-----------------------------------------------------</div>');
-    doc.write('</div>')
+    // doc.write('<div>-----------------------------------------------</div>');
+
 
 
 
@@ -2082,11 +2191,13 @@ if (iframe !== null) {
 
     doc.write('<pre>' + receiptContent1 + '</pre>');
 
+
     doc.write('<div style="text-align: center;">');
-    doc.write('<div> --------------------------------------------------</div>');
-    doc.write('<div> THANK YOU COME AGAIN: </div>');
-    doc.write('<div> --------------------------------------------------</div>');
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+    doc.write('<pre style="margin: 0; line-height: 1; font-size: 12px;"> THANK YOU COME AGAIN: </pre>');
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
     
+
     doc.write('<div> LEAD SOLUTIONS INC. </div>');
 
     doc.write('<div> DOOR 1 DWTC BLDG RIZAL EXTENSION </div>');
@@ -2115,7 +2226,11 @@ if (iframe !== null) {
     doc.write(`<img src="${qrDataURI}" alt="QR Code"  style="max-width: 120px; display: inline-block;" />`);
     doc.write('</div>'); // Close the container div
     doc.close();
-  // Remove the iframe after printing
+
+
+     
+  /* The above code is using setTimeout to execute a series of actions after a delay of 1000
+  milliseconds. */
   setTimeout(() => {
     iframeWindow.print();
     localStorage.removeItem('cartData');
@@ -2126,10 +2241,6 @@ if (iframe !== null) {
     setCartItems([])
     setTableNo('')
   }, 1000); 
-    // Print the receipt
-  
-
-    // Remove the iframe after printing
     setTimeout(() => {
       document.body.removeChild(iframe);
 
@@ -2172,12 +2283,7 @@ if (iframe !== null) {
 
   iframe.onload = () => {
     const currentDate = new Date();   
-
-// Format the date and time as needed
    const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: 'UTC' });
-    // Write the receipt content to the iframe document
-    // const doc = iframe.contentDocument || iframe.contentWindow.document;
-
     const iframeWindow = iframe.contentWindow;
 
     if (iframeWindow !== null) {
@@ -2187,7 +2293,7 @@ if (iframe !== null) {
     // doc.write('<style>body { font-family: "Courier New", Courier, monospace; }</style>');
     doc.write('<style>body {  font-family: Consolas, monaco, monospace; }</style>');
 
-    doc.write('<div style="width: 350px; margin:none; font-size:12px">');
+    doc.write('<div style="width: 200px; margin:none; font-size:8px">');
     doc.write('<div>'); // Start a container div for content
 
     // Embed the logo image using an <img> tag
@@ -2198,7 +2304,7 @@ if (iframe !== null) {
 
 
     doc.write('<div style="text-align: center;">');
-    doc.write('<div> -----------------------------------------------------</div>');
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
 
   
 
@@ -2213,24 +2319,17 @@ if (iframe !== null) {
 
 
 
-    doc.write('<p>This Serve as an Official Receipt </p>');
+    doc.write('<p style="font-size:12px">This Serve as an Official Receipt </p>');
     doc.write(`<div> SI# ${parseFloat(dataInfo.data.OR)}</div>`);
     doc.write(`<div> ${formattedDateTime} </div>`);
     doc.write('</div>')
-    // Write the receipt content
     doc.write('<pre>' + receiptContent + '</pre>');
-    // doc.write('<div style="text-align: center;">');
-    // doc.write('<div> -----------------------------------------------------</div>');
-    // doc.write('</div>')
-
-
-
 
 
       let receiptContent1 = '';
 
       const AlignmentSpace = (description: string | any[], data: string | any[]) => {
-        const totalLength = 47; // Total desired length for alignment
+        const totalLength = 48; // Total desired length for alignment
         const contentLength = description.length + data.length; // Calculate the length of the combined content
         const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
       
@@ -2246,7 +2345,7 @@ if (iframe !== null) {
             description = 'SERVICE CHARGES:'
             spaces = AlignmentSpace(description, data);
             receiptContent1 = `<div style="margin-top:-7px; padding: 0;">${description}${spaces}${data}</div>`;
-            receiptContent1 += '<div style="margin-top:-3px; padding: 0;">=====================================================</div>'
+            receiptContent1 += '<div style="margin-top:-3px; padding: 0;">================================================</div>'
            
             doc.write('<pre>' + receiptContent1 + '</pre>');
 
@@ -2254,7 +2353,7 @@ if (iframe !== null) {
             data = formattedTotalDue || ''; 
             spaces = AlignmentSpace(description, data);
             receiptContent1 = `<div style="margin-top:-9px; padding: 0;font-weight: bold;">${description}${spaces}${data}</div>`;
-            receiptContent1 += '<div style="margin:-3px; padding: 0;">-----------------------------------------------------</div>'
+            receiptContent1 += '<div style="margin:-3px; padding: 0;">-------------------------------------------------</div>'
             doc.write('<pre>' + receiptContent1 + '</pre>');
 
 
@@ -2286,7 +2385,7 @@ if (iframe !== null) {
             data = dataInfo.data.VAT || ''; 
             spaces = AlignmentSpace(description, data);
             receiptContent1 += `<div>${description}${spaces}${data}</div>`;
-            doc.write('<pre>' + receiptContent1 + '=====================================================</pre>');
+            doc.write('<pre>' + receiptContent1 + '================================================</pre>');
             //                    doc.write('<div> =====================================================</div>');
 
             description = 'TOTAL DUE:';
@@ -2295,11 +2394,7 @@ if (iframe !== null) {
             receiptContent1 = `<div style="margin-top:-9px; padding: 0;font-weight: bold;">${description}${spaces}${data}</div>`;
 
             doc.write('<pre>' + receiptContent1 + '</pre>');
-
-            doc.write('<div style="text-align: center;">');
-            doc.write('<div>-----------------------------------------------------</div>');
-            doc.write('</div>')
-
+            doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
 
 
     description = 'CASH:';
@@ -2320,10 +2415,7 @@ if (iframe !== null) {
 
     doc.write('<pre>' + receiptContent1 + '</pre>');
 
-    
-    doc.write('<div style="text-align: center;">');
-    doc.write('<div> -----------------------------------------------------</div>');
-    doc.write('</div>')
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
 
     
     description = 'CASHIER:';
@@ -2349,10 +2441,7 @@ if (iframe !== null) {
     doc.write('<pre>' + receiptContent1 + '</pre>');
 
 
-    
-    doc.write('<div style="text-align: center;">');
-    doc.write('<div>-----------------------------------------------------</div>');
-    doc.write('</div>')
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
 
 
 
@@ -2381,9 +2470,10 @@ if (iframe !== null) {
     doc.write('<pre>' + receiptContent1 + '</pre>');
 
     doc.write('<div style="text-align: center;">');
-    doc.write('<div> --------------------------------------------------</div>');
-    doc.write('<div> THANK YOU COME AGAIN: </div>');
-    doc.write('<div> --------------------------------------------------</div>');
+
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+    doc.write('<pre style="margin: 0; line-height: 1; font-size: 12px;"> THANK YOU COME AGAIN: </pre>');
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
     
     doc.write('<div> LEAD SOLUTIONS INC. </div>');
 
@@ -2429,10 +2519,10 @@ if (iframe !== null) {
   
 
     // Remove the iframe after printing
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-    // Reload the page after printing
-    }, 20000); // Adjust timeout as needed for printing to complete
+    // setTimeout(() => {
+    //   document.body.removeChild(iframe);
+    // // Reload the page after printing
+    // }, 20000); // Adjust timeout as needed for printing to complete
   } };
     iframe.src = 'about:blank';
   return iframe;
@@ -2446,112 +2536,345 @@ if (iframe !== null) {
 };
 
 
+//************ PRINT CASH BREAKDOWN*****************//
 
-const handleBackspace = () => {
-  if (TableNo.length === 0) return;
+const PrintCashBreakDown = (dataDinomination:any,dataInfo:any) => {
+  const generateReceiptIframe = (logoSrc: { logo: string; }) => {
+    const iframe = document.getElementById('myIframe') as HTMLIFrameElement | null;
 
-  setTableNo((TableNo) => TableNo.slice(0, -1))
-};
-const clearInput = () => {
-  setTableNo('');
-};
+if (iframe !== null) {
 
-const handleInput = (value: string | number) => {
-  setTableNo((prevValue:any) => {
-
-    if (value === '0' && parseFloat(prevValue) === 0) {
-      return value;
-    } else {
-
-
-      // Check if the value is a decimal point
-      if (value === '.') {
-          const res = parseFloat(prevValue) + value;
-          return res;
-      }
-      const stringValue = prevValue.toString();
-        // Check if the previous value already contains a decimal point
-        if (stringValue.includes('.')) {
-          const res = prevValue + value;
-          return res;
-        }
-  
-
-      // Perform addition based on the input value
-
-      if (prevValue === 0) {
-        const res =  value;
-        return res.toString();
-      }
-      const res = prevValue + value;
-      return res.toString();
-    }
-  });
-
-  if (parseFloat(TableNo + value) > TableList.length) {
-    Swal.fire({
-      title: 'Error',
-      text: `Selected table is Not Existed Please Select Table from 1 to ${TableList.length}`,
-      icon: 'info',
-      confirmButtonText: 'OK'
-    });
-  
-    setTableNo('')
+  setShowIframe(true)
+  if (iframe) {
+    iframe.style.display = 'block';
   }
 
+  iframe.onload = () => {
+    const currentDate = new Date();   
+  //  const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: 'UTC+08:00' });
+
+   const currentYear = currentDate.getFullYear();
+   const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Adding padding to month
+   const currentDay = currentDate.getDate().toString().padStart(2, '0'); // Adding padding to day
+   
+
+
+   let currentHours = currentDate.getHours();
+  const currentMinutes = currentDate.getMinutes();
+  const currentSeconds = currentDate.getSeconds();
+  let amPmIndicator = 'AM';
+
+// Convert to 12-hour format and determine AM/PM
+if (currentHours >= 12) {
+  amPmIndicator = 'PM';
+}
+if (currentHours > 12) {
+  currentHours -= 12;
+}
+
+  const date = `${currentMonth}/${currentDay}/${currentYear}`
+  const time = `${currentHours}:${currentMinutes}:${currentSeconds} ${amPmIndicator}`
+
+    const iframeWindow = iframe.contentWindow;
+
+    if (iframeWindow !== null) {
+      const doc = iframeWindow.document;
+      doc.open();
+    doc.write('<style>body {  font-family: Consolas, monaco, monospace; }</style>');
+
+    doc.write('<div style="width: 200px; margin:none; font-size:8px">');
+    doc.write('<div>'); // Start a container div for content
+
+    doc.write('<div style="text-align: center;">');
+    doc.write(`<img src="${logo}" alt="Logo Image" style="max-width: 50px; display: inline-block;" />`);
+    doc.write('</div>');
+
+
+
+    doc.write('<div style="text-align: center;">');
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+
   
-};
 
-const overlayStyle: React.CSSProperties  = {
-  position: 'absolute',
-  top: '0',
-  left: '0',
-  width: '100%',
-  height: '100%',
-  display : showIframe ? 'block' : 'none',
-  backgroundColor:showIframe ? 'rgba(0, 0, 0, 0.5)' : 'white', // Semi-transparent overlay
-  zIndex: showIframe ? '9999' : '-1', // Set a higher zIndex to cover iframe when shown
-  pointerEvents: showIframe ? 'auto' : 'none', // Enable or disable click events
-};
+    doc.write(`<div> ${dataInfo.CustomerCompanyName}</div>`);
+
+
+    doc.write(`<div> ${dataInfo.CustomerCompanyAddress}</div>`);
+    doc.write(`<div> ${dataInfo.TelNo}</div>`);
+    doc.write(`<div> ${dataInfo.CustomerTIN}</div>`);
+    doc.write(`<div> ${dataInfo.SerialNO}</div>`);
+    doc.write(`<div> ${dataInfo.MachineNo}</div>`);
 
 
 
-const theme = useTheme();
-const matchesSm = useMediaQuery(theme.breakpoints.down('sm'));
-const matchesXs = useMediaQuery(theme.breakpoints.down('xs'));
+    let receiptContent1 = '';
 
-const [deviceType, setDeviceType] = useState<string>('');
+    const AlignmentSpace = (description: string | any[], data: string | any[]) => {
+      const totalLength = 28; // Total desired length for alignment
+      const contentLength = description.length + data.length; // Calculate the length of the combined content
+      const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
 
-useEffect(() => {
-  const checkDeviceType = () => {
-    if (isMobile) {
-      setDeviceType('Mobile');
-    } else if (isTablet) {
-      setDeviceType('Tablet');
-    } else {
-      setDeviceType('Desktop');
-    }
-  };
+      return ' '.repeat(spacesNeeded); // Return the string with required spaces
+    };
 
-  checkDeviceType();
+    const AlignmentSpace3 = (description: string | any[], data: string | any[]) => {
+      const totalLength = 48; // Total desired length for alignment
+      const contentLength = description.length + data.length; // Calculate the length of the combined content
+      const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
 
-  const handleResize = () => {
-    checkDeviceType();
-  };
+      return ' '.repeat(spacesNeeded); // Return the string with required spaces
+    };
 
-  window.addEventListener('resize', handleResize);
+    const AlignmentSpace2 = (description: string | any[], data: string | any[]) => {
+      let totalLength = 32; 
 
-  return () => {
-    window.removeEventListener('resize', handleResize);
-  };
-}, []);
+      if (description.length == 12 ){
+         totalLength = totalLength - 1
+        const contentLength = description.length + data.length; // Calculate the length of the combined content
+        const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
+        return ' '.repeat(spacesNeeded); 
+      }
+      if (description.length == 11 ){
+        totalLength = totalLength - 2
+        const contentLength = description.length + data.length; // Calculate the length of the combined content
+        const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
+        return ' '.repeat(spacesNeeded); 
+      }
 
+      if (description.length == 10 ){
+        totalLength = totalLength - 3 
+        const contentLength = description.length + data.length; // Calculate the length of the combined content
+        const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
+        return ' '.repeat(spacesNeeded); 
+      }
+
+      if (description.length == 9 ){
+      totalLength = totalLength - 4
+        const contentLength = description.length + data.length; // Calculate the length of the combined content
+        const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
+        return ' '.repeat(spacesNeeded); 
+      }
+
+      if (description.length == 8 ){
+        totalLength = totalLength - 5
+        const contentLength = description.length + data.length; // Calculate the length of the combined content
+        const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
+        return ' '.repeat(spacesNeeded); 
+      }
+
+      if (description.length == 7 ){
+        totalLength = totalLength - 6 
+        const contentLength = description.length + data.length; // Calculate the length of the combined content
+        const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
+        return ' '.repeat(spacesNeeded); 
+      }
+
+    };
+      
+      //********************************************************* */
+      let description = '';
+      let dinomination = ''
+      let totaldinomination = ''
+      // Get the value or initialize an empty string if it's null
+      let spaces = null
+      let spaces2 = null
+      let data1 =''
+      doc.write('</div>')
+
+
+      spaces = AlignmentSpace3(date, time);
+      receiptContent1 = `<div>${date}${spaces}${time}</div>`;
+      doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+    description = 'Terminal No.: ';
+    data1 = dataInfo.TerminalNo
+    spaces = AlignmentSpace3(description, data1);
+    receiptContent1 = `<div>${spaces}${description}${data1}</div>`;
+    doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+
+    doc.write('<div style="text-align: center;">');
+    doc.write('<p style="font-size:12px">CASH COUNT</p>');
+    doc.write('</div>')
+
+    
+ 
+
+
+            description = 'CASHIER:';
+            data1 = localStorage.getItem('FullName') || ''; 
+            spaces = AlignmentSpace3(description, data1);
+            receiptContent1 = `<div>${description} ${data1}${spaces}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+            doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+            doc.write('<pre style="margin: 0; line-height: 1;">Qty               Denomination           Total</pre>');
+            doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+            dinomination = dataDinomination.dinomination.OneThousand  || '0';
+            totaldinomination =(dataDinomination.Totaldenominations?.TotalOneThousand || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = '1,000.00 PHP'
+            spaces = AlignmentSpace(description, dinomination);
+            spaces2 = AlignmentSpace2(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1 ;"> ${dinomination}${spaces}${description}${spaces2}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+            dinomination = dataDinomination.dinomination.Fivehundred  || '0';
+            totaldinomination = (dataDinomination.Totaldenominations.TotalFivehundred || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = '500.00 PHP'
+            spaces = AlignmentSpace(description, dinomination);
+            spaces2 = AlignmentSpace2(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1; "> ${dinomination}${spaces}${description}${spaces2}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+            dinomination = dataDinomination.dinomination.Twohundred  || '0';
+            totaldinomination = (dataDinomination.Totaldenominations.TotalTwohundred || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = '200.00 PHP'
+            spaces = AlignmentSpace(description, dinomination);
+            spaces2 = AlignmentSpace2(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1; "> ${dinomination}${spaces}${description}${spaces2}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+
+            dinomination = dataDinomination.dinomination.Onehundred  || '0';
+            totaldinomination = (dataDinomination.Totaldenominations.TotalOnehundred || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = '100.00 PHP'
+            spaces = AlignmentSpace(description, dinomination);
+            spaces2 = AlignmentSpace2(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1; "> ${dinomination}${spaces}${description}${spaces2}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+
+
+            dinomination = dataDinomination.dinomination.Fifty  || '0';
+            totaldinomination = (dataDinomination.Totaldenominations.TotalFifty || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = '50.00 PHP'
+            spaces = AlignmentSpace(description, dinomination);
+            spaces2 = AlignmentSpace2(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1; "> ${dinomination}${spaces}${description}${spaces2}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+            
+            dinomination = dataDinomination.dinomination.Twenty  || '0';
+            totaldinomination = (dataDinomination.Totaldenominations.TotalTwenty || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = '20.00 PHP'
+            spaces = AlignmentSpace(description, dinomination);
+            spaces2 = AlignmentSpace2(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1; "> ${dinomination}${spaces}${description}${spaces2}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+            dinomination = dataDinomination.dinomination.Ten  || '0';
+            totaldinomination = (dataDinomination.Totaldenominations.TotalTen || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = '10.00 PHP'
+            spaces = AlignmentSpace(description, dinomination);
+            spaces2 = AlignmentSpace2(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1; "> ${dinomination}${spaces}${description}${spaces2}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+            dinomination = dataDinomination.dinomination.Five  || '0';
+            totaldinomination = (dataDinomination.Totaldenominations.TotalFive || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = '5.00 PHP'
+            spaces = AlignmentSpace(description, dinomination);
+            spaces2 = AlignmentSpace2(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1; "> ${dinomination}${spaces}${description}${spaces2}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+
+            dinomination = dataDinomination.dinomination.Peso  || '0';
+            totaldinomination = (dataDinomination.Totaldenominations.TotalPeso || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = '1.00 PHP'
+            spaces = AlignmentSpace(description, dinomination);
+            spaces2 = AlignmentSpace2(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1; "> ${dinomination}${spaces}${description}${spaces2}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+            
+            dinomination = dataDinomination.dinomination.Cent25  || '0';
+            totaldinomination = (dataDinomination.Totaldenominations.TotalCent25 || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = '0.25 PHP'
+            spaces = AlignmentSpace(description, dinomination);
+            spaces2 = AlignmentSpace2(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1; "> ${dinomination}${spaces}${description}${spaces2}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+            dinomination = dataDinomination.dinomination.Cent05  || '0';
+            totaldinomination = (dataDinomination.Totaldenominations.TotalCent05 || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = '0.05 PHP'
+            spaces = AlignmentSpace(description, dinomination);
+            spaces2 = AlignmentSpace2(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1; "> ${dinomination}${spaces}${description}${spaces2}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+
+
+            doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+            totaldinomination = (dataDinomination.Totaldenominations.TotalCashbreakDown || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formatting to 2 decimal places
+            description = 'Grand Total:'
+            spaces = AlignmentSpace3(description, totaldinomination);
+            receiptContent1 = `<div style="margin:0px;line-height: 1; ">${description}${spaces}${totaldinomination}</div>`;
+            doc.write('<pre style="margin:0 ;line-height: 1;">' + receiptContent1 + '</pre>');
+            doc.write('<pre style="margin: 0; line-height: 1;">================================================</pre>');
+            doc.write('<p/>')
+            doc.write('<p/>')
+            doc.write('<p/>')
+            doc.write('<p/>')
+            doc.write('<div style="text-align: center;">');
+            doc.write('<p style="margin: 0; line-height: 1;">_____________________________</p>');
+            doc.write('<p style="margin: 0; line-height: 1;">Terminal Cashier</p>');
+            doc.write('</div>')
+    
+            doc.write('<p/>')
+            doc.write('<p/>')
+            doc.write('<p/>')
+            doc.write('<p/>')
+            doc.write('<div style="text-align: center;">');
+            doc.write('<p style="margin: 0; line-height: 1;">_____________________________</p>');
+            doc.write('<p style="margin: 0; line-height: 1;">Treasury Personnel</p>');
+            doc.write('</div>')
+        
+
+
+    const qr = QRCode(0, 'H'); // QR code type and error correction level
+    qr.addData('Your data for QR code'); // Replace with the data you want in the QR code
+    qr.make();
+
+    // Get the generated QR code as a data URI
+    const qrDataURI = qr.createDataURL();
+
+    // Insert the QR code image into the document
+    doc.write('<div style="text-align: center;">');
+    doc.write(`<img src="${qrDataURI}" alt="QR Code"  style="max-width: 120px; display: inline-block;" />`);
+    doc.write('</div>'); // Close the container div
+    doc.close();
+  // Remove the iframe after printing
+  setTimeout(() => {
+    iframeWindow.print();
+    // window.location.reload(); 
+
+    setOrderType('')
+    setOrderTypeModal(true)
+    setShowIframe(false)
+    iframe.style.display = 'none';
+    setCartItems([])
+    setTableNo('')
+  }, 1000); 
+
+  } };
+    iframe.src = 'about:blank';
+  return iframe;
+  }};
+
+  const iframe = generateReceiptIframe({logo});
+}
+
+const closeCashPayment = () => {
+  setCashPaymentEntryModal(false)
+  setOrderTypeModal(true)
+  setCartItems('')
+  setTableNo('')
+}
 
   return (
     <>
     
-
-
     <Grid
       container
       className='Restaurant-trans'
@@ -2559,6 +2882,28 @@ useEffect(() => {
       spacing={1}
       justifyContent="space-between" // Adjust alignment as needed
     >
+
+{loadingPrint && (
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 9999,
+            pointerEvents:'auto',
+          }}
+        >
+          <ClipLoader color="#4a90e2" loading={loadingPrint} size={50} />
+        </div>
+      )}
+
 
 <div style={overlayStyle} />
 
@@ -2796,9 +3141,11 @@ useEffect(() => {
 {CustomerDineInModal && <CustomerDineIn handleclose={CloseCustomerDineInModal} typeandtable={TypeAndTable}  handlemodaldata={CutomerInfoEntry} />}
 {SalesOrderListOpenModal && <ListOfDineInSalesOrder handleclose={CloseSalesOrderListOpenModal}  settlebillData = {settlebillData} tableno={TableNo} />}
 {/* {ReceiptOpenModal && <Receipt handleclose={CloseSalesOrderListOpenModal} cartitems={cartItems} />} */}
-{CashPaymentEntryModal && <CashPaymentEntry amountdue={formattedTotalDue} amounttendered={SaveCashPayment}/>}
+{CashPaymentEntryModal && <CashPaymentEntry handleClose={closeCashPayment} amountdue={formattedTotalDue} amounttendered={SaveCashPayment}/>}
 {CustomeryPaymentModal && <CustomerPayment handlemodaldata={CutomerInfoEntryPaymnet} />}
 {ReprintTransactionModal && <ReprintTransaction handleClose={CloseReprintTransactionModal} PrintTransactionData={ReprintTransactionReceipt}/>}
+{CashBreakDownModal && <CashBreakDown CashBreakDownDataList ={CashBreakDownDataList} CloseCashBreakDownModal={CloseCashBreakDownModal}/>}
+{ChargeToModal && <ChargeTo/>}
 
 
 
@@ -3016,10 +3363,10 @@ useEffect(() => {
               style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
+              }} onClick={OpenChargeModal}>
 
               <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue', textAlign:'center'}}>
-               Charge To Room</p>
+               Charge</p>
               <img src= {ChargeRoom} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
             </div>
 
@@ -3175,8 +3522,8 @@ useEffect(() => {
               <img src= {Multiple} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
             </div>
               
-
-            <div    onClick={logoutClick} 
+            <div onClick={CloseTerminal}
+            // <div onClick={logoutClick} 
               style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
@@ -3330,6 +3677,23 @@ useEffect(() => {
             </div>
         </div>
         )}
+
+
+{CloseTerminalModal && (
+        <div className="modal" >
+             
+          <div className="modal-content" style={{width:'50%' ,display:'flex',flexDirection:'column' }}>
+          {/* <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'red'}}>
+              Select Type of Transaction
+            </h2> */}
+          { isDesktop &&(
+            <button className="btn" style={{backgroundColor:'red'}} onClick={EndShiftHandleClick}>End Shift</button>
+          )}
+            <button className="btn" style={{backgroundColor:'blue'}} onClick={logoutClick}>Logout</button>
+            <button className="btn"  style={{backgroundColor:'red'}} onClick={CloseLogout}>Cancel</button>
+          </div>
+        </div>
+      )}
   
 </Grid>
 </>
