@@ -1,19 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react/prop-types */
 import React, { useState, useEffect,useRef } from 'react';
 import Cash from '../assets/cahphp.jpg';
-import '../Restaurant/CashPaymentEntry.css'
+import './css/CashPaymentEntry.css'
+// import '../Restaurant/css/CashPaymentEntry.css'
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // import { faBackspace, faBackward, faFastBackward, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import Swal from "sweetalert2";
 
 interface CashData {
+  handleClose: () => void;
   amountdue : any;
   amounttendered : any;
 }
 
 
-const CashPaymentEntry: React.FC<CashData> = ({amountdue,amounttendered}) => {
+const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttendered}) => {
   // State variables to store payment details
   const [amountReceived, setAmountReceived] = useState<any>('');
 
@@ -117,13 +118,13 @@ const CashPaymentEntry: React.FC<CashData> = ({amountdue,amounttendered}) => {
 
   // }
 
-  const swalWithBootstrapButtons = Swal.mixin({
-    customClass: {
-      confirmButton: 'btn btn-success',
-      cancelButton: 'btn btn-danger'
-    },
-    buttonsStyling: false
-  })
+  // const swalWithBootstrapButtons = Swal.mixin({
+  //   customClass: {
+  //     confirmButton: 'btn btn-success',
+  //     cancelButton: 'btn btn-danger'
+  //   },
+  //   buttonsStyling: false
+  // })
 
   const handleBackspace = () => {
     if (typeof amountReceived !== 'string' || amountReceived.length === 0) return;
@@ -162,10 +163,11 @@ const CashPaymentEntry: React.FC<CashData> = ({amountdue,amounttendered}) => {
     // })
   };
 
-  const handleClose = () => {
-    // Handle Close button action here
-    setAmountReceived(0); // Clear input when closing
-  };
+  // const handleClose = () => {
+  //   // Handle Close button action here
+  //   setAmountReceived(0); // Clear input when closing
+
+  // };
 
 
   const handleAmountReceivedChange = (value: string) => {

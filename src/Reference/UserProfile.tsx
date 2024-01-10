@@ -8,7 +8,8 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPlus, faPrint} from '@fortawesome/free-solid-svg-icons';
 import { isDesktop } from 'react-device-detect';
-
+import showErrorAlert from '../SwalMessage/ShowErrorAlert';
+import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
 import Swal from 'sweetalert2';
 
 const swalWithBootstrapButtons = Swal.mixin({
@@ -65,6 +66,7 @@ const UserProfile: React.FC = () => {
             }
 
         } catch (error) {
+
             console.error('Error fetching data:', error);
         }
     };
@@ -96,19 +98,37 @@ const handleInputChange = (
             if (result.isConfirmed) {
                 try {
                     const response = await axios.post(`${BASE_URL}/api/add-users/`, user);
-                    console.log('User created:', response.data);
-                    setUser({
-                        id_code:'',
-                        fullName: '',
-                        username: '',
-                        password: '',
-                        rank: ''
-                    });
-                    fetchData();
-                    setOpenaddUsermodal(false)
+
+                    if (response.status==200){
+   
+                        setUser({
+                            id_code:'',
+                            fullName: '',
+                            username: '',
+                            password: '',
+                            rank: ''
+                        });
+                        fetchData();
+                        setOpenaddUsermodal(false)
+                        showSuccessAlert(response.data.message);
+                    }
+
+
         
-                } catch (error) {
-                    console.error('Error creating user:', error);
+                } catch (error:any) {
+
+
+                    showErrorAlert(error.response.data.error)
+                    // Swal.fire({
+                    //     title: 'Error',
+                    //     text: ' ' + error.response.data.error,
+                    //     icon: 'error', // You can use 'success', 'error', 'warning', 'info', 'question'
+                    //     confirmButtonText: 'OK'
+                    //   });
+                    //   setTimeout(() => {
+                    //     Swal.close();
+                    //   }, 2000);
+                    console.error('Error creating user:  ', error);
                 }
             }})
 
@@ -138,8 +158,11 @@ const handleInputChange = (
                     });
                     fetchData();
                     setOpenaddUsermodal(false)
+
+                    showSuccessAlert(response.data.message)
         
-                } catch (error) {
+                } catch (error:any) {
+                    showErrorAlert(error.response.data.error)
                     console.error('Error creating user:', error);
                 }
             }})
@@ -163,18 +186,22 @@ const handleInputChange = (
                 const response = await axios.delete(`${BASE_URL}/api/delete-users/`, {
                     data: { user: user }
                   });
-                console.log('User created:', response.data);
-                setUser({
-                    id_code:'',
-                    fullName: '',
-                    username: '',
-                    password: '',
-                    rank: ''
-                });
-                fetchData();
-                setOpenaddUsermodal(false)
-    
-            } catch (error) {
+          
+                  if (response.status==200) {
+                    setUser({
+                        id_code:'',
+                        fullName: '',
+                        username: '',
+                        password: '',
+                        rank: ''
+                    });
+                    fetchData();
+                    setOpenaddUsermodal(false)
+                    showSuccessAlert(response.data.message)
+                  }
+ 
+            } catch (error:any) {
+                showErrorAlert(error.response.data.error)
                 console.error('Error creating user:', error);
             }
         }})

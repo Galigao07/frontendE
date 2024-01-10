@@ -1,0 +1,16 @@
+.Cashbreakdown-container input,label {
+    text-align: end;
+    margin: 2px;
+}
+.Cashbreakdown-container button {
+margin: 5px;
+width: 100%;
+padding: 5px;
+font-size: 15px;
+font-weight: bold;
+border-radius: 5px;
+cursor: pointer;
+color: #ffff;
+border-color: transparent;
+}
+

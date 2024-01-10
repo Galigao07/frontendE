@@ -1,9 +1,66 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { contextBridge, ipcRenderer } from 'electron'
 
 // --------- Expose some API to the Renderer process ---------
-contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer))
+// contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer))
 
+contextBridge.exposeInMainWorld('ipcRenderer', {
+  send: (channel: string, data: any) => {
+    ipcRenderer.send(channel, data);
+  },
+  receive: (channel:any, listener:any) => {
+    ipcRenderer.on(channel, (event, ...args) => listener(...args));
+  },
+  // Add any other methods or properties you want to expose from ipcRenderer
+});
+
+declare global {
+  interface Window {
+    electronAPI: {
+      silentPrint(iframeWindow: Window): unknown;
+
+      closeApp: () => void;
+
+      SilentPrint:() => void;
+      // Add other methods/properties if needed
+    };
+  }
+}
+
+
+contextBridge.exposeInMainWorld('electronAPI', {
+
+  // printIframeContent: (content: any) => {
+  //   const printWindow = window.open('', '_blank');
+  //   printWindow!.document.write(content);
+  //   printWindow!.document.close();
+
+  //   printWindow!.onload = () => {
+  //     printWindow!.print();
+  //     printWindow!.onafterprint = () => {
+  //       printWindow!.close();
+  //       // You can trigger an IPC event or perform other actions after printing is completed
+  //     };
+  //   };
+  // },
+  SilentPrint: () => {
+    ipcRenderer.send('SilentPrint');
+  },
+  closeApp: () => {
+    ipcRenderer.send('closeApp');
+  },
+});
+
+
+
+ipcRenderer.on('print-iframe', (event, data) => {
+  const { iframeWindow } = data; // Access the iframeWindow reference
+  if (iframeWindow) {
+    iframeWindow.print();
+  }
+});
 // `exposeInMainWorld` can't detect attributes and methods of `prototype`, manually patching it.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function withPrototype(obj: Record<string, any>) {
   const protos = Object.getPrototypeOf(obj)
 

@@ -5,7 +5,8 @@
 import React, { useEffect, useState,useRef } from 'react';
 import axios from 'axios';
 import BASE_URL from '../config';
-import '../Restaurant/css/RepirintTransaction.css'
+import './css/RepirintTransaction.css'
+// import '../Restaurant/css/RepirintTransaction.css'
 import ReprintImage from '../assets/ReprintImage.jpeg';
 import CloseImage from '../assets/close.png';
 import Swal from 'sweetalert2';

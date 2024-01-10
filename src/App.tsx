@@ -1,4 +1,6 @@
-import { useState } from 'react'
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useRef, useState } from 'react'
 
 import './App.css'
 import './homepage.css'
@@ -15,6 +17,7 @@ import { faDollarSign, faListAlt, faPowerOff, faReceipt } from '@fortawesome/fre
 import UserProfile from './Reference/UserProfile'
 import WaiterProfile from './Reference/WaiterProfile'
 import TableList from './Reference/TableList'
+import Homepage from './Home/home'
 // import OnlineTestApp from './OnlineTestApp';
 // import electron, { BrowserWindow } from 'electron';
 
@@ -261,8 +264,10 @@ const logoutClick = async () => {
   // const handleClick = () => {
   //   history.push(`/TaskPane/`);
   // };
+
+
   return (
-    <div>
+    <div> 
       {isLogin ? (
         userRank === 'Cashier' || userRank === 'SalesMan' ? (
             <Restaurant/>
@@ -499,6 +504,7 @@ const logoutClick = async () => {
 function Content() {
 return <div>
     <Routes>
+    <Route path="/" element={<Homepage />}></Route>
     <Route path="/Profile" element={<Profile />}></Route>
     <Route path="/userProfile" element={<UserProfile />}></Route>
     <Route path="/WaiterProfile" element={<WaiterProfile />}></Route>

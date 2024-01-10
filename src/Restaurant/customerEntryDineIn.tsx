@@ -2,14 +2,15 @@
 /* eslint-disable no-unused-vars */
 
 import React, { useState,useEffect, useRef } from 'react';
-import './customerEntryDineIn.css';
+import './css/customerEntryDineIn.css';
+// import './css/customerEntryDineIn.css';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import BASE_URL from '../config';
-import './keyboard.css'
+import './css/keyboard.css'
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { isDesktop, isMobile,isTablet } from 'react-device-detect';
+import { isDesktop} from 'react-device-detect';
 
 
 
@@ -652,31 +653,31 @@ if (WaiterRef.current) {
  }
 
 
- const [deviceType, setDeviceType] = useState<string>('');
+//  const [deviceType, setDeviceType] = useState<string>('');
 
- useEffect(() => {
-   const checkDeviceType = () => {
-     if (isMobile) {
-       setDeviceType('Mobile');
-     } else if (isTablet) {
-       setDeviceType('Tablet');
-     } else {
-       setDeviceType('Desktop');
-     }
-   };
+//  useEffect(() => {
+//    const checkDeviceType = () => {
+//      if (isMobile) {
+//        setDeviceType('Mobile');
+//      } else if (isTablet) {
+//        setDeviceType('Tablet');
+//      } else {
+//        setDeviceType('Desktop');
+//      }
+//    };
  
-   checkDeviceType();
+//    checkDeviceType();
  
-   const handleResize = () => {
-     checkDeviceType();
-   };
+//    const handleResize = () => {
+//      checkDeviceType();
+//    };
  
-   window.addEventListener('resize', handleResize);
+//    window.addEventListener('resize', handleResize);
  
-   return () => {
-     window.removeEventListener('resize', handleResize);
-   };
- }, []);
+//    return () => {
+//      window.removeEventListener('resize', handleResize);
+//    };
+//  }, []);
  
 
   return (

@@ -2,11 +2,11 @@
 /* eslint-disable no-unused-vars */
 
 import React, { useState,useEffect, useRef, ChangeEvent } from 'react';
-import './customerEntryDineIn.css';
+import './css/customerEntryDineIn.css';
 import axios from 'axios';
 import BASE_URL from '../config';
 
-import  './keyboard.css';
+import  './css/keyboard.css';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
