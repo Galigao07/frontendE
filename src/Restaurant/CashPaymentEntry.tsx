@@ -131,14 +131,27 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
   
     setAmountReceived((prevAmountReceived: string) => prevAmountReceived.slice(0, -1));
   };
-  
+
+
+
+
+
   const handleOk = () => {
 
-
+    if (Number.isNaN(amountReceived)) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Invalid Amount Tendered..!',
+        icon: 'info',
+        confirmButtonText: 'OK'
+      });   
+      return;
+    }
+    
 
     const due = amountdue.replace(/,/g, '')
 
-    if (parseFloat(due) > parseFloat(amountReceived)) {
+    if (parseFloat(due) > (amountReceived !== '' ? parseFloat(amountReceived) : 0)) {
       // Handle the condition where amount due is greater than amount received
       // For example, display an error message, prevent action, etc.
       Swal.fire({

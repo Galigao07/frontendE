@@ -5,3 +5,22 @@
 .charge-container button{
   width: 49%;
 }
+
+.credit-Container label,input{
+  text-align: start;
+  width: 100%;
+}
+
+.credit-Container button{
+  width: 49%;
+}
+
+.Event-Container label,input{
+  text-align: start;
+  width: 100%;
+}
+
+.Event-Container button{
+  width: 49%;
+}
+
