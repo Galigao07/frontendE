@@ -37,9 +37,10 @@ import CustomerPayment from './CustomerEntryPayment';
 import ReprintTransaction from './RepirintTransaction';
 import CashBreakDown from './CashBreakDown';
 import ChargeTo from './Charge';
+import CreditCardPayment from './CreditCard';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt} from '@fortawesome/free-solid-svg-icons';
+import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt, faArrowAltCircleDown, faArrowDown, faExpand, faExpandArrowsAlt, faChevronDown, faChevronCircleDown, faArrowUp, faAnglesUp, faAnglesDown} from '@fortawesome/free-solid-svg-icons';
 // import CustomerDineIn from './customerEntryDineIn';
 import QRCode from 'qrcode-generator';
 import { Button, Dialog, DialogContent, DialogTitle, Grid, Typography } from '@mui/material';
@@ -53,6 +54,8 @@ import { ClipLoader } from 'react-spinners';
 import { BrowserWindow,ipcRenderer } from 'electron';
 import { webContents } from 'electron';
 import { IpcRendererEvent } from 'electron/renderer';
+import DebitCardPayment from './DebitCard';
+import { faExpandAlt } from '@fortawesome/free-solid-svg-icons/faExpandAlt';
 ///**************PRODUCT GRID DESIGN*******************//
 
 
@@ -517,10 +520,20 @@ interface CategoryData {
 }
 const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const [selectedCategoryall, setSelectedCategoryall] = useState<boolean>(false);
+
     const [productscCat, setProducts] = useState([]);
 
     const fetchData = async (x: any) => {
 
+      if (x == 'ALL'){
+        setSelectedCategoryall(true)
+
+      }else{
+        setSelectedCategoryall(false)
+
+      }
     
       try {
         // const response = await axios.get(`${BASE_URL}/api/product/${x}`);
@@ -556,6 +569,8 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
       }
     };
   
+
+
     
     const theme = useTheme();
     const matchesXs = useMediaQuery(theme.breakpoints.down('xs'));
@@ -615,7 +630,51 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
     margin: '10px',
  }}
 >
-
+<Box
+     key={0}
+     onClick={() => fetchData('ALL')}
+      sx={{
+        border: '1px solid #ccc',
+        padding: '5px',
+        justifyContent: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        height: '60px',
+        borderRadius: '10px',
+        cursor: 'pointer',
+        color: '#ffffff',
+        backgroundColor:
+        selectedCategoryall ? '#ff9800' : '#007bff', // Change background color conditionally
+        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        fontSize: '1rem', // Make the font responsive
+        width: matchesXs ? '100%' : matchesSm ? '100%' : '100%', // Adjust width based on breakpoints
+      }} 
+    >
+   <Typography
+      variant="body1"
+      sx={{
+        margin: '10px',
+        textAlign: 'center',
+        fontSize: {
+          xs: '0.8rem', // Default font size for extra-small screens
+          sm: '0.5rem', // Font size for small screens
+          md: '0.6rem', // Font size for medium screens
+          lg: '0.8rem', // Font size for large screens
+          xl: '1rem', // Font size for extra-large screens
+        },
+        fontWeight: 'bold',
+        '@media (min-width:600px)': { // Additional responsive font size using @media query
+          fontSize: '1rem',
+        },
+        // Add more @media queries for other breakpoints if necessary
+      }}
+    >
+      SHOW ALL
+    </Typography>
+    </Box>
  {category.map((categoryItem: { category: any; }) => (
     <Box
       key={categoryItem.category}
@@ -689,7 +748,8 @@ const Restaurant: React.FC = () => {
 
 
 
-    
+  const [DebitCardPaymentModal, setDebitCardPaymentModal] = useState<boolean>(false);
+  const [CreditCardPaymentModal, setCreditCardPaymentModal] = useState<boolean>(false);
   const [ChargeToModal, setChargeToModal] = useState<boolean>(false);
   const [AddOrderModal, setAddOrderModal] = useState<boolean>(false);
   const [OrderTypeModal, setOrderTypeModal] = useState<boolean>(true);
@@ -1307,13 +1367,48 @@ const settlebillData = async (data: { tableno: React.SetStateAction<string>; }) 
 
 
 ///************ CHARGE TO ROOM, CUSTOMER AND EVENT TRANSACTION*************** */
+
+
 const OpenChargeModal = () => {
-setChargeToModal(true)
+
 setPaymentOpenModal(false)
+setChargeToModal(true)
 }
 
+const CloseChargeModal = () => {
+  setChargeToModal(false)
+  setPaymentOpenModal(true)
+}
+
+////***************** END ****************/
+
+//// ************************** CREDIT CARD PAYMENT TYPE TRANSACTION ******************
+
+const OpenCreditCardPayment = () => {
+  setCreditCardPaymentModal(true)
+  setPaymentOpenModal(false)
+}
+
+const CloseCreditCardPayment = () => {
+  setCreditCardPaymentModal(false)
+  setPaymentOpenModal(true)
+}
+////***************** END ****************/
 
 
+
+//// ************************** DEBIT CARD PAYMENT TYPE TRANSACTION ******************
+
+const OpenDebitCardPayment = () => {
+  setDebitCardPaymentModal(true)
+  setPaymentOpenModal(false)
+}
+
+const CloseDebitCardPayment = () => {
+  setDebitCardPaymentModal(false)
+  setPaymentOpenModal(true)
+}
+////***************** END ****************/
   const AddOrdertable = () => 
   {
 
@@ -2872,6 +2967,9 @@ const closeCashPayment = () => {
   setTableNo('')
 }
 
+const [categoryHide,setcategoryHide] = useState<boolean>(true)
+
+
   return (
     <>
     
@@ -2907,7 +3005,8 @@ const closeCashPayment = () => {
 
 <div style={overlayStyle} />
 
-<Grid item xs={12} md={2} style={{ height: '100%',width:'35%'}}>
+<Grid item xs={12} md={2} style={{ height: categoryHide ? '100%': '10%',width:'35%'}}>
+
       <div className="Category">
           <Typography      
             sx={{
@@ -2915,15 +3014,37 @@ const closeCashPayment = () => {
             color: '#ffffff',backgroundColor: '#007bff',
             padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
             borderRadius: '5px',margin: '10px',
-            fontWeight: 'bold', textAlign: 'center',}}>
-              Category Section
-          </Typography>
-          <div className='Category-container' style={{ overflowY: 'auto', maxHeight: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
-            <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} />
-          </div>
+            fontWeight: 'bold', textAlign: 'center',
+            justifyContent: 'space-between', // Aligns items at the start and end of the flex container
+            alignItems: 'center', // Aligns items at the center of the flex container
+            }}>
+         Category Section
+            </Typography>
+
+            <div className='Category-container'  style={{ overflowY: 'auto', maxHeight: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
+            {isMobile && 
+                      <div style={{display:'flex',flexDirection:'column',alignItems:'center' }} >
+             
+                      {categoryHide ? (
+                       <div style={{marginBottom:'20px'}} >
+                                 <FontAwesomeIcon icon={faAnglesDown} style={{position:'absolute',margin:'5px'}} onClick={()=> setcategoryHide(false)}/>
+                         </div>
+               
+                         ):(
+                           <FontAwesomeIcon icon={faAnglesUp} style={{position:'absolute',margin:'5px'}} onClick={()=> setcategoryHide(true)}/>
+                         )}
+                     </div>
+            }
+  
+
+
+            {categoryHide &&  <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} />}
+             
+            </div>
 
       </div>
-    </Grid>
+
+</Grid>
 
 
     <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
@@ -2937,8 +3058,12 @@ const closeCashPayment = () => {
         fontWeight: 'bold', textAlign: 'center',}}>
       Product Section
           </Typography>
+         
+
+  
           <div className='Product-container' style={{ overflowY: 'auto', height: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
             <ProductGrid products={products} addtocart={addToCart} selectedProductData={selectedProductData} />
+           
           </div>
         </div>
     </Grid>
@@ -2952,7 +3077,7 @@ const closeCashPayment = () => {
       <div className='Transaction-container' style={{ height: '95%'}}>
           <Typography      
               sx={{
-                fontSize: { xs: '1.2rem', sm: '1.2rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
+              fontSize: { xs: '1.2rem', sm: '1.2rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
               color: '#ffffff',backgroundColor: '#007bff',
               padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
               borderRadius: '5px',margin: '10px',
@@ -3145,7 +3270,11 @@ const closeCashPayment = () => {
 {CustomeryPaymentModal && <CustomerPayment handlemodaldata={CutomerInfoEntryPaymnet} />}
 {ReprintTransactionModal && <ReprintTransaction handleClose={CloseReprintTransactionModal} PrintTransactionData={ReprintTransactionReceipt}/>}
 {CashBreakDownModal && <CashBreakDown CashBreakDownDataList ={CashBreakDownDataList} CloseCashBreakDownModal={CloseCashBreakDownModal}/>}
-{ChargeToModal && <ChargeTo/>}
+{ChargeToModal && <ChargeTo handleClose={CloseChargeModal} amountdue={formattedTotalDue}/>}
+{CreditCardPaymentModal && <CreditCardPayment handleClose={CloseCreditCardPayment} amountdue={formattedTotalDue}/>}
+{DebitCardPaymentModal && <DebitCardPayment handleClose={CloseDebitCardPayment} amountdue={formattedTotalDue}/>}
+
+
 
 
 
@@ -3329,7 +3458,7 @@ const closeCashPayment = () => {
               style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
+              }} onClick={OpenCreditCardPayment}>
 
               <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
                Credit Sales</p>
@@ -3340,7 +3469,7 @@ const closeCashPayment = () => {
               style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
+              }}  onClick={OpenDebitCardPayment}>
 
               <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
                EPS</p>
