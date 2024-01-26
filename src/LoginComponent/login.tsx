@@ -10,10 +10,11 @@ import { isMobile, isTablet } from 'react-device-detect';
 import { width } from '@fortawesome/free-solid-svg-icons/fa0';
 import { ipcRenderer } from 'electron';
   const LoginForm: React.FC  = () => {
-    const usernameRef = useRef(null);
-    const passwordRef = useRef(null);
+    const usernameRef = useRef<HTMLInputElement>(null);
+    const passwordRef = useRef<HTMLInputElement>(null);
+    const loginBtnRef = useRef<HTMLButtonElement>(null);
     // const ulCodeRef = useRef(null);
-    const loginBtnRef = useRef(null);
+    // const loginBtnRef = useRef(null);
 
     const [formData, setFormdata] = useState({
         username: '',
@@ -24,6 +25,20 @@ import { ipcRenderer } from 'electron';
 
 
     const [deviceType, setDeviceType] = useState<string>('');
+
+
+    useEffect(() => {
+      setTimeout(() => {
+        if (usernameRef.current){
+          usernameRef.current.focus();
+          usernameRef.current.select();
+        }
+      }, 100);
+
+
+    },[])
+
+
 
     useEffect(() => {
       const checkDeviceType = () => {
@@ -48,6 +63,8 @@ import { ipcRenderer } from 'electron';
         window.removeEventListener('resize', handleResize);
       };
     }, []);
+
+
 
     useEffect(() => {
       const channel = new BroadcastChannel('my-channel');
@@ -136,57 +153,57 @@ import { ipcRenderer } from 'electron';
     }
   };
   
-const onSubmit = async () => {
+const onSubmit = async (event:any) => {
+  event.preventDefault();
   
-
-  const config = {
-    headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-CSRFToken':   localStorage.csrfToken
-    },
-    // withCredentials: true
-};
-
-const body = JSON.stringify({ username, password});
-
-// const BASE_URL = 'http://localhost:8000'; 
-
-try{
-    const response = await axios.post(`${BASE_URL}/api/login/`,body, config);
-
-
-    if (response.status === 200) {
-      console.log(response.data); 
-      const { Info } = response.data;
-      if (Info) {
-        const { UserRank, FullName, UserID, UserName,TerminalNo,SiteCode } = Info;
-        localStorage.setItem('isLogin','true')
-        localStorage.setItem('UserRank', UserRank);
-        localStorage.setItem('FullName', FullName);
-        localStorage.setItem('UserID', UserID);
-        localStorage.setItem('UserName', UserName);
-        localStorage.setItem('TerminalNo', TerminalNo);
-        localStorage.setItem('SiteCode', SiteCode);
-
-
-
-        // Process the extracted data as needed
-      }
-
-
-      window.location.reload();
-      // channel.postMessage({ type: 'login' });
-    }
-  } catch {
-    Swal.fire({
-      title: 'Log in Error',
-      text: 'Error Username or Password',
-      icon: 'info',
-      confirmButtonText: 'OK'
-    });
+  if (isMobile){
+    localStorage.setItem('isLogin', 'true');
+    localStorage.setItem('UserRank', 'SalesMan');
+    localStorage.setItem('FullName', 'FullName');
+    localStorage.setItem('UserID', '99999');
+    localStorage.setItem('UserName', 'SalesMan');
+    localStorage.setItem('TerminalNo', '1');
+    localStorage.setItem('SiteCode', '121');
+    window.location.reload();
   }
-};
+    try {
+      const response = await axios.get(`${BASE_URL}/api/login/`, {
+        params:{
+        username : username,
+        password : password
+        }
+      });
+  
+      if (response.status === 200) {
+        console.log(response.data);
+        const { Info }: { Info?: any } = response.data; // Adjust 'Info' type as per the actual structure
+        if (Info) {
+          const { UserRank, FullName, UserID, UserName, TerminalNo, SiteCode }: any = Info; // Adjust types as per the actual structure
+          localStorage.setItem('isLogin', 'true');
+          localStorage.setItem('UserRank', UserRank);
+          localStorage.setItem('FullName', FullName);
+          localStorage.setItem('UserID', UserID);
+          localStorage.setItem('UserName', UserName);
+          localStorage.setItem('TerminalNo', TerminalNo);
+          localStorage.setItem('SiteCode', SiteCode);
+          window.location.reload();
+          // Process the extracted data as needed
+        }
+  
+   
+        // channel.postMessage({ type: 'login' });
+      }
+    } catch (error) {
+      Swal.fire({
+        title: 'Log in Error',
+        text: 'Error Username or Password',
+        icon: 'info',
+        confirmButtonText: 'OK'
+      });
+    }
+  };
+
+ 
 
 const closeApp = () => {
   if (window.electronAPI) {
@@ -195,8 +212,38 @@ const closeApp = () => {
     console.error('electronAPI is not available');
   }
 };
+
+const handleKeyDown = (event :any, BackRef : any, nextRef:any) => {
+  if (event.key === 'Enter')  {
+    event.preventDefault();
+
+
+      if (nextRef.current) {
+        nextRef.current.focus();
+        nextRef.current.select();
+      }
+    
+
+  }
+  if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    if (BackRef.current) {
+      BackRef.current.focus();
+      BackRef.current.select();
+    }
+  }
+
+  if (event === 'Enter') {
+    if (nextRef.current) {
+      nextRef.current.focus();
+      nextRef.current.select();
+    }
+  }
+};
+
+
   return (
-    <form>
+    <form onSubmit={onSubmit}>
       
   <div className="container" style={deviceType === 'Mobile' ? { width: '100%', height: '100vh' } : {}}>
   <div className="login-form" style={deviceType === 'Desktop' ? { width: '450px' } : { width: '320px',height: '100vh' }}>
@@ -235,6 +282,7 @@ const closeApp = () => {
             value={username}
             placeholder="Username"
             autoComplete="off"
+            onKeyDown={(e) => handleKeyDown(e, usernameRef, passwordRef)}  
             required
           />
         </div>
@@ -249,13 +297,14 @@ const closeApp = () => {
             value={password}
             placeholder="Password"
             autoComplete="off"
+            onKeyDown={(e) => handleKeyDown(e, usernameRef, loginBtnRef)}  
             required
           />
         </div>
         
         
         <div className='form-group'>
-          <button className="btn-login" type='button' ref={loginBtnRef} onClick={handleLogin}>
+          <button className="btn-login" type='submit' ref={loginBtnRef} onClick={handleLogin}  >
             Login
           </button>
           <button className="btn-login" style={{backgroundColor:'red'}} type='button'  onClick={closeApp}>

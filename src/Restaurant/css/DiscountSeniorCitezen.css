@@ -1,0 +1,28 @@
+.modal-content-senior {
+    position: absolute;
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 700px;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-content-senior Button {
+    width: 31%;
+    margin-top: 15px;
+    padding: 8px 8px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 5px;
+  }
+
+  .senior-Container label{
+width: 100%;
+  }

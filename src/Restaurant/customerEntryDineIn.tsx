@@ -11,6 +11,7 @@ import './css/keyboard.css'
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { isDesktop} from 'react-device-detect';
+import {  Grid, Typography } from '@mui/material';
 
 
 
@@ -18,15 +19,16 @@ interface CustomerDineInData {
   handleclose: () => void;
   typeandtable: any;
   handlemodaldata: any;
+  isDineIn:any;
 }
 
 
 
 
-const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtable, handlemodaldata }) => {
+const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtable, handlemodaldata ,isDineIn}) => {
   // Your co
 
-
+  const userRank = localStorage.getItem('UserRank');
   interface Customer {
     id_code : string;
     trade_name: string; // Assuming trade_name is a property in your Customer type
@@ -49,6 +51,8 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
     const [WaiterListModal, setWaiterListModal] = useState<boolean>(false);
     const [CustomerListModal, setCustomerListModal] = useState<boolean>(false);
 
+    const [QueNo, setQueNo] = useState<any>('0');
+
     const [WaiterList, setWaiterList] = useState<Waiter[]>([]);
     
     const [CustomerList, setCustomerList] = useState<Customer[]>([]);
@@ -57,6 +61,9 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
     const GuestCountRef = useRef<HTMLInputElement>(null)
     const WaiterRef = useRef<HTMLInputElement>(null)
     const WaiterListRef = useRef<HTMLUListElement>(null)
+    const SaveBtnRef = useRef<HTMLButtonElement>(null)
+    const PaymentSaveBtnRef = useRef<HTMLButtonElement>(null)
+    const CloseBtnRef = useRef<HTMLButtonElement>(null)
 
     const CustomerListRef = useRef<HTMLUListElement>(null)
     const [isTextHighlighted, setIsTextHighlighted] = useState<boolean>(false);
@@ -160,7 +167,7 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
 };
 
 
-const sendDataToMain = () => {
+const   sendDataToMain = () => {
   if (customer === '' || guestCount === '' || waiter === '' || waiterID === '') {
         Swal.fire({
           title: 'Fields Required',
@@ -176,13 +183,25 @@ const sendDataToMain = () => {
           }
         }, 500); // Increased duration to 500 milliseconds (0.5 seconds) for the dialog to display first
       }else {
+      if  (isDesktop) {
         handlemodaldata({
-            Customer: customer,
-            GuestCount: guestCount,
-            Waiter: waiter,
-            PaymentType:'Sales Order',
-            waiterID:waiterID
-          });
+          Customer: customer,
+          GuestCount: guestCount,
+          Waiter: waiter,
+          PaymentType:'Sales Order',
+          waiterID:waiterID
+        });
+      } else {
+        handlemodaldata({
+          Customer: customer,
+          GuestCount: guestCount,
+          Waiter: waiter,
+          PaymentType:'Sales Order Take Out',
+          waiterID:waiterID,
+          Que:QueNo,
+        });
+      }
+
           
       }
     
@@ -414,7 +433,11 @@ const handleCustomerTypeWalkIN = () => {
           onClick={() => handleSpecialButtonClick(letter)}
           aria-label={letter}
         >
+           <Typography sx={{
+            fontSize: { xs: '0.5rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' }
+              }}>
           {letter}
+          </Typography>
         </button>
       ))}
     </div>
@@ -538,6 +561,11 @@ const handleCustomerTypeWalkIN = () => {
           const listItems = WaiterListRef.current?.querySelectorAll('li');
           const currentIndex = Array.from(listItems || []).findIndex((item) => item === selectedItemIndex);
           ClickWaiterList(currentIndex);
+          if (SaveBtnRef.current) {
+            event.preventDefault();
+            SaveBtnRef.current.focus()
+          }
+         
        
         }
 
@@ -678,125 +706,191 @@ if (WaiterRef.current) {
 //      window.removeEventListener('resize', handleResize);
 //    };
 //  }, []);
- 
+const [,setisFocus] = useState<any>(1)
+const SelectButtonHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) => {
+  event.preventDefault();
+  if (event.key == 'ArrowRight' || event.key == 'ArrowDown') {
+      NextRef.current.focus();
+      NextRef.current.style.backgroundColor = 'blue';
+  
+      if (index == 1) {
+        setisFocus(0)
+      }else {
+        setisFocus(index + 1)
+      }
+   
+
+  }
+
+  if (event.key == 'ArrowLeft' || event.key == 'ArrowUp'){
+    BackRef.current.focus();
+    BackRef.current.style.backgroundColor = 'blue';
+
+    setisFocus(index - 1)
+
+}
+
+if (event.key == 'Enter'){
+   if (index == 0){
+    sendDataToMainOrderAndPay();
+   }
+   if (index == 1){
+    sendDataToMain()
+   }
+   if (index == 2){
+    handleclose()
+   }
+
+}
+
+}
+
+
+
+
 
   return (
     <div className="modal">
       <div className="modal-contentCustomerDine" style={{width:'100%', display:'flex',flexDirection:'row'}}>
 
-    <div style={{width:'100%',height:'100%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
-      <h2 style={{ color: '#007bff', padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
-      borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid' }}
-      >Sales Order  {typeandtable.OrderType} </h2>
-      <div className="customer-type">
-        <span className="customer-type-label">Customer Type:</span>
-        <div className="button-group">
-          <button className={selectedOption === 'option1' ? 'radio-button checked blinking' : 'radio-button'}id="option1"onClick={() => handleCustomerTypeRegular()}>Regular</button>
-          <button className={selectedOption === 'option2' ? 'radio-button checked blinking' : 'radio-button'}id="option2"onClick={() => handleCustomerTypeWalkIN()}>Walk-In </button>
-        </div>
-      </div>
+      <Grid container className="CreditCard-Container" spacing={2}>
 
-        {/* Input fields */}
-        <div style={{ display: 'flex', flexDirection: 'column'}}>
-        <div style={{display:'flex',flexDirection:'column'}}>
-              <label htmlFor="input1">Customer Name:</label>
-              <input ref={CustomerRef} 
-              onKeyDown={(e) =>
-                customerType === 'Walk-in'
-                  ? handleKeyDown(e, CustomerRef, GuestCountRef)
-                  : handleKeys(e, 'Customer')
-              }
-                disabled={typeandtable.OrderType === 'ADD ORDER'}
-                onChange={(e) => setCustomer(e.target.value)}  autoComplete="off"
-                onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
-                onClick={() => handleClick(CustomerRef)}
-                onFocus={CustomerF} 
+        <Grid item xs={12} md={3} style={{ height: '100%',width:'100%'}}>
+          <div style={{width:'100%',height:'100%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
+            <h2 style={{ color: '#007bff', padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
+            borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid' }}
+            >Sales Order  {typeandtable.OrderType} </h2>
+            <div className="customer-type">
+              <span className="customer-type-label">Customer Type:</span>
+              <div className="button-group">
+                <button className={selectedOption === 'option1' ? 'radio-button checked blinking' : 'radio-button'}id="option1"onClick={() => handleCustomerTypeRegular()}>Regular</button>
+                <button className={selectedOption === 'option2' ? 'radio-button checked blinking' : 'radio-button'}id="option2"onClick={() => handleCustomerTypeWalkIN()}>Walk-In </button>
+              </div>
+            </div>
 
-                onMouseUp={() => checkSelection(CustomerRef)}
-                // onKeyUp={() => checkSelection(CustomerRef)}
-                value={customer} required/>
+              {/* Input fields */}
+              <div style={{ display: 'flex', flexDirection: 'column'}}>
+              <div style={{display:'flex',flexDirection:'column'}}>
+                    <label htmlFor="input1">Customer Name:</label>
+                    <input ref={CustomerRef} 
+                    onKeyDown={(e) =>
+                      customerType === 'Walk-in'
+                        ? handleKeyDown(e, CustomerRef, GuestCountRef)
+                        : handleKeys(e, 'Customer')
+                    }
+                      disabled={typeandtable.OrderType === 'ADD ORDER'}
+                      onChange={(e) => setCustomer(e.target.value)}  autoComplete="off"
+                      onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
+                      onClick={() => handleClick(CustomerRef)}
+                      onFocus={CustomerF} 
 
-                  {CustomerListModal && (
-                    <div className='Customerlist-Container' onKeyDown={(event) => handleKeys(event, 'customer')} >
-                    <ul id="list" className='ul-list customer'   onKeyDown={(event) => handleKeys(event, 'customer')}  ref={CustomerListRef}>
-                      {CustomerList.map((result,index) => (
-                        <li tabIndex={0} key={index}
-                        onKeyDown={(event) => handleKeys(event, 'Customer')}
-                          onClick={() => ClickCustomerList(index)}
-                        >{result.id_code.padStart(4, '0')} - {result.trade_name}</li>
-                            ))}
-                          </ul>
-                          </div>
-                        )}
+                      onMouseUp={() => checkSelection(CustomerRef)}
+                      // onKeyUp={() => checkSelection(CustomerRef)}
+                      value={customer} required/>
+
+                        {CustomerListModal && (
+                          <div className='Customerlist-Container' onKeyDown={(event) => handleKeys(event, 'customer')} >
+                          <ul id="list" className='ul-list customer'   onKeyDown={(event) => handleKeys(event, 'customer')}  ref={CustomerListRef}>
+                            {CustomerList.map((result,index) => (
+                              <li tabIndex={0} key={index}
+                              onKeyDown={(event) => handleKeys(event, 'Customer')}
+                                onClick={() => ClickCustomerList(index)}
+                              >{result.id_code.padStart(4, '0')} - {result.trade_name}</li>
+                                  ))}
+                                </ul>
+                                </div>
+                              )}
+                </div>
+                
+                <div style={{display:'flex',flexDirection:'column'}}>
+                  {isDineIn ? (
+                    <><label htmlFor="input2">
+                        Table Number
+                      </label><input type="text" id="input2" placeholder="0" readOnly value={typeandtable.tableNo} /></>
+                      ):(
+                        <><label htmlFor="input2">
+                      Que No
+                        </label><input type="number" id="input2" placeholder="0"
+                                  onChange={(e) => setQueNo(e.target.value)}
+                        /></>
+                      )}
+
+              </div>
+
+              <div style={{display:'flex',flexDirection:'column'}}>
+                  <label htmlFor="input3">Guest Count:</label>
+                  <input ref={GuestCountRef}  onKeyDown={(e) => handleKeyDown(e, GuestCountRef, WaiterRef)}  id="input3" 
+                  type = "number"  pattern="[0-9]*"  placeholder="Guest Count" 
+                    disabled={typeandtable.OrderType === 'ADD ORDER'}
+                    onChange={(e) => setGuestCount(e.target.value)} autoComplete="off"
+                    onFocus={GuestCountF}
+                
+                    value={guestCount}
+                    onClick={() => handleClick(GuestCountRef)}
+                    // onClick={handleClick}
+                    required />
+              </div>
+              
+              <div style={{display:'flex',flexDirection:'column'}}>
+              <label htmlFor="input4">Waiter:</label>
+                        <input  ref={WaiterRef} type="text" id="input4" placeholder="Select Waiter"  
+                          onChange={(e) => setWaiter(e.target.value)} autoComplete="off" 
+                          value={waiter}
+                          onFocus={WaiterF}
+                          onKeyDown={(e) =>handleKeys(e, 'Waiter')}
+                          onInput={(e: React.ChangeEvent<HTMLInputElement>)=> handleSearchInputChange(e.target.value, 'Waiter')}
+                          onClick={() => handleClick(WaiterRef)}
+                          required/>
+                          {WaiterListModal && (
+                              <div className='Waiterlist-Container'>
+                              <ul id="list" className='ul-list Waiter' onKeyDown={(event) => handleKeys(event, 'Waiter')}  ref={WaiterListRef}>
+                                {WaiterList.map((result,index) => (
+                                  <li tabIndex={0} key={index} className={selectedItemIndex === index ? 'selected' : ''}
+                                  onKeyDown={(event) => handleKeys(event, 'Waiter')} 
+                                  onClick={() => ClickWaiterList(index)}
+                                  >{result.waiter_id} - {result.waiter_name}</li>
+                                      ))}
+                                    </ul>
+                                    </div>
+                    )}
+              </div>
+
+
+              </div>
+
+
+              {/* Command buttons */}
+              <div style={{display:'flex',flexDirection:'row'}} >
+                {userRank == 'Cashier' && (   
+                <button tabIndex={0} onClick={sendDataToMainOrderAndPay} 
+                 ref={PaymentSaveBtnRef}  disabled={typeandtable.OrderType === 'ADD ORDER'} 
+                 className='button-ok' 
+                onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,PaymentSaveBtnRef,SaveBtnRef,0) } 
+                 style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Order and Pay</button>
+          )}
+                  
+                <button tabIndex={1} onClick={sendDataToMain} ref={SaveBtnRef} 
+                  onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,SaveBtnRef,CloseBtnRef,1) } 
+                className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Save Sales Order</button>
+              
+              </div>
+              <button tabIndex={2} type="button" className ='button-cancel' ref={CloseBtnRef}
+                onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,CloseBtnRef,PaymentSaveBtnRef,2) } 
+              style={{width:'100%'}} onClick={handleclose}>Exit</button>
           </div>
-          
-          <div style={{display:'flex',flexDirection:'column'}}>
-          <label htmlFor="input2">Table Number</label>
-          <input   type="text" id="input2" placeholder="Table No" readOnly  value={typeandtable.tableNo}/>
+        </Grid>
+      <Grid item xs={12} md={9} style={{ height: '100%',width:'100%'}}>
+
+        {isDesktop && (
+          <div className='keyboardScreen'>
+          {rows}
+          <button className="num-pad-key" style={{width:'95%',margin:'8px 10px'}} onClick={() => handleButtonClick(' ')}>SPACE</button>
         </div>
+        )}
 
-        <div style={{display:'flex',flexDirection:'column'}}>
-            <label htmlFor="input3">Guest Count:</label>
-            <input ref={GuestCountRef}  onKeyDown={(e) => handleKeyDown(e, GuestCountRef, WaiterRef)}  id="input3" type = "number"  placeholder="Guest Count" 
-              disabled={typeandtable.OrderType === 'ADD ORDER'}
-              onChange={(e) => setGuestCount(e.target.value)} autoComplete="off"
-              onFocus={GuestCountF}
-          
-              value={guestCount}
-              onClick={() => handleClick(GuestCountRef)}
-              // onClick={handleClick}
-              required />
-        </div>
-        
-        <div style={{display:'flex',flexDirection:'column'}}>
-        <label htmlFor="input4">Waiter:</label>
-                  <input  ref={WaiterRef} type="text" id="input4" placeholder="Select Waiter"  
-                    onChange={(e) => setWaiter(e.target.value)} autoComplete="off" 
-                    value={waiter}
-                    onFocus={WaiterF}
-                    onKeyDown={(e) =>handleKeys(e, 'Waiter')}
-                    onInput={(e: React.ChangeEvent<HTMLInputElement>)=> handleSearchInputChange(e.target.value, 'Waiter')}
-                    onClick={() => handleClick(WaiterRef)}
-                    required/>
-                    {WaiterListModal && (
-                        <div className='Waiterlist-Container'>
-                        <ul id="list" className='ul-list Waiter' onKeyDown={(event) => handleKeys(event, 'Waiter')}  ref={WaiterListRef}>
-                          {WaiterList.map((result,index) => (
-                            <li tabIndex={0} key={index} className={selectedItemIndex === index ? 'selected' : ''}
-                            onKeyDown={(event) => handleKeys(event, 'Waiter')} 
-                            onClick={() => ClickWaiterList(index)}
-                            >{result.waiter_id} - {result.waiter_name}</li>
-                                ))}
-                              </ul>
-                              </div>
-              )}
-        </div>
+        </Grid>
 
-
-        </div>
-
-
-        {/* Command buttons */}
-        <div style={{display:'flex',flexDirection:'row'}} >
-          {isDesktop && (   
-          <button onClick={sendDataToMainOrderAndPay}    disabled={typeandtable.OrderType === 'ADD ORDER'} className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Order and Pay</button>
-    )}
-             
-          <button onClick={sendDataToMain} className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Save Sales Order</button>
-        
-        </div>
-        <button type="submit" className ='button-cancel' onClick={handleclose}>Exit</button>
-    </div>
-
- 
-{isDesktop && (
-   <div className='keyboardScreen'>
-   {rows}
-   <button className="num-pad-key" style={{width:'95%',margin:'8px 10px'}} onClick={() => handleButtonClick(' ')}>SPACE</button>
- </div>
-)}
-
-
+    </Grid>
     {/* <div>
       <div className="num-pad" style={{width:'50% !important'}}>
       <div className="num-pad-row">

@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 
-import React, { useEffect, useState,useRef, ChangeEvent } from 'react';
+import React, { useEffect, useState,useRef, ChangeEvent, useLayoutEffect } from 'react';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import BASE_URL from '../config';
 import image from '../assets/item.jpeg';
@@ -38,12 +38,13 @@ import ReprintTransaction from './RepirintTransaction';
 import CashBreakDown from './CashBreakDown';
 import ChargeTo from './Charge';
 import CreditCardPayment from './CreditCard';
+import CreditCardPaymentEntry from './CreditCardPayment';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt, faArrowAltCircleDown, faArrowDown, faExpand, faExpandArrowsAlt, faChevronDown, faChevronCircleDown, faArrowUp, faAnglesUp, faAnglesDown} from '@fortawesome/free-solid-svg-icons';
 // import CustomerDineIn from './customerEntryDineIn';
 import QRCode from 'qrcode-generator';
-import { Button, Dialog, DialogContent, DialogTitle, Grid, Typography } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogTitle, Grid, Table, Typography } from '@mui/material';
 import { createTheme, ThemeProvider,Theme,makeStyles, useTheme  } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -56,6 +57,8 @@ import { webContents } from 'electron';
 import { IpcRendererEvent } from 'electron/renderer';
 import DebitCardPayment from './DebitCard';
 import { faExpandAlt } from '@fortawesome/free-solid-svg-icons/faExpandAlt';
+import Verification from './Verification';
+import { blue } from '@mui/material/colors';
 ///**************PRODUCT GRID DESIGN*******************//
 
 
@@ -69,14 +72,19 @@ interface ProductData {
   products :ProductList[];
   addtocart:any;
   selectedProductData:any;
+  isSelected:any;
+
 }
 
 
 
-const ProductGrid: React.FC<ProductData> = ({ products , addtocart ,selectedProductData}) => {
+  
+const ProductGrid: React.FC<ProductData> = ({ products , addtocart ,selectedProductData,isSelected}) => {
   const [quantity, setQuantity] = useState<number | 1>(1); // Adjust the initial state value
 
     const [Price, setPrice] = useState<number>(1);
+    const ProductRef = useRef<HTMLDivElement>(null)
+    const [isFocusIndex,setisFocusIndex] = useState<boolean>(true)
 
 
 
@@ -115,12 +123,14 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [open, setOpen] = useState<boolean>(false);
 
+    const [isSelectedIndex, setisSelectedIndex] = useState<any>(null);
 
+    const ProductRefs = useRef<any>([]);
 
-    const handleproductclick = (product:any) => {
+    const handleproductclick = (product:any,index:any) => {
 
-      selectedProductData({product})
-
+      selectedProductData({product,index})
+      setisFocusIndex(false)
       // setSelectedProduct(product);
       // setIsModalOpen(true);
       // setOpen(true);
@@ -135,6 +145,7 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
        
     };
 
+
     const addQuantity = () => {
         setQuantity(prevQuantity => prevQuantity + 1);
       };
@@ -145,8 +156,55 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
           return newQuantity <= 0 ? 1 : newQuantity;
         });
       };
-      
 
+      useEffect(() => {
+        setisSelectedIndex(isSelectedIndex)
+        setTimeout(() => {
+          if (ProductRefs.current[isSelectedIndex]) {
+            ProductRefs.current[isSelectedIndex].focus();
+          }
+        }, 50);
+      }, [isSelectedIndex]);
+
+
+
+      // useEffect(() => {
+      //   setisSelectedIndex(isSelectedIndex)
+      //   setTimeout(() => {
+      //     if (ProductRefs.current[isSelectedIndex]) {
+      //       ProductRefs.current[isSelectedIndex].focus();
+      //     }
+      //   }, 50);
+      // }, []);
+
+      useEffect(() => {
+          setisSelectedIndex(isSelected)
+        setTimeout(() => {
+          if (ProductRefs.current[isSelected]) {
+            ProductRefs.current[isSelected].focus();
+          }
+        }, 50);
+      }, [isSelected, products]);
+
+ 
+        const focusindex = () => {
+          if (isFocusIndex) {
+            if (ProductRefs.current[isSelectedIndex]) {
+              ProductRefs.current[isSelectedIndex].focus();
+            }
+          }
+
+        }
+
+
+      useEffect(() => {
+        focusindex();
+        const interval = setInterval(() => {
+          focusindex();
+        }, 500);
+        // Clear the interval when the component unmounts
+        return () => clearInterval(interval);
+      }, [isSelectedIndex]);
 
 
 
@@ -179,13 +237,37 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
       
       };
 
+const Handlekeydown = (e:any,index:any) => {
+e.preventDefault()
+  if (e.key === 'ArrowUp' && index > 0) {
+    if (index > 4){
+      setisSelectedIndex(index - 5);
+    }
 
+  } else if (e.key === 'ArrowDown' && index < products.length - 1) {
+    setisSelectedIndex(index + 5);
+  }
+
+  else if (e.key === 'ArrowLeft' && index > 0) {
+    setisSelectedIndex(index - 1);
+  } else if (e.key === 'ArrowRight' && index < products.length - 1) {
+    setisSelectedIndex(index + 1);
+  }
+
+else if (e.key == 'Enter'){
+  handleproductclick(products[index],index)
+
+}
+
+}
 
   return (
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '5px' ,margin:'10px'}}>
-          {products.map((product: { bar_code: React.Key | null | undefined; long_desc: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; reg_price: string; }) => (
-              <div key={product.bar_code}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '5px' ,margin:'10px'}}>
+          {products.map((product:any,index) => (
+              <div key={index}
+              tabIndex={index}
+              ref={(ref) => (ProductRefs.current[index] = ref)}
               //  style={{ border: '1px solid #ccc', padding: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center' , borderRadius:'10px',cursor:'pointer',caretColor:'transparent'}}
               style={{
                 border: '1px solid #4a90e2',
@@ -199,17 +281,14 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
                 borderStyle: 'solid',
                 borderWidth: '2px',
                 borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                backgroundColor: isSelectedIndex == index ? 'blue':'white',
               }}
-             onClick={() => handleproductclick(product)}> 
+              onKeyDown={(e) => Handlekeydown(e,index)}
+             onClick={() => handleproductclick(product,index)}> 
              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-
-   
-
-              <p style={{ fontWeight: 'bold', textAlign: 'center', marginBottom: '10px', flex: '1 1 100%',height:'40px' }}>{product.long_desc}</p>
-
-
+              <p style={{ color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', marginBottom: '10px', flex: '1 1 100%',height:'40px' }}>{product.long_desc}</p>
               <img src={image} style={{ maxWidth: '80%', maxHeight: '150px', marginBottom: '10px', flex: '0 0 auto' }} />
-              <p style={{ fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%' }}>Price: {parseFloat(product.reg_price).toFixed(2)}</p>
+              <p style={{ color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%' }}>Price: {parseFloat(product.reg_price).toFixed(2)}</p>
             </div>
                   {/* <p style={{fontWeight:'bold',textAlign:'center' , marginBottom: '10px'}}>{product.long_desc}</p>
                   <img src={image} alt={product.bar_code} style={{ maxWidth: '80%', maxHeight: '150px', marginBottom: '10px' }} />
@@ -278,9 +357,10 @@ interface TransactionData {
   setcartitems:any;
   totaldue:any;
   EditOrderList:any;
+  DiscountData:any;
 }
 
-const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totaldue,EditOrderList  }) => {
+const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totaldue,EditOrderList,DiscountData  }) => {
     const [IsOpenTransModal, setIsOpenTransModal] = useState<boolean>(false);
     const [selectedItemIndex, setSelectedItemIndex] = useState<any>(null);
     const [quantity, setQuantity] = useState<number>(1);
@@ -423,8 +503,12 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
  
 
     return (
-      <div className="Transaction" style={{ overflowY: 'auto', maxHeight: '55%' , border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
-        <table className="OrderList">
+      <div className="Transaction" style={{ overflowY: 'auto', maxHeight: '55%' ,
+       border: '1px solid #ccc', borderRadius: '10px',
+        boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
+        <Table className="OrderList" sx={{
+                            fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
+                            overflow: 'auto'}} >
           <thead>
             <tr>
               <th>Qty</th>
@@ -453,8 +537,25 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
     <td colSpan={4}>No items in the transaction</td>
   </tr>
 )}
+
+
+        {DiscountData.length !== 0 && (
+                        <>
+                          <tr style={{ border: 'none', borderCollapse: 'collapse' }}>
+                            <td colSpan={5}></td>
+                          </tr>
+                          <tr style={{ border: 'none',color:'red',fontWeight:'bold' }}>
+                            <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}> SC VAT Exemption on {totaldue}</td>
+                            <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}>{DiscountData.SLessVat12}</td>
+                          </tr>
+                          <tr style={{ border: 'none',color:'red',fontWeight:'bold'   }}>
+                            <td colSpan={3} style={{ textAlign: 'center', border: 'none'}}> SC Discount: 20% of  {DiscountData.SNetOfVat}</td>
+                            <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}>{DiscountData.SLess20SCDiscount}</td>
+                          </tr>
+                        </>
+                      )}
           </tbody>
-        </table>
+        </Table>
       
         {/* {IsOpenTransModal && (
             <div className="modal">
@@ -735,12 +836,21 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
 const Restaurant: React.FC = () => {
   const [OrderType, setOrderType] = useState<string>('');
   const [TableNo, setTableNo] = useState<string>('');
+  const [QueNo, setQueNo] = useState<string>('');
   const [CustomerName, setCustomer] = useState<string>('');
   const [SOCustomerName, setSOCustomer] = useState<any>([]);
   const [GuestCount, setGuestCount] = useState<number>(0);
+  const [PaymentType, setPaymentType] = useState<string>('');
+  const [DiscountData, setDiscountData] = useState<any>('');
+  const [DiscountType, setDiscountType] = useState<any>('');
+  const [TotalDue, setTotalDue] = useState<any>(0);
+
+
 
   const inputRef = useRef<HTMLInputElement>(null);
   const TableNoRef = useRef<HTMLInputElement>(null);
+  const QueNoRef = useRef<HTMLInputElement>(null);
+
   const [CashBreakDownModal, setCashBreakDownModal] = useState<boolean>(false);
   const [CloseTerminalModal, setCloseTerminalModal] = useState<boolean>(false);
   const [EditOrderModal, setEditOrderModal] = useState<boolean>(false);
@@ -749,6 +859,7 @@ const Restaurant: React.FC = () => {
 
 
   const [DebitCardPaymentModal, setDebitCardPaymentModal] = useState<boolean>(false);
+  const [CreditCardPaymentEntryModal, setCreditCardPaymentEntryModal] = useState<boolean>(false);
   const [CreditCardPaymentModal, setCreditCardPaymentModal] = useState<boolean>(false);
   const [ChargeToModal, setChargeToModal] = useState<boolean>(false);
   const [AddOrderModal, setAddOrderModal] = useState<boolean>(false);
@@ -766,6 +877,8 @@ const Restaurant: React.FC = () => {
 
   const [PrintReceiptModal,setPrintReceiptModal] = useState<boolean>(false);
 
+  const [OpenVireficationModal,setOpenVireficationModal] = useState<boolean>(false)
+
   const [refreshCart, setRefreshCart] = useState(false);
   const [SalesOrderListOpenModal, setSalesOrderListOpenModal] = useState<boolean>(false);
   const [products, setProducts] = useState<any>([]);
@@ -775,13 +888,39 @@ const Restaurant: React.FC = () => {
   // const siteCode = useSiteCode();
   const [loading, setLoading] = useState(true);
 
-
+  const [showTable, setshowTable] = useState(true);
   const [loadingPrint, setLoadingPrint] = useState(false);
   // Access user data values from the store
   interface TypeAndTableState {
     ordertTYpe: string;
     tableNo: string;
   }
+
+  const [isSelected,setisSelected] = useState<any>(null)
+
+  const TableNoModalRef = useRef<HTMLDivElement>(null)
+
+  //**********PAYMENT BUTTON REF********* */
+
+  const CashPaymentRef = useRef<HTMLDivElement>(null)
+  const CreditCardPaymentRef = useRef<HTMLDivElement>(null)
+  const EPSPaymentRef = useRef<HTMLDivElement>(null)
+  const MultiplePaymentRef = useRef<HTMLDivElement>(null)
+  const ChargePaymentRef = useRef<HTMLDivElement>(null)
+  const ClosePaymentRef = useRef<HTMLDivElement>(null)
+  
+    //**********ORDER TYPE REF********* */
+    const TakeOutRef = useRef<HTMLButtonElement>(null)
+    const DineInRef = useRef<HTMLButtonElement>(null)
+
+
+    //**********TYPE OF TRANSACTION REF********* */
+    const AddOrderRef = useRef<HTMLButtonElement>(null)
+    const SettleOrderRef = useRef<HTMLButtonElement>(null)
+    const TransferTableRef = useRef<HTMLButtonElement>(null)
+    const CloseSelectTransTypeRef = useRef<HTMLButtonElement>(null)
+
+
   
   // Initialize the state with empty strings for ordertTYpe and tableNo
   const [TypeAndTable, setTypeAndTable] = useState<TypeAndTableState>({ ordertTYpe: '', tableNo: '' });
@@ -792,16 +931,28 @@ const Restaurant: React.FC = () => {
 
   const [showIframe, setShowIframe] = useState<boolean>(false);
   const SideCode = localStorage.getItem('SiteCode');
+  const userRank = localStorage.getItem('UserRank');
 
+  
 
   interface TableItem {
     table_count: number;
     Paid: string;
     // Define other properties as needed
   }
+
+
+  
+  interface QueItem {
+    q_no: string;
+    Paid: string;
+    // Define other properties as needed
+  }
+  
   
   // Initialize the state variable TableList with an empty array of TableItem type
   const [TableList, setTableList] = useState<TableItem[]>([]);
+  const [QueList, setQueList] = useState<QueItem[]>([]);
 
 
 
@@ -818,11 +969,19 @@ const Restaurant: React.FC = () => {
 
   const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(null);
   const [Price, setPrice] = useState<number>(0);
+
  const selectedProductData = (data:any) => {
   setAddOrderModal(true)
       setSelectedProduct(data)
       setPrice(data.product.reg_price);
       setQuantity(1);
+  if (data.index == localStorage.getItem('index')){
+    setisSelected(-1)
+  }else{
+    localStorage.setItem('index',data.index ) 
+  }
+   
+
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
@@ -862,6 +1021,30 @@ const Restaurant: React.FC = () => {
   
   const addtocarts = () => {
     if (selectedProduct !== null) {
+
+    let dataExist:boolean = false
+    let index : number = 0
+      for (let i = 0; i < cartItems.length; i++) {
+        if (cartItems[i].barcode ===  selectedProduct.product.bar_code || cartItems[i].data ===  selectedProduct.product.bar_code) {
+            // Item found, do something with it
+            dataExist =true
+            index = i
+            console.log("Item found:", cartItems[i]);
+            break; // You might want to break out of the loop if you only need to find the first occurrence
+        }
+    }
+
+    if (dataExist){
+
+
+      const updatedItems = [...cartItems];
+
+      updatedItems[index].quantity = updatedItems[index].quantity + quantity ;
+      updatedItems[index].totalAmount = ((updatedItems[index].quantity + quantity) * Price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      setCartItems(updatedItems);
+
+
+    }else {
       const productToAdd = {
         quantity: quantity,
         description: selectedProduct.product.long_desc,
@@ -871,14 +1054,51 @@ const Restaurant: React.FC = () => {
       };
   
       addToCart(productToAdd);
+    }
+
       setAddOrderModal(false);
-    } else {
+
+      setisSelected(localStorage.getItem('index'))
+    }
+    
+    else {
       // Handle the case where selectedProduct is null (optional)
       // For example, you could show an error message or perform alternative logic
       console.error("selectedProduct is null");
     }
     
     };
+
+  const HandleAddtocart = (event:any) => {
+    event.preventDefault();
+    if (event.key =='Enter'){
+      addtocarts();
+    }
+
+    if (event.key =='ArrowUp'){
+      addQuantity();
+    }
+    if (event.key =='ArrowDown'){
+      MinusQuantity();
+    }
+
+  }
+
+
+  const HandleUpdatetocart = (event:any) => {
+    event.preventDefault();
+    if (event.key =='Enter'){
+      onUpdateToCart();
+    }
+
+    if (event.key =='ArrowUp'){
+      addQuantity();
+    }
+    if (event.key =='ArrowDown'){
+      MinusQuantity();
+    }
+
+  }
 
 
     interface selecteditemData {
@@ -925,7 +1145,15 @@ const Restaurant: React.FC = () => {
     const EditOrderList = (data:any) => {
       setSelectedItemIndex(data.index)
       setSelectedItemIndexData(data)
+      setQuantity(data.selectedItem.quantity)
+      setPrice(data.selectedItem.price)
+      // calculateTotal()
       setEditOrderModal(true)
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 50);
+   
+      
     }
 
     const onClose = () => {
@@ -952,6 +1180,9 @@ const Restaurant: React.FC = () => {
   const CloseLogout = () =>{
     setCloseTerminalModal(false)
     setOrderTypeModal(true)
+    setTimeout(() => {
+      DineInRef.current?.focus()
+    }, 50);
   }
 
     const logoutClick = async () => {
@@ -1021,6 +1252,9 @@ const Restaurant: React.FC = () => {
     const CloseCashBreakDownModal = () => {
       setCashBreakDownModal(false)
       setOrderTypeModal(true)
+      setTimeout(() => {
+        DineInRef.current?.focus()
+      }, 50);
     }
 
     /// ************************* END *************************************** //
@@ -1062,6 +1296,10 @@ const CashBreakDownDataList = async (data:any) => {
       if (OrderType == 'TAKE OUT'){
         setOrderType('DINE IN')
         setTableNoModal(true)
+        setTimeout(() => {
+          TableNoRef.current?.focus();
+          TableNoRef.current?.select();
+        }, 50);
         setDineIn(true)
       }
     }
@@ -1082,34 +1320,70 @@ const CashBreakDownDataList = async (data:any) => {
 
 const OpenTableNoModal = () => {
 setTableNoModal(true)
+setTimeout(() => {
+  TableNoRef.current?.focus();
+  TableNoRef.current?.select();
+}, 50);
 }
 
     const handleDineIn = () => {
       setOrderTypeModal(false)
       setOrderType('DINE IN')
       setTableNoModal(true);
+      setTimeout(() => {
+        TableNoRef.current?.focus();
+        TableNoRef.current?.select();
+      }, 50);
       setDineIn(true)
     };
   
     const handleTakeOut = () => {
+      setTableNo('')
+      setQueNo('')
       setOrderTypeModal(false)
       setOrderType('TAKE OUT')
       setDineIn(false)
+      setisSelected(0)
     };
 
     const CloseTableNo = () => {
       setOrderTypeModal(true)
       setOrderType('')
       setTableNoModal(false);
+
+      setTimeout(() => {
+        DineInRef.current?.focus()
+      }, 50);
     }
 
     const OtherCommand = () => {
       setOtherCommandOpenModal(true)
     }
 
+
+const PaymentClickControlS = () => {
+   
+    
+    setPaymentOpenModal(true)
+    setTimeout(() => {
+      if (CashPaymentRef.current){
+        CashPaymentRef.current?.focus();
+        CashPaymentRef.current.style.backgroundColor = 'blue';
+        setisFocus(0)
+      }
+    }, 50);
+}
+
    const PaymentClick = () => {
     if (parseFloat(formattedTotalDue )!== 0){
       setPaymentOpenModal(true)
+      setTimeout(() => {
+        if (CashPaymentRef.current){
+          CashPaymentRef.current?.focus();
+          CashPaymentRef.current.style.backgroundColor = 'blue';
+          setisFocus(0)
+        }
+      }, 50);
     }
 
    }
@@ -1126,6 +1400,7 @@ setTableNoModal(true)
 
    const CloseCustomerDineInModal = () => {
     setCustomerDineInModal(false)
+    setisSelected(0)
    }
 
    useEffect(() => {
@@ -1158,7 +1433,7 @@ setTableNoModal(true)
 
     const CashierID = localStorage.getItem('UserID');
     const TerminalNo = localStorage.getItem('TerminalNo');
-    // const newTab = window.open('/Receipt', '_blank');
+   
     try {
       const response = await axios.post(`${BASE_URL}/api/add-sales-order/`,{data:cartItems,data2:dictionary,TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo});
       if (response.status === 200) {
@@ -1187,12 +1462,12 @@ setTableNoModal(true)
 
   };
 
-//// *************   END ***********************//
 
-  ///************ CASH PAYMENT ENTRY*************** */
+//************ CASH PAYMENT ENTRY*************** */
 const CashPayment = () => {
   setPaymentOpenModal(false)
   setCashPaymentEntryModal(true)
+  setPaymentType('CASH')
 
 }
 
@@ -1202,7 +1477,7 @@ const SaveCashPayment = async (data: { amounttendered: React.SetStateAction<numb
   setChangeAmount(data.change);
   setCustomeryPaymentModal(true)
 };
-////***************** END ****************/
+
 
 
 
@@ -1253,24 +1528,106 @@ setLoadingPrint(true)
 
   
     try {
-      const response = await axios.post(`${BASE_URL}/api/save-sales-order-take-out/`,{data:cartItems,AmountTendered:AmountTendered,TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo});
+      const response = await axios.post(`${BASE_URL}/api/save-sales-order-payment/`,{data:cartItems,AmountTendered:AmountTendered,TableNo:TableNo,CashierID:CashierID,
+                                                                                      TerminalNo:TerminalNo,DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo});
       if (response.status === 200) {
 
-        const response1 = await axios.post(`${BASE_URL}/api/save-cash-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
-          TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType});
-        if (response1.status === 200) {
-    
-          setLoadingPrint(false)
-          PrintCashPaymentReceipt(response1.data);
+        if (PaymentType === 'CASH') {
+          const response1 = await axios.post(`${BASE_URL}/api/save-cash-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
+                                                                                    TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,
+                                                                                    AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,
+                                                                                    DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo});
+          if (response1.status === 200) {
+      
+            setLoadingPrint(false)
+            PrintCashPaymentReceipt(response1.data);
+          } else {
+            // Handle other response statuses if needed
+            console.log('Request failed with status:', response.status);
+          }
+  
         } else {
           // Handle other response statuses if needed
           console.log('Request failed with status:', response.status);
         }
 
-      } else {
-        // Handle other response statuses if needed
-        console.log('Request failed with status:', response.status);
-      }
+        if (PaymentType === 'CREDIT CARD') {
+          const CreditCard:any = localStorage.getItem('CreditCardPayment')
+          const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
+            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,CreditCard:CreditCard});
+          if (response1.status === 200) {
+            localStorage.removeItem('CreditCardPayment')
+            setLoadingPrint(false)
+            PrintCashPaymentReceipt(response1.data);
+          } else {
+            // Handle other response statuses if needed
+            console.log('Request failed with status:', response.status);
+          }
+  
+        } else {
+          // Handle other response statuses if needed
+          console.log('Request failed with status:', response.status);
+        }
+
+        
+        if (PaymentType === 'DEBIT CARD') {
+          const CreditCard:any = localStorage.getItem('CreditCardPayment')
+          const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
+            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,CreditCard:CreditCard});
+          if (response1.status === 200) {
+            localStorage.removeItem('CreditCardPayment')
+            setLoadingPrint(false)
+            PrintCashPaymentReceipt(response1.data);
+          } else {
+            // Handle other response statuses if needed
+            console.log('Request failed with status:', response.status);
+          }
+  
+        } else {
+          // Handle other response statuses if needed
+          console.log('Request failed with status:', response.status);
+        }
+
+        
+        if (PaymentType === 'CHARGE') {
+          const CreditCard:any = localStorage.getItem('CreditCardPayment')
+          const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
+            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,CreditCard:CreditCard});
+          if (response1.status === 200) {
+            localStorage.removeItem('CreditCardPayment')
+            setLoadingPrint(false)
+            PrintCashPaymentReceipt(response1.data);
+          } else {
+            // Handle other response statuses if needed
+            console.log('Request failed with status:', response.status);
+          }
+  
+        } else {
+          // Handle other response statuses if needed
+          console.log('Request failed with status:', response.status);
+        }
+
+
+        
+        if (PaymentType === 'MULTIPLE') {
+          const CreditCard:any = localStorage.getItem('CreditCardPayment')
+          const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
+            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,CreditCard:CreditCard});
+          if (response1.status === 200) {
+            localStorage.removeItem('CreditCardPayment')
+            setLoadingPrint(false)
+            PrintCashPaymentReceipt(response1.data);
+          } else {
+            // Handle other response statuses if needed
+            console.log('Request failed with status:', response.status);
+          }
+  
+        } else {
+          // Handle other response statuses if needed
+          console.log('Request failed with status:', response.status);
+        }
+        }
+
   } catch (error :any) {
       if (error.response) {
           // The request was made and the server responded with a status code
@@ -1313,9 +1670,58 @@ setLoadingPrint(true)
 }
 
 
-const CloseModal = () => {
+const CloseCustomerPaymentModal = async () => {
+
+  swalWithBootstrapButtons.fire({
+    title: 'Confirmation',
+    text: "Do you want Abort this Transaction?",
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No',
+    reverseButtons: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      setCustomeryPaymentModal(false)
+      setOrderTypeModal(true)
+      setTimeout(() => {
+        DineInRef.current?.focus()
+      }, 50);
+      setDiscountData('')
+      setCartItems('')
+      setTableNo('')
+    }})
+
+
+
+
+
+}
+
+const CloseModal = async () => {
   if (PaymentOpenModal) {
-    setPaymentOpenModal(false);
+
+    swalWithBootstrapButtons.fire({
+      title: 'Confirmation',
+      text: "Do you want Abort Payment Transaction?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      reverseButtons: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setPaymentOpenModal(false);
+        setDiscountData('')
+        setCartItems('')
+        setTableNo('')
+      setOrderTypeModal(true)
+      setTimeout(() => {
+        DineInRef.current?.focus()
+      }, 50);
+      }})
+  
+
   }
 
   if (OtherCommandOpenModal) {
@@ -1336,21 +1742,39 @@ const CloseSalesOrderListOpenModal = () => {
   setSalesOrderListOpenModal(false)
   setTableNoModal(true)
   setTableNo('')
+  setTimeout(() => {
+    TableNoRef.current?.focus();
+    TableNoRef.current?.select();
+  }, 50);
 };
 
-const settlebillData = async (data: { tableno: React.SetStateAction<string>; }) => {
+const settlebillData = async (data:any) => {
   // Implement your logic here for settlebillData
-  console.log('Settle bill data:', data);
+  console.log('Settle bill data:', data.DiscountData);
   setSalesOrderListOpenModal(false)
   setTableNoModal(false)
   setDineIn(false)
   setTableNo(data.tableno)
   setPaymentOpenModal(true)
+  setDiscountData(data.DiscountData)
+  setDiscountType(data.DiscountType)
+
+  setTimeout(() => {
+    if (CashPaymentRef.current){
+      CashPaymentRef.current?.focus();
+      CashPaymentRef.current.style.backgroundColor = 'blue';
+      setisFocus(0)
+
+    }
+
+  }, 50);
+
 
   try {
     const response = await axios.get(`${BASE_URL}/api/sales-order-listing/`, {
         params: {
           tableno: data.tableno,
+          queno:QueNo,
         }
     });
 
@@ -1373,27 +1797,77 @@ const OpenChargeModal = () => {
 
 setPaymentOpenModal(false)
 setChargeToModal(true)
+
+setPaymentType('CHARGE')
 }
 
 const CloseChargeModal = () => {
   setChargeToModal(false)
-  setPaymentOpenModal(true)
+  setTimeout(() => {
+    if (CashPaymentRef.current){
+      CashPaymentRef.current?.focus();
+      CashPaymentRef.current.style.backgroundColor = 'blue';
+      setisFocus(0)
+
+    }
+
+  }, 50);
 }
 
-////***************** END ****************/
+
+
+
 
 //// ************************** CREDIT CARD PAYMENT TYPE TRANSACTION ******************
 
 const OpenCreditCardPayment = () => {
   setCreditCardPaymentModal(true)
   setPaymentOpenModal(false)
+  setPaymentType('CREDIT CARD')
 }
 
 const CloseCreditCardPayment = () => {
   setCreditCardPaymentModal(false)
   setPaymentOpenModal(true)
+  setTimeout(() => {
+    if (CashPaymentRef.current){
+      CashPaymentRef.current?.focus();
+      CashPaymentRef.current.style.backgroundColor = 'blue';
+      setisFocus(0)
+
+    }
+
+  }, 50);
 }
-////***************** END ****************/
+
+const CreditCardPaymentOk = (data:any) => {
+  localStorage.setItem('CreditCardPayment',data)
+  setCreditCardPaymentModal(false)
+  setCreditCardPaymentEntryModal(true)
+}
+
+const CloseCreditCardPaymentEntryModal = () => {
+  setCreditCardPaymentEntryModal(false)
+  setPaymentOpenModal(true)
+  setTimeout(() => {
+    if (CashPaymentRef.current){
+      CashPaymentRef.current?.focus();
+      CashPaymentRef.current.style.backgroundColor = 'blue';
+      setisFocus(0)
+
+    }
+
+  }, 50);
+}
+
+
+
+const SaveCreditCardPayment = async (data: { amounttendered: number; change:number; }) => {
+  setCreditCardPaymentEntryModal(false)
+  setAmountTendered(data.amounttendered);
+  setChangeAmount(0);
+  setCustomeryPaymentModal(true)
+};
 
 
 
@@ -1402,16 +1876,30 @@ const CloseCreditCardPayment = () => {
 const OpenDebitCardPayment = () => {
   setDebitCardPaymentModal(true)
   setPaymentOpenModal(false)
+  setPaymentType('DEBIT CARD')
 }
 
 const CloseDebitCardPayment = () => {
   setDebitCardPaymentModal(false)
   setPaymentOpenModal(true)
+  setTimeout(() => {
+    if (CashPaymentRef.current){
+      CashPaymentRef.current?.focus();
+      CashPaymentRef.current.style.backgroundColor = 'blue';
+      setisFocus(0)
+
+    }
+
+  }, 50);
 }
-////***************** END ****************/
+
+
+
+
+
   const AddOrdertable = () => 
   {
-
+    setisSelected(0)
     setOrderType('ADD ORDER')
     setSelectTypeOfTransaction(false)
     setTableNoModal(false)
@@ -1436,9 +1924,34 @@ const CloseDebitCardPayment = () => {
    
 const SelectTable = (index:any) => {
   setTableNo(index.table_count);
+
+  setQueNo('')
   if (index.Paid === 'N') {
     setSelectTypeOfTransaction(true)
+    setTimeout(() => {
+      AddOrderRef.current?.focus();
+      
+    }, 50);
   } else {
+    // Handle other cases when index.Paid is not 'N'
+    setisSelected(0)
+    setTableNoModal(false);
+    // Additional logic or function calls related to paid table
+  }
+};
+
+const SelectQue = (index:any) => {
+  // setisSelected(0)
+  setQueNo(index.q_no);
+  setTableNo('')
+  if (index.Paid === 'N') {
+    setSelectTypeOfTransaction(true)
+    setTimeout(() => {
+      AddOrderRef.current?.focus();
+      
+    }, 50);
+  } else {
+    setisSelected(0)
     // Handle other cases when index.Paid is not 'N'
     setTableNoModal(false);
     // Additional logic or function calls related to paid table
@@ -1446,26 +1959,67 @@ const SelectTable = (index:any) => {
 };
 
 const SelectTableOk = (searchItemindex: string) => {
-if (parseFloat(searchItemindex) <= TableList.length) {
-  const index = TableList.findIndex(item => item.table_count === parseFloat(searchItemindex) && item.Paid === 'N');
-console.log(index)
-  if (index !== -1) {
-    setSelectTypeOfTransaction(true)
+
+  if (showTable) {
+    if (parseFloat(searchItemindex) <= TableList.length) {
+      const index = TableList.findIndex(item => item.table_count === parseFloat(searchItemindex) && item.Paid === 'N');
+        console.log(index)
+      if (index !== -1) {
+        setSelectTypeOfTransaction(true)
+        setTimeout(() => {
+          AddOrderRef.current?.focus();
+          
+        }, 50);
+      } else {
+        setTableNoModal(false);
+        setisSelected(0)
+      }
+    }
+    
+    else {
+      Swal.fire({
+        title: 'Error',
+        text: `Selected table is Not Existed Please Select Table from 1 to ${TableList.length}`,
+        icon: 'info',
+        confirmButtonText: 'OK'
+      });
+    
+      setTableNo('')
+    }
   } else {
-    setTableNoModal(false);
+ 
+      const index = QueList.findIndex(item => String(parseInt(item.q_no)) === QueNo);
+        console.log(index)
+      if (index !== -1) {
+        setSelectTypeOfTransaction(true)
+        setTimeout(() => {
+          AddOrderRef.current?.focus();
+          
+        }, 50);
+      } else {
+        Swal.fire({
+          title: 'Error',
+          text: `Selected Que is Not Existed Please Select Another Que No`,
+          icon: 'info',
+          confirmButtonText: 'OK'
+        });
+      
+        setQueNo('')
+      }
+    
+    
+    // else {
+    //   Swal.fire({
+    //     title: 'Error',
+    //     text: `Selected Que is Not Existed Please Select Another Que No`,
+    //     icon: 'info',
+    //     confirmButtonText: 'OK'
+    //   });
+    
+    //   setTableNo('')
+    // }
   }
-}
 
-else {
-  Swal.fire({
-    title: 'Error',
-    text: `Selected table is Not Existed Please Select Table from 1 to ${TableList.length}`,
-    icon: 'info',
-    confirmButtonText: 'OK'
-  });
-
-  setTableNo('')
-}
 
 };
 
@@ -1492,6 +2046,29 @@ else {
         });
  };
 
+
+ const fecthQueList = () => {
+  if (TableList.length != 0){
+  setLoading(false)
+  }
+      const apiUrl = `${BASE_URL}/api/que-list/?site_code=${SideCode}`; // Replace with your actual site code
+      fetch(apiUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          setQueList(data.que);
+          setLoading(false) // Assuming the response data has a 'tables' key
+        })
+        .catch(error => {
+          console.error('There was a problem fetching the data:', error);
+        });
+ };
+
+
     const addToCart = (item: any) => {
         // Create a new array by spreading the existing cartItems and adding the new item to it
         const updatedCartItems = [...cartItems, item];
@@ -1509,9 +2086,16 @@ else {
           if (item.totalAmount === undefined) {
             const totalAmount = item.quantity * item.price
             amountWithoutCommas = totalAmount; // Remove commas from the amount
+         } else {
+          const totalAmount = item.quantity * item.price
+          amountWithoutCommas = totalAmount; // Remove commas from the amount
          }
         
           totalDue += parseFloat(amountWithoutCommas);
+        }
+
+        if (DiscountData.length !== 0) {
+          totalDue = totalDue - (parseFloat(DiscountData.SLess20SCDiscount) + parseFloat(DiscountData.SLessVat12))
         }
         return totalDue.toFixed(2);
       };
@@ -1582,29 +2166,81 @@ else {
     }, []);
 
 
-    useEffect(() => {
-      const handleKeyPress = (e: { keyCode: number; preventDefault: () => void; ctrlKey: any; }) => {
-        if (e.keyCode === 116) {
-          e.preventDefault(); // Prevent the default browser refresh action for F5 (key code 116)
 
-        }
+  //************* PREVENT KEYPRESS***************** */
 
-        if (e.ctrlKey && e.keyCode === 78) {
-          e.preventDefault(); // Prevent the default browser action for Control + N (key code 78)
-      }
-        // if (e.keyCode === 27) {
-         
-        // }
+    // useEffect(() => {
+    //   const handleKeyPress = (e: { keyCode: number; preventDefault: () => void; ctrlKey: any; }) => {
+    //     if (e.keyCode === 116) {
+    //       e.preventDefault(); // Prevent the default browser refresh action for F5 (key code 116)
+
+    //     }
+
+    //     if (e.ctrlKey && e.keyCode === 78) {
+    //       e.preventDefault(); // Prevent the default browser action for Control + N (key code 78)
+    //   }
+    //   if (e.ctrlKey && e.keyCode === 83){ //control s
+    //     e.preventDefault(); 
+
+    //     if (DineIn){
+    //       SaveOrderClick()
+    //     }else{
+    //       PaymentClick()
+    //     }
+    //   }
         
+    //   };
+  
+    //   window.addEventListener('keydown', handleKeyPress);
+  
+    //   return () => {
+    //     window.removeEventListener('keydown', handleKeyPress);
+    //   };
+    // }, []);
+
+
+    const [isKey, setIsKey] = useState<boolean>(false);
+
+    useEffect(() => {
+      setTotalDue(calculateTotalDue);
+    }, [isKey, calculateTotalDue]); // Include calculateTotalDue in the dependency array if it's used inside calculateTotalDue
+    
+    useEffect(() => {
+      const handleKeyPress = (e: KeyboardEvent) => {
+
+
+        if (e.key === 'F5') {
+          e.preventDefault(); // Prevent the default browser refresh action for F5
+        }
+        if (e.ctrlKey && e.key === 'n') {
+          e.preventDefault(); // Prevent the default browser action for Control + N
+        }
+        if (e.ctrlKey && e.key === 's') { // Control + S
+          e.preventDefault();
+                  if (CustomerDineInModal || SalesOrderListOpenModal || CashPaymentEntryModal || CustomeryPaymentModal || ReprintTransactionModal || CashBreakDownModal || ChargeToModal || CreditCardPaymentModal || CreditCardPaymentEntryModal || DebitCardPaymentModal || OpenVireficationModal) {
+                return;
+                  }
+          if (DineIn) {
+            SaveOrderClick();
+          } else {
+            setIsKey(true);
+    
+            if (parseFloat(TotalDue) !== 0) {
+              PaymentClickControlS();
+            }
+    
+            setIsKey(false);
+          }
+        }
       };
-  
+    
       window.addEventListener('keydown', handleKeyPress);
-  
+    
       return () => {
         window.removeEventListener('keydown', handleKeyPress);
       };
-    }, []);
-
+    }, [DineIn, TotalDue, SaveOrderClick, PaymentClickControlS]);
+  
 //// FETCH DINE IN DATA EVERY 10 SECONDS ////
   
     useEffect(() => {
@@ -1614,6 +2250,7 @@ else {
       // Set up a timer to fetch data every 20 seconds
       const interval = setInterval(() => {
         fecthTableList();
+        fecthQueList();
       }, 5000);
   
       // Clear the interval when the component unmounts
@@ -1643,59 +2280,121 @@ else {
     
 
 const handleBackspace = () => {
-  if (TableNo.length === 0) return;
 
-  setTableNo((TableNo) => TableNo.slice(0, -1))
+  if (showTable) {
+    if (TableNo.length === 0) return;
+    setTableNo((TableNo) => TableNo.slice(0, -1))
+  }else {
+    if (QueNo.length === 0) return;
+    setQueNo((QueNo) => QueNo.slice(0, -1))
+  }
+
 };
 const clearInput = () => {
   setTableNo('');
+  setQueNo('')
 };
 
+
+
 const handleInput = (value: string | number) => {
-  setTableNo((prevValue:any) => {
+  if (showTable){
+    setTableNo((prevValue:any) => {
 
-    if (value === '0' && parseFloat(prevValue) === 0) {
-      return value;
-    } else {
-
-
-      // Check if the value is a decimal point
-      if (value === '.') {
-          const res = parseFloat(prevValue) + value;
-          return res;
-      }
-      const stringValue = prevValue.toString();
-        // Check if the previous value already contains a decimal point
-        if (stringValue.includes('.')) {
-          const res = prevValue + value;
-          return res;
-        }
+      if (value === '0' && parseFloat(prevValue) === 0) {
+        return value;
+      } else {
   
-
-      // Perform addition based on the input value
-
-      if (prevValue === 0) {
-        const res =  value;
+  
+        // Check if the value is a decimal point
+        if (value === '.') {
+            const res = parseFloat(prevValue) + value;
+            return res;
+        }
+        const stringValue = prevValue.toString();
+          // Check if the previous value already contains a decimal point
+          if (stringValue.includes('.')) {
+            const res = prevValue + value;
+            return res;
+          }
+    
+  
+        // Perform addition based on the input value
+  
+        if (prevValue === 0) {
+          const res =  value;
+          return res.toString();
+        }
+        const res = prevValue + value;
         return res.toString();
       }
-      const res = prevValue + value;
-      return res.toString();
-    }
-  });
-
-  if (parseFloat(TableNo + value) > TableList.length) {
-    Swal.fire({
-      title: 'Error',
-      text: `Selected table is Not Existed Please Select Table from 1 to ${TableList.length}`,
-      icon: 'info',
-      confirmButtonText: 'OK'
     });
   
-    setTableNo('')
+    if (parseFloat(TableNo + value) > TableList.length) {
+      Swal.fire({
+        title: 'Error',
+        text: `Selected table is Not Existed Please Select Table from 1 to ${TableList.length}`,
+        icon: 'info',
+        confirmButtonText: 'OK'
+      });
+    
+      setTableNo('')
+    }
+  
+  }else{
+    setQueNo((prevValue:any) => {
+
+      if (value === '0' && parseFloat(prevValue) === 0) {
+        return value;
+      } else {
+  
+  
+        // Check if the value is a decimal point
+        if (value === '.') {
+            const res = parseFloat(prevValue) + value;
+            return res;
+        }
+        const stringValue = prevValue.toString();
+          // Check if the previous value already contains a decimal point
+          if (stringValue.includes('.')) {
+            const res = prevValue + value;
+            return res;
+          }
+    
+  
+        // Perform addition based on the input value
+  
+        if (prevValue === 0) {
+          const res =  value;
+          return res.toString();
+        }
+        const res = prevValue + value;
+        return res.toString();
+      }
+    });
   }
 
   
 };
+
+
+
+const ChangeViewToQue = () => {
+  if (showTable) {
+    setshowTable(false)
+    setTimeout(() => {
+      QueNoRef.current?.focus();
+      QueNoRef.current?.select();
+    }, 50);
+  }
+  else {
+    setshowTable(true)
+    setTimeout(() => {
+      TableNoRef.current?.focus();
+      TableNoRef.current?.select();
+    }, 50);
+  }
+}
 
 const overlayStyle: React.CSSProperties  = {
   position: 'absolute',
@@ -1745,10 +2444,52 @@ useEffect(() => {
   localStorage.removeItem('cartData');
   setOrderType('')
   setOrderTypeModal(true)
+  setTimeout(() => {
+    DineInRef.current?.focus()
+  }, 50);
   setShowIframe(false)
   setCartItems([])
   setTableNo('')
 }, []);
+
+
+
+useEffect(() => {
+  if (showTable){
+    if (parseFloat(TableNo)> TableList.length || parseFloat(TableNo) == 0) {
+      Swal.fire({
+        title: 'Error',
+        text: `Selected table is Not Existed Please Select Table from 1 to ${TableList.length}`,
+        icon: 'info',
+        confirmButtonText: 'OK'
+      });
+    
+      setTableNo('')
+  
+      TableNoRef.current?.focus()
+      TableNoRef.current?.select()
+    }
+  }
+
+
+}, [TableNo]);
+
+
+//*************************VERIFICATION ****************************/
+const OpenVireficationEntry = () => {
+  setOpenVireficationModal(true)
+}
+
+const CloseVerification = () => {
+  setOpenVireficationModal(false)
+}
+
+const OKVerification = (data:any) => {
+  setOpenVireficationModal(false)
+  ReprintList()
+
+
+}
 
 
 
@@ -1931,8 +2672,13 @@ useEffect(() => {
 
           iframe.onload = () => {
             const currentDate = new Date();   
+
+
+// Specify the time zone you want, such as 'Asia/Kolkata'
+            const timeZone = 'Asia/Manila';
+
               // Format the date and time as needed
-             const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: 'UTC' });
+             const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone:timeZone });
             // Write the receipt content to the iframe document
             // const doc = iframe.contentDocument || iframe.contentWindow.document;
             const iframeWindow = iframe.contentWindow;
@@ -2037,6 +2783,9 @@ useEffect(() => {
               if (SOInfo.PaymentType ==='Sales Order'){
                 setOrderType('')
                 setOrderTypeModal(true)
+                setTimeout(() => {
+                  DineInRef.current?.focus()
+                }, 50);
                 setShowIframe(false)
                 iframe.style.display = 'none';
                 setCartItems([])
@@ -2072,7 +2821,7 @@ useEffect(() => {
     };
     
 
-//************ PRINT RECEIPT CASH PAYMENT*****************//
+//************ RE-PRINT RECEIPT CASH PAYMENT*****************//
 const RePrintCashPaymentReceipt = async (dataInfo:any) => {
   const generateReceiptIframe = (receiptContent: string, logoSrc: { logo: string; }) => {
 
@@ -2086,8 +2835,9 @@ if (iframe !== null) {
   }
 
   iframe.onload = () => {
-  const currentDate = new Date();   
-  const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: 'UTC' });
+  const currentDate = new Date(); 
+  const timeZone = 'Asia/Manila';  
+  const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: timeZone});
 
   const iframeWindow = iframe.contentWindow;
 
@@ -2331,6 +3081,9 @@ if (iframe !== null) {
     localStorage.removeItem('cartData');
     setOrderType('')
     setOrderTypeModal(true)
+    setTimeout(() => {
+      DineInRef.current?.focus()
+    }, 50);
     setShowIframe(false)
     iframe.style.display = 'none';
     setCartItems([])
@@ -2378,7 +3131,8 @@ if (iframe !== null) {
 
   iframe.onload = () => {
     const currentDate = new Date();   
-   const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: 'UTC' });
+    const timeZone = 'Asia/Manila';  
+   const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: timeZone });
     const iframeWindow = iframe.contentWindow;
 
     if (iframeWindow !== null) {
@@ -2440,10 +3194,32 @@ if (iframe !== null) {
             description = 'SERVICE CHARGES:'
             spaces = AlignmentSpace(description, data);
             receiptContent1 = `<div style="margin-top:-7px; padding: 0;">${description}${spaces}${data}</div>`;
-            receiptContent1 += '<div style="margin-top:-3px; padding: 0;">================================================</div>'
+            // receiptContent1 += '<div style="margin-top:-3px; padding: 0;"></div>'
            
-            doc.write('<pre>' + receiptContent1 + '</pre>');
+            // doc.write('<pre>' + receiptContent1 + '</pre>');
 
+            if (DiscountType === 'SC'){
+              description = `Less: 20% VAT on ${DiscountData.SVatSales}`;
+              data = DiscountData.SLessVat12 || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+
+              description = `Net of VAT:`;
+              data = DiscountData.SNetOfVat || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+              description = `Less: 20%`;
+              data = DiscountData.SLess20SCDiscount || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+              doc.write('<pre style="margin: 0; line-height: 1;">' + receiptContent1 + '</pre>');
+            }
+
+
+            doc.write('<pre style="margin: 0; line-height: 1;">================================================</pre>');
             description = 'TOTAL DUE:';
             data = formattedTotalDue || ''; 
             spaces = AlignmentSpace(description, data);
@@ -2459,7 +3235,7 @@ if (iframe !== null) {
             receiptContent1 = `<div>${description}${spaces}${data}</div>`;
 
             description = 'VAT Exempt:';
-            data = dataInfo.data.VatExcempt || ''; 
+            data = dataInfo.data.VatExempt || ''; 
             spaces = AlignmentSpace(description, data);
             receiptContent1 += `<div>${description}${spaces}${data}</div>`;
 
@@ -2605,10 +3381,15 @@ if (iframe !== null) {
 
     setOrderType('')
     setOrderTypeModal(true)
+    setTimeout(() => {
+      DineInRef.current?.focus()
+    }, 50);
     setShowIframe(false)
     iframe.style.display = 'none';
     setCartItems([])
     setTableNo('')
+    setDiscountData('')
+    setDiscountType('')
   }, 1000); 
     // Print the receipt
   
@@ -2946,6 +3727,9 @@ if (currentHours > 12) {
 
     setOrderType('')
     setOrderTypeModal(true)
+    setTimeout(() => {
+      DineInRef.current?.focus()
+    }, 50);
     setShowIframe(false)
     iframe.style.display = 'none';
     setCartItems([])
@@ -2960,14 +3744,158 @@ if (currentHours > 12) {
   const iframe = generateReceiptIframe({logo});
 }
 
-const closeCashPayment = () => {
-  setCashPaymentEntryModal(false)
-  setOrderTypeModal(true)
-  setCartItems('')
-  setTableNo('')
+const closeCashPayment = async () => {
+  swalWithBootstrapButtons.fire({
+    title: 'Confirmation',
+    text: "Do you want Abort Payment Transaction?",
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No',
+    reverseButtons: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      setCashPaymentEntryModal(false)
+      setOrderTypeModal(true)
+      setTimeout(() => {
+        DineInRef.current?.focus()
+      }, 50);
+      setCartItems('')
+      setTableNo('')
+      setDiscountData('')
+    }})
+
+}
+const [categoryHide,setcategoryHide] = useState<boolean>(true)
+
+const [isFocus,setisFocus] = useState<any>(0)
+
+
+const PaymentModalHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) => {
+  event.preventDefault();
+  if (event.key == 'ArrowRight' || event.key == 'ArrowDown') {
+      NextRef.current.focus();
+      NextRef.current.style.backgroundColor = 'blue';
+      CurrentRef.current.style.backgroundColor = 'white';
+      if (index == 5) {
+        setisFocus(0)
+      }else {
+        setisFocus(index + 1)
+      }
+   
+
+  }
+
+  if (event.key == 'ArrowLeft' || event.key == 'ArrowUp'){
+    BackRef.current.focus();
+    BackRef.current.style.backgroundColor = 'blue';
+    CurrentRef.current.style.backgroundColor = 'white';
+    setisFocus(index - 1)
+
 }
 
-const [categoryHide,setcategoryHide] = useState<boolean>(true)
+if (event.key == 'Enter'){
+   if (index == 0){
+      CashPayment();
+   }
+   if (index == 1){
+    OpenCreditCardPayment()
+   }
+   if (index == 2){
+  OpenDebitCardPayment()
+   }
+   if (index == 3){
+    OpenDebitCardPayment()
+   }
+   if (index == 4){
+    OpenChargeModal()
+   }
+   if (index == 5){
+    CloseModal()
+   }
+}
+
+}
+const OrderTypeHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) => {
+  event.preventDefault();
+  if (event.key == 'ArrowRight' || event.key == 'ArrowDown') {
+      NextRef.current.focus();
+      NextRef.current.style.backgroundColor = 'blue';
+  
+      if (index == 1) {
+        setisFocus(0)
+      }else {
+        setisFocus(index + 1)
+      }
+   
+
+  }
+
+  if (event.key == 'ArrowLeft' || event.key == 'ArrowUp'){
+    BackRef.current.focus();
+    BackRef.current.style.backgroundColor = 'blue';
+
+    setisFocus(index - 1)
+
+}
+
+if (event.key == 'Enter'){
+   if (index == 0){
+      handleDineIn();
+   }
+   if (index == 1){
+    handleTakeOut()
+   }
+}
+
+}
+
+
+const TableNoHandleKeydown = (event:any) => {
+  if (event.key == 'Enter'){
+    SelectTableOk(TableNo)
+  }
+}
+
+const SelectTransTypeHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) => {
+  event.preventDefault();
+  if (event.key == 'ArrowRight' || event.key == 'ArrowDown') {
+      NextRef.current.focus();
+      NextRef.current.style.backgroundColor = 'blue';
+  
+      if (index == 1) {
+        setisFocus(0)
+      }else {
+        setisFocus(index + 1)
+      }
+   
+
+  }
+
+  if (event.key == 'ArrowLeft' || event.key == 'ArrowUp'){
+    BackRef.current.focus();
+    BackRef.current.style.backgroundColor = 'blue';
+
+    setisFocus(index - 1)
+
+}
+
+if (event.key == 'Enter'){
+   if (index == 0){
+      AddOrdertable();
+   }
+   if (index == 1){
+    SettleOrdertable()
+   }
+   if (index == 2){
+    TransferOrdertable()
+   }
+   if (index == 3){
+    CloseModal()
+   }
+}
+
+}
 
 
   return (
@@ -3010,7 +3938,7 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
       <div className="Category">
           <Typography      
             sx={{
-            fontSize: { xs: '1rem', sm: '0.9rem', md: '0.9rem', lg: '1.1rem', xl: '1.2rem' },
+            fontSize: { xs: '1.2rem', sm: '0.9rem', md: '0.9rem', lg: '1.1rem', xl: '1.2rem' },
             color: '#ffffff',backgroundColor: '#007bff',
             padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
             borderRadius: '5px',margin: '10px',
@@ -3035,9 +3963,6 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
                          )}
                      </div>
             }
-  
-
-
             {categoryHide &&  <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} />}
              
             </div>
@@ -3051,18 +3976,18 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
       <div className="Product">
           <Typography      
         sx={{
-          fontSize: { xs: '1rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
+          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
         color: '#ffffff',backgroundColor: '#007bff',
         padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
         borderRadius: '5px',margin: '10px',
         fontWeight: 'bold', textAlign: 'center',}}>
-      Product Section
+         Product Section
           </Typography>
          
 
   
           <div className='Product-container' style={{ overflowY: 'auto', height: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
-            <ProductGrid products={products} addtocart={addToCart} selectedProductData={selectedProductData} />
+            <ProductGrid products={products} addtocart={addToCart} selectedProductData={selectedProductData} isSelected ={isSelected}  />
            
           </div>
         </div>
@@ -3082,13 +4007,17 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
               padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
               borderRadius: '5px',margin: '10px',
               fontWeight: 'bold', textAlign: 'center',}}>
-                  {OrderType === 'TAKE OUT' ? 'TAKE OUT' : `${OrderType} Table No. ${TableNo}`}
+                {QueNo !== '' ? 
+                `TAKE OUT QUE NO. ${parseInt(QueNo)}`
+                :
+                (OrderType === 'TAKE OUT' ? 'TAKE OUT' : `${OrderType} Table No. ${TableNo}`)
+                }
           </Typography>
          
-          <Transaction cartitems={cartItems} setcartitems={setCartItems} totaldue={calculateTotalDue()} EditOrderList={EditOrderList} />
+          <Transaction cartitems={cartItems} setcartitems={setCartItems} totaldue={calculateTotalDue()} EditOrderList={EditOrderList} DiscountData ={DiscountData}/>
 
           <Typography sx={{
-           fontSize: { xs: '0.5rem', sm: '0.7rem', md: '.8rem', lg: '.9rem', xl: '1.2rem' },
+           fontSize: { xs: '0.8rem', sm: '0.8rem', md: '.8rem', lg: '.9rem', xl: '1.2rem' },
            fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue', color: 'blue',
             padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)', borderRadius: '5px'
           }}>Total Amount Due: Php {formattedTotalDue}</Typography>
@@ -3098,7 +4027,7 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
               <div style={{ display: 'flex', flexDirection:'row',height:'50%' }}>
 
 
-                  {DineIn ? (
+                  {DineIn || userRank == 'Salesman' ? (
 
                       <Button
                         style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
@@ -3120,12 +4049,12 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
                         />
                       </Button>
                  
-                
+
+          
 
                   ) : (
 
-
-                  
+                    (isDesktop ? 
                       <Button
                         style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
                           display: 'flex',flexDirection: 'column',alignItems: 'center',
@@ -3136,18 +4065,32 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
                         <Typography
                           variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
                           fontSize: { xs: '1rem', sm: '1rem', md: '.6rem', lg: '.7rem', xl: '.8rem' },
-                       fontWeight: 'bold', color: 'blue',textAlign: 'center',
+                        fontWeight: 'bold', color: 'blue',textAlign: 'center',
                           }}> Payment
                         </Typography>
-                        <img src={Selectpayment} alt="Sales Order"
-                          style={{
-                            maxWidth: '80%', maxHeight: '50%',marginBottom: '10px', flex: '0 0 auto',
-                          }}
-                        />
+                        <img src={Selectpayment} alt="Sales Order" style={{
+                            maxWidth: '80%', maxHeight: '50%',marginBottom: '10px', flex: '0 0 auto', }} />
                       </Button>
+                      :
+                      <Button
+                      style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
+                        display: 'flex',flexDirection: 'column',alignItems: 'center',
+                        borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
+                        borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
+                      onClick={SaveOrderClick}
+                      fullWidth >
+                      <Typography
+                        variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
+                        fontSize: { xs: '1rem', sm: '1rem', md: '.6rem', lg: '.7rem', xl: '.8rem' },
+                      fontWeight: 'bold', color: 'blue',textAlign: 'center',
+                        }}> Save Take Out
+                      </Typography>
+                      <img src={Selectpayment} alt="Sales Order" style={{
+                          maxWidth: '80%', maxHeight: '50%',marginBottom: '10px', flex: '0 0 auto', }} />
+                    </Button>
+                      )
              
-
-                  )}
+                )}
          
                         <Button
                           style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
@@ -3214,13 +4157,13 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
                     </Button>
              
 
-           
+           { userRank == 'Cashier' && (
                     <Button
                       style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
                         display: 'flex',flexDirection: 'column',alignItems: 'center',
                         borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
                         borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
-                      onClick={ReprintList}
+                      onClick={OpenVireficationEntry}
                       fullWidth >
                       <Typography
                         variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
@@ -3234,7 +4177,7 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
                         }}
                       />
                     </Button>
-              
+              )}
                     <Button
                       style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
                         display: 'flex',flexDirection: 'column',alignItems: 'center',
@@ -3263,19 +4206,20 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
       
        
 {/* </div> */}
-{CustomerDineInModal && <CustomerDineIn handleclose={CloseCustomerDineInModal} typeandtable={TypeAndTable}  handlemodaldata={CutomerInfoEntry} />}
-{SalesOrderListOpenModal && <ListOfDineInSalesOrder handleclose={CloseSalesOrderListOpenModal}  settlebillData = {settlebillData} tableno={TableNo} />}
+{CustomerDineInModal && <CustomerDineIn handleclose={CloseCustomerDineInModal} typeandtable={TypeAndTable}  handlemodaldata={CutomerInfoEntry} isDineIn={DineIn} />}
+{SalesOrderListOpenModal && <ListOfDineInSalesOrder handleclose={CloseSalesOrderListOpenModal}  settlebillData = {settlebillData} tableno={TableNo} queno={QueNo}/>}
 {/* {ReceiptOpenModal && <Receipt handleclose={CloseSalesOrderListOpenModal} cartitems={cartItems} />} */}
 {CashPaymentEntryModal && <CashPaymentEntry handleClose={closeCashPayment} amountdue={formattedTotalDue} amounttendered={SaveCashPayment}/>}
-{CustomeryPaymentModal && <CustomerPayment handlemodaldata={CutomerInfoEntryPaymnet} />}
+{CustomeryPaymentModal && <CustomerPayment handlemodaldata={CutomerInfoEntryPaymnet} handleClose={CloseCustomerPaymentModal}/>}
 {ReprintTransactionModal && <ReprintTransaction handleClose={CloseReprintTransactionModal} PrintTransactionData={ReprintTransactionReceipt}/>}
 {CashBreakDownModal && <CashBreakDown CashBreakDownDataList ={CashBreakDownDataList} CloseCashBreakDownModal={CloseCashBreakDownModal}/>}
 {ChargeToModal && <ChargeTo handleClose={CloseChargeModal} amountdue={formattedTotalDue}/>}
-{CreditCardPaymentModal && <CreditCardPayment handleClose={CloseCreditCardPayment} amountdue={formattedTotalDue}/>}
+{CreditCardPaymentModal && <CreditCardPayment handleClose={CloseCreditCardPayment} amountdue={formattedTotalDue} CreditCardPayment ={CreditCardPaymentOk}/>}
+{CreditCardPaymentEntryModal && <CreditCardPaymentEntry handleClose={CloseCreditCardPaymentEntryModal} amountdue={formattedTotalDue} amounttendered={SaveCreditCardPayment}/>}
 {DebitCardPaymentModal && <DebitCardPayment handleClose={CloseDebitCardPayment} amountdue={formattedTotalDue}/>}
+{OpenVireficationModal && <Verification handleClose={CloseVerification} VerificationEntry={OKVerification}/>}
 
-
-
+if (CustomerDineInModal || SalesOrderListOpenModal || CashPaymentEntryModal || CustomeryPaymentModal)
 
 
 {OrderTypeModal && (
@@ -3301,7 +4245,10 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
           Choose Order Type
         </Typography>
 
-              <Button className="button-dine-in"onClick={handleDineIn} >
+              <Button className="button-dine-in"onClick={handleDineIn} 
+              ref={DineInRef}
+              onKeyDown={(e)=> OrderTypeHandleKeydown(e,TakeOutRef,DineInRef,TakeOutRef,0)}
+              >
                 <Typography      
                   sx={{
                   fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
@@ -3313,8 +4260,10 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
                 
               </Button>
 
-              {isDesktop && (
-              <Button className="button-take-out"onClick={handleTakeOut} >
+              <Button className="button-take-out"onClick={handleTakeOut} 
+                     onKeyDown={(e)=> OrderTypeHandleKeydown(e,DineInRef,TakeOutRef,DineInRef,1)}
+              ref={TakeOutRef}
+              >
               <Typography      
                 sx={{
                 fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
@@ -3324,7 +4273,7 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
                Take Out
               </Typography>
             </Button>
-              )}
+            
 
             </div>
           </div>
@@ -3332,13 +4281,33 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
 
 { tableNoModal && (
   <div className="modal" >
-    <div className="modal-contentTable" >
+    <div className="modal-contentTable"  >
+
+{/* <div onKeyDown={handleDivInput} tabIndex={0} ref={TableNoModalRef}> */}
+
+
     {isDesktop ? (        
-       <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
-                    SELECT TABLE {TableNo}</h2> 
+              <>
+                <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px', color: 'Blue' }}>
+                  {showTable ? `SELECT TABLE ${TableNo}` : 'SELECT QUE NO.'}
+                </h2>
+                <input
+                type="number"
+                ref={showTable ? TableNoRef : QueNoRef}
+                inputMode="numeric"
+                placeholder={showTable ? 'Table No' : 'QUE NO.'}
+                style={{ width: '100%', margin: '5px', textAlign: 'center' }}
+                value={showTable ? TableNo : QueNo}
+                onChange={(e) => (showTable ? setTableNo(e.target.value) : setQueNo(e.target.value))}
+                onKeyDown={(e) => TableNoHandleKeydown(e)}
+              />
+
+              </>
+
                 ):(
                     <><h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px', color: 'Blue' }}>
-                    SELECT TABLE {TableNo}</h2>
+                   {showTable ? `SELECT TABLE ${TableNo}` : 'SELECT QUE NO.'}
+                    </h2>
 
                     <div style={{margin:'5px',display:'flex',flexDirection:'row'}}>
 
@@ -3351,91 +4320,140 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
 
       
 
-  <div className='containertable' style={{display:'flex',flexDirection:'row'}}>
+  {/* <div className='containertable' style={{display:'flex',flexDirection:'row'}}> */}
 
-    <div style={{overflow:'auto',height: '75%' }}>
+  <Grid container className="CreditCard-Container" spacing={2}>
+      <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
+        <div style={{overflow:'auto',height: '75%',width:'100%' }}>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px',overflow:'auto',height: '550px',
-              border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'10px',borderRadius:'10px' }}>
-     {loading && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '37%',
-            transform: 'translate(-50%, -50%)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
-            zIndex: 999,
-          }}
-        >
-          <ClipLoader color="#4a90e2" loading={loading} size={50} />
-        </div>
-      )}
-              {TableList.map(item => (
-                  <div key={item.table_count} className={item.Paid} onClick={() => SelectTable(item)}
+  <div style={{ display: 'grid', gridTemplateColumns: isDesktop? 'repeat(3, minmax(100px, 1fr))': 'repeat(3, minmax(33%, 1fr))', gap: '5px' ,margin:'5px',overflow:'auto',height: '550px',
+        border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'10px',borderRadius:'10px' }}>
+  {loading && (
+  <div
+    style={{
+      position: 'absolute',
+      top: '50%',
+      left: '37%',
+      transform: 'translate(-50%, -50%)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, 0.7)',
+      zIndex: 999,
+    }}
+  >
+    <ClipLoader color="#4a90e2" loading={loading} size={50} />
+  </div>
+  )}
+  {showTable ? (
+        (TableList.map(item => (
+            <div key={item.table_count} className={item.Paid} onClick={() => SelectTable(item)}
+              style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
+                alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                backgroundColor:item.Paid  === 'N' ? 'RED' : '', }}>
+
+                <p key={item.table_count} style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'20px' ,fontWeight:'bold' ,color:'blue'}}>
+                        {item.table_count}</p>
+                <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+
+            </div>
+              )))
+
+              ):(
+                (QueList.map(item => (
+                  <div key={item.q_no} className={item.Paid} onClick={() => SelectQue(item)}
                     style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
                       alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                       borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      backgroundColor:item.Paid  === 'N' ? 'RED' : '', }}>
-
-                      <p key={item.table_count} style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'20px' ,fontWeight:'bold' ,color:'blue'}}>
-                              {item.table_count}</p>
+                      backgroundColor:item.Paid  === 'N' ? 'blue' : '', }}>
+      
+                      <p key={item.q_no} style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'20px' ,fontWeight:'bold' ,color:'white'}}>
+                              {String(parseInt(item.q_no))}</p>
                       <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-
+      
                   </div>
-          ))}
-        </div>
-    </div>
+                    )))
 
+              )}
+  </div>
+        </div>
+      </Grid>
+
+
+      <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
       {isDesktop && (
         
-  <div className="num-pad" style={{margin:'5px'}}>
-  <div className="num-pad-row">
-    <button className="num-pad-key" onClick={() => handleInput('1')}>1</button>
-    <button className="num-pad-key" onClick={() => handleInput('2')}>2</button>
-    <button className="num-pad-key" onClick={() => handleInput('3')}>3</button>
-  </div>
-  <div className="num-pad-row">
-    <button className="num-pad-key" onClick={() => handleInput('4')}>4</button>
-    <button className="num-pad-key" onClick={() => handleInput('5')}>5</button>
-    <button className="num-pad-key" onClick={() => handleInput('6')}>6</button>
-  </div>
-  <div className="num-pad-row">
-    <button className="num-pad-key" onClick={() => handleInput('7')}>7</button>
-    <button className="num-pad-key" onClick={() => handleInput('8')}>8</button>
-    <button className="num-pad-key" onClick={() => handleInput('9')}>9</button>
-  </div>
-  <div className="num-pad-row">
-  <button className="num-pad-key"style={{ width: '33%'}} onClick={() => handleBackspace()}>Back</button>
-    <button className="num-pad-key" onClick={() => handleInput('0')}>0</button>
-
-  </div>
-  <div className="num-pad-row">
-    <button className="num-pad-key" onClick={CloseTableNo} style={{width:'33%'}}>Close</button>
-    <button className="num-pad-key" style={{width:'33%'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
-    <button className="num-pad-key" style={{ width: '33%'}} onClick={clearInput}> Clear </button>
-  </div>
-</div>
-)}
-
-</div>
-
-
-
-  
-      {/* <button className="closeTable" onClick={CloseTableNo} style={{width:'100%',backgroundColorcolor:'red'}}>Cancel</button> */}
-    </div>
-
+        <div className="num-pad" style={{margin:'5px'}}>
+        <div className="num-pad-row">
+          <button className="num-pad-key" onClick={() => handleInput('1')}>1</button>
+          <button className="num-pad-key" onClick={() => handleInput('2')}>2</button>
+          <button className="num-pad-key" onClick={() => handleInput('3')}>3</button>
+        </div>
+        <div className="num-pad-row">
+          <button className="num-pad-key" onClick={() => handleInput('4')}>4</button>
+          <button className="num-pad-key" onClick={() => handleInput('5')}>5</button>
+          <button className="num-pad-key" onClick={() => handleInput('6')}>6</button>
+        </div>
+        <div className="num-pad-row">
+          <button className="num-pad-key" onClick={() => handleInput('7')}>7</button>
+          <button className="num-pad-key" onClick={() => handleInput('8')}>8</button>
+          <button className="num-pad-key" onClick={() => handleInput('9')}>9</button>
+        </div>
+        <div className="num-pad-row" >
+        <button className="num-pad-key" style={{ width: '33%',height:'100%'}} onClick={() => handleBackspace()}>
    
-  </div>
+          <Typography      
+        sx={{
+          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.5rem' }}}>
+                  Back
+          </Typography>
+          </button>
+          <button className="num-pad-key" style={{ width: '33%',height:'100%'}}  onClick={() => handleInput('0')}>0</button>
+          <button className="num-pad-key" style={{ width: '33%',height:'100%',padding:'9% 0'}}  onClick={ChangeViewToQue}>
+          <Typography      
+        sx={{
+          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.5rem' }}}>
+               {showTable ? 'Que No':'Table No'}
+          </Typography>
+    
+            </button>
+      
+        </div>
+        <div className="num-pad-row">
+          <button className="num-pad-key" onClick={CloseTableNo} style={{width:'33%'}}>
+
+            <Typography      
+        sx={{
+          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.5rem' }}}>
+                   Close
+          </Typography>
+            </button>
+          <button className="num-pad-key" style={{width:'33%'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
+          <button className="num-pad-key" style={{ width: '33%'}} onClick={clearInput}> 
+          
+          <Typography      
+        sx={{
+          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.5rem' }}}>
+             Clear 
+          </Typography>
+        </button>
+        </div>
+      </div>
+      )}
+      
+      
+      </Grid>
+    </Grid>
+    </div>
+    </div>
+   
+  // </div>
 )}
 
 {PaymentOpenModal && (
         <div className="modal" >
-          <div className="modal-content" style={{width:'50%'}}>
+          <div className="modal-content" style={{width:'100%'}}>
           <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
                     SELECT PAYMENT</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px'}}>
@@ -3446,21 +4464,30 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
               }}
-              onClick={CashPayment}>
+              tabIndex={0}
+              onKeyDown={(e)=> PaymentModalHandleKeydown(e,CashPaymentRef,CashPaymentRef,CreditCardPaymentRef,0)}
+              onClick={CashPayment} ref={CashPaymentRef}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' 
+              ,color: isFocus == 0 ? 'White' :'Blue',textAlign:'center'}}>
                Cash Payment</p>
               <img src= {cash} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
             </div>
               
 
-            <div     
+            <div    
+            
               style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }} onClick={OpenCreditCardPayment}>
+              }} 
+              tabIndex={1}
+              onKeyDown={(e)=> PaymentModalHandleKeydown(e,CashPaymentRef,CreditCardPaymentRef,EPSPaymentRef,1)}
+              ref={CreditCardPaymentRef}
+              onClick={OpenCreditCardPayment}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold'
+                 ,color: isFocus == 1 ? 'White' :'Blue',textAlign:'center'}}>
                Credit Sales</p>
               <img src= {credit} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
             </div>
@@ -3469,9 +4496,14 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
               style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}  onClick={OpenDebitCardPayment}>
+              }}  
+              tabIndex={2}
+              onKeyDown={(e)=> PaymentModalHandleKeydown(e,CreditCardPaymentRef,EPSPaymentRef,MultiplePaymentRef,2)}
+              ref={EPSPaymentRef}
+              onClick={OpenDebitCardPayment}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' 
+                     ,color: isFocus == 2 ? 'White' :'Blue',textAlign:'center'}}>
                EPS</p>
               <img src= {epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
             </div>
@@ -3480,9 +4512,14 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
               style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
+              }}
+              tabIndex={3}
+              onKeyDown={(e)=> PaymentModalHandleKeydown(e,EPSPaymentRef,MultiplePaymentRef,ChargePaymentRef,3)}
+              ref={MultiplePaymentRef}
+              >
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' 
+        ,color: isFocus == 3 ? 'White' :'Blue',textAlign:'center'}}>
                Multiple Payment</p>
               <img src= {Multiple} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
             </div>
@@ -3492,17 +4529,39 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
               style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }} onClick={OpenChargeModal}>
+              }} 
+              tabIndex={4}
+              onKeyDown={(e)=> PaymentModalHandleKeydown(e,MultiplePaymentRef,ChargePaymentRef,ClosePaymentRef,4)}
+              ref={ChargePaymentRef}
+              onClick={OpenChargeModal}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue', textAlign:'center'}}>
+              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' 
+                    ,color: isFocus == 4 ? 'White' :'Blue',textAlign:'center'}}>
                Charge</p>
               <img src= {ChargeRoom} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+            </div>
+
+
+            <div     
+              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
+              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+              }}
+              tabIndex={5}
+              onKeyDown={(e)=> PaymentModalHandleKeydown(e,ChargePaymentRef,ClosePaymentRef,CashPaymentRef,5)}
+              ref={ClosePaymentRef}
+              onClick={CloseModal} >
+
+              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' 
+                 ,color: isFocus == 5 ? 'White' :'Blue',textAlign:'center'}}>
+               Close</p>
+              <img src= {CloseImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
             </div>
 
           </div>
 
 
-
+{/* 
           <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
                     SELECT DISCOUNT</h2>
 
@@ -3550,11 +4609,11 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
               <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
                Transaction Discount</p>
               <img src= {transactD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
+            </div> */}
 
 
 
-            <div     
+            {/* <div     
               style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
@@ -3564,9 +4623,9 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
               <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
                Close</p>
               <img src= {CloseImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
+            </div> */}
 
-            </div>
+            {/* </div> */}
 
 
 
@@ -3577,80 +4636,74 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
 
  {OtherCommandOpenModal && (
         <div className="modal" >
-          <div className="modal-content" style={{width:'50%'}}>
+          <div className="modal-content" style={{width:'100%'}}>
           <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
                     SELECT TRANSACTION</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px'}}>
+          <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, minmax(100px, 1fr))': 'repeat(3, minmax(33%, 1fr))' , gap: '5px' ,margin:'5px'}}>
 
+{userRank == 'Cashier' && (
+            <><div
+                    style={{
+                      border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
+                      borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                    }}>
 
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
+                    <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', height: '70px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+                      Item Discount</p>
+                    <img src={itemD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                  </div><div
+                    style={{
+                      border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
+                      borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                    }}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Item Discount</p>
-              <img src= {itemD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-              
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', height: '70px', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+                        Suspend Transaction</p>
+                      <img src={credit} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div><div
+                      style={{
+                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
+                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                      }}>
 
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', height: '70px', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+                        Return</p>
+                      <img src={epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div><div
+                      style={{
+                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
+                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                      }}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Suspend Transaction</p>
-              <img src= {credit} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', height: '70px', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+                        Cash Count</p>
+                      <img src={epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div><div
+                      style={{
+                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
+                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                      }}>
 
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', height: '70px', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+                        Cash Pull-Out</p>
+                      <img src={epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div><div
+                      style={{
+                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
+                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                      }}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Return</p>
-              <img src= {epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Cash Count</p>
-              <img src= {epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-
-
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Cash Pull-Out</p>
-              <img src= {epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Lock Terminal</p>
-              <img src= {Multiple} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-              
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+                        Lock Terminal</p>
+                      <img src={Multiple} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div></>
+              ) }
             <div onClick={CloseTerminal}
             // <div onClick={logoutClick} 
               style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
@@ -3696,14 +4749,30 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
           <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'red'}}>
               Select Type of Transaction
             </h2>
-            <button className="button-dine-in" onClick={AddOrdertable}>Add Order</button>
-          { isDesktop &&(
-            <button className="button-take-out" onClick={SettleOrdertable}>Settle Order</button>
+            <button className="button-dine-in" 
+            onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,AddOrderRef,SettleOrderRef,0)}
+            ref={AddOrderRef}
+            onClick={AddOrdertable}>Add Order</button>
+
+
+            { userRank == 'Cashier' &&(
+            <button className="button-take-out" 
+            onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,SettleOrderRef,TransferTableRef,1)}
+            ref={SettleOrderRef}
+            onClick={SettleOrdertable}>Settle Order</button>
+
           )}
 
 
-            <button className="button-dine-in" onClick={TransferOrdertable}>Transfer table</button>
-            <button className="button-dine-in" onClick={CloseModal}>Close</button>
+            <button className="button-dine-in" 
+                onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,SettleOrderRef,TransferTableRef,CloseSelectTransTypeRef,2)}
+              ref={TransferTableRef}
+            onClick={TransferOrdertable}>Transfer table</button>
+
+            <button className="button-dine-in-close" 
+              onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,TransferTableRef,CloseSelectTransTypeRef,AddOrderRef,3)}
+              ref={CloseSelectTransTypeRef}
+             style={{backgroundColor:'red'}} onClick={CloseModal}>Close</button>
           </div>
         </div>
       )}
@@ -3741,7 +4810,9 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
     <div className="input-group">
     <button className="btn" style={{backgroundColor:'white',color:'red' ,border:'solid'}} onClick={MinusQuantity} ><FontAwesomeIcon icon={faMinus}/> </button>
       <input type="number" ref={inputRef}  inputMode="numeric"  placeholder="Quantity" value={quantity} onChange={handleQuantityChange} 
-       style={{width:'60%' ,margin:'10px', fontSize:'20px',fontWeight:'bold',textAlign:'center'}}/>
+       style={{width:'60%' ,margin:'10px', fontSize:'20px',fontWeight:'bold',textAlign:'center'}}
+       onKeyDown={(event) => HandleAddtocart(event)}
+       />
       <button className="btn" style={{backgroundColor:'white',color:'blue' ,border:'solid'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  style={{ verticalAlign: 'middle' }}/></button>
     </div>
 
@@ -3781,6 +4852,7 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
                       placeholder="Quantity"
                       value={quantity}
                       onChange={handleQuantityChange}
+                      onKeyDown={(event) => HandleUpdatetocart(event)}
                       style={{
                         width: '60%',
                         margin: '10px',
@@ -3815,7 +4887,7 @@ const [categoryHide,setcategoryHide] = useState<boolean>(true)
           {/* <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'red'}}>
               Select Type of Transaction
             </h2> */}
-          { isDesktop &&(
+          { userRank =='Cashier' &&(
             <button className="btn" style={{backgroundColor:'red'}} onClick={EndShiftHandleClick}>End Shift</button>
           )}
             <button className="btn" style={{backgroundColor:'blue'}} onClick={logoutClick}>Logout</button>

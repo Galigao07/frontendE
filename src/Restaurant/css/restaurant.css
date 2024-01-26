@@ -145,16 +145,22 @@
     padding: 20px;
     border-radius: 10px;
     max-width: 100%;
-    max-height: 90%;
+    max-height: 95%;
     overflow-y: auto;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-contentTable button {
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
   }
   
   .modal-content-cashpayment{
     background-color: #fefefe;
     padding: 20px;
     border-radius: 10px;
-    max-width: 50%;
+    max-width: 80%;
     max-height: 90%;
     overflow-y: auto;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);

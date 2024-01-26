@@ -1,0 +1,47 @@
+.itemDiscounts-Container label {
+    text-align: start;
+    width: 100%;
+}
+
+.itemDiscounts-Container button {
+width: 49%;
+}
+
+.modal-content-itemDiscounts {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    width: 700px;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-content-itemDiscounts Button {
+    width: 45%;
+    margin: 15px 0 0 5%;
+    padding: 8px 8px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  input {
+    width: 100%;
+  }
+
+  .DisCountLevel input {
+    width: 90%;
+    margin: 17px 0 0 10px;
+  }
+
+  .DisCountLevel Typography {
+    border: solid;
+    text-align: center;
+    width: 100%;
+  }
+

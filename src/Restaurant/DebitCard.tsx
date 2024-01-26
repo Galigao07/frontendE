@@ -1,13 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import './css/DebitCard.css'
 import Swal from "sweetalert2";
 import { Button, Grid, Table, Typography } from "@mui/material";
-import showErrorAlert from "../SwalMessage/ShowErrorAlert";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+
 
 
 interface DebitCardPaymentTrans {
