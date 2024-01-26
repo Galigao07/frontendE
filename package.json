@@ -2,7 +2,7 @@
   "name": "pos",
   "description": "POS Restaurant System",
   "private": true,
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "Hernanie Galigao Jr",
   "scripts": {
     "dev": "vite",

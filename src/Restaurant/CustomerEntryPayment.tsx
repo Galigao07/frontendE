@@ -9,12 +9,14 @@ import BASE_URL from '../config';
 import  './css/keyboard.css';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { Grid, Typography } from '@mui/material';
 
 interface CustomerPaymentData {
   handlemodaldata:any
+  handleClose:() => void;
 }
 
-const CustomerPayment:React.FC<CustomerPaymentData> = ({handlemodaldata }) => {
+const CustomerPayment:React.FC<CustomerPaymentData> = ({handlemodaldata,handleClose }) => {
 
 
   interface CustomerData { 
@@ -251,7 +253,12 @@ if (customerFocus && cursorPosition > 0) {
           onClick={() => handleSpecialButtonClick(letter)}
           aria-label={letter}
         >
+          <Typography sx={{
+     fontSize: { xs: '0.5rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' }
+              }}>
           {letter}
+          </Typography>
+ 
         </button>
       ))}
     </div>
@@ -372,89 +379,97 @@ const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
     <div className="modal">
       <div className="modal-contentCustomerDine" style={{width:'100%', display:'flex',flexDirection:'row'}}>
 
-    <div style={{width:'30%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
-      <h2 style={{ color: '#007bff', padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
-      borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid' }}
-      >Customer Info</h2>
-      <div className="customer-type">
-        <span className="customer-type-label">Customer Type:</span>
-        <div className="button-group">
-          <button className={selectedOption === 'option1' ? 'radio-button checked blinking' : 'radio-button'}id="option1"onClick={() => handleCustomerTypeRegular()}>Regular</button>
-          <button className={selectedOption === 'option2' ? 'radio-button checked blinking' : 'radio-button'}id="option2"onClick={() => handleCustomerTypeWalkIN()}>Walk-In </button>
-        </div>
+
+      <Grid container className="CreditCard-Container" spacing={2}>
+
+        <Grid item xs={12} md={3} style={{ height: '100%',width:'100%'}}>
+          <div style={{width:'100%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
+            <h2 style={{ color: 'blue', padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
+            borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid' }}
+            >Customer Info</h2>
+            <div className="customer-type">
+              <span className="customer-type-label">Customer Type:</span>
+              <div className="button-group">
+                <button className={selectedOption === 'option1' ? 'radio-button checked blinking' : 'radio-button'}id="option1"onClick={() => handleCustomerTypeRegular()}>Regular</button>
+                <button className={selectedOption === 'option2' ? 'radio-button checked blinking' : 'radio-button'}id="option2"onClick={() => handleCustomerTypeWalkIN()}>Walk-In </button>
+              </div>
+            </div>
+
+              {/* Input fields */}
+              <div style={{ display: 'flex', flexDirection: 'column'}}>
+                <label htmlFor="input1">Customer Name:</label>
+                <input ref={CustomerRef} 
+                onKeyDown={(e) =>
+                            customerType === 'Walk-in'
+                              ? handleKeyDown(e, CustomerRef, customerAddressRef)
+                              : handleKeys(e, 'Customer')}
+                        onInput={(e: ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
+                type="text" id="input1" placeholder="Customer" 
+                  onChange={(e) => setCustomer(e.target.value)}  autoComplete="off"
+                  onClick={() => handleClick(CustomerRef)}
+                  onFocus={CustomerF} 
+                  value={customer} required/>
+
+                  {CustomerListModal && (
+                      <div className='CustomerlistPayment-Container' onKeyDown={(event) => handleKeys(event, 'customer')} >
+                      <ul id="list" className='ul-list customer'   onKeyDown={(event) => handleKeys(event, 'customer')}  ref ={CustomerListRef}>
+                        {CustomerList.map((result,index) => (
+                          <li tabIndex={0} key={index}
+                          onKeyDown={(event) => handleKeys(event, 'Customer')}
+                            onClick={() => ClickCustomerList(index)}
+                          >{result.id_code.padStart(4, '0')} - {result.trade_name}</li>
+                              ))}
+                            </ul>
+                            </div>
+            )} 
+
+
+
+                <label htmlFor="input3">Address:</label>
+                <input ref={customerAddressRef}  onKeyDown={(e) => handleKeyDown(e, customerAddressRef, customerTINRef)}  id="input3" type = "text"  placeholder="Address" 
+                  onChange={(e) => setcustomerAddress(e.target.value)} autoComplete="off"
+                  onFocus={AddressF}
+                  value={customerAddress}
+                  onClick={() => handleClick(customerAddressRef)}
+                  // onClick={handleClick}
+                  required />
+
+                <label htmlFor="input4">TIN:</label>
+                <input  ref={customerTINRef} type="text" id="input4" placeholder="Tax Identification"  
+                  onChange={(e) => setcustomerTIN(e.target.value)} autoComplete="off" value={customerTIN}
+                  onFocus={TINF}
+                  onKeyDown={(e) => handleKeyDown(e, customerTINRef, customerBusinessStyleRef)}
+                  onClick={() => handleClick(customerTINRef)}
+                  required/>
+
+
+              <label htmlFor="input4">Business Style:</label>
+                <input  ref={customerBusinessStyleRef} type="text" id="input45" placeholder="Business Style"  
+                  onChange={(e) => setcustomerBusinessStyle(e.target.value)} autoComplete="off" value={customerBusinessStyle}
+                  onFocus={BusinessStyleF}
+                  onKeyDown={(e) => handleKeyDown(e, customerTINRef, customerBusinessStyleRef)}
+                  onClick={() => handleClick(customerBusinessStyleRef)}
+
+                  required/>
+              </div>
+
+
+              {/* Command buttons */}
+              <div style={{display:'flex'}} >
+                <button  ref={SaveRef} onClick={sendDataToMain} className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>SAVE</button>
+                <button  onClick={handleClose} className='button-CLOSE' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>CLOSE</button>
+              </div>
+          </div>
+      </Grid>
+
+
+    <Grid item xs={12} md={9} style={{ height: '100%',width:'100%'}}>
+      <div className='keyboardScreen'>
+        {rows}
+        <button className="num-pad-key" style={{width:'98%',margin:'8px 10px'}} onClick={() => handleButtonClick(' ')}>SPACE</button>
       </div>
-
-        {/* Input fields */}
-        <div style={{ display: 'flex', flexDirection: 'column'}}>
-          <label htmlFor="input1">Customer Name:</label>
-          <input ref={CustomerRef} 
-           onKeyDown={(e) =>
-                      customerType === 'Walk-in'
-                        ? handleKeyDown(e, CustomerRef, customerAddressRef)
-                        : handleKeys(e, 'Customer')}
-                  onInput={(e: ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
-          type="text" id="input1" placeholder="Customer" 
-            onChange={(e) => setCustomer(e.target.value)}  autoComplete="off"
-            onClick={() => handleClick(CustomerRef)}
-            onFocus={CustomerF} 
-            value={customer} required/>
-
-            {CustomerListModal && (
-                <div className='CustomerlistPayment-Container' onKeyDown={(event) => handleKeys(event, 'customer')} >
-                 <ul id="list" className='ul-list customer'   onKeyDown={(event) => handleKeys(event, 'customer')}  ref ={CustomerListRef}>
-                   {CustomerList.map((result,index) => (
-                     <li tabIndex={0} key={index}
-                     onKeyDown={(event) => handleKeys(event, 'Customer')}
-                      onClick={() => ClickCustomerList(index)}
-                     >{result.id_code.padStart(4, '0')} - {result.trade_name}</li>
-                        ))}
-                       </ul>
-                       </div>
-       )} 
-
-
-
-          <label htmlFor="input3">Address:</label>
-          <input ref={customerAddressRef}  onKeyDown={(e) => handleKeyDown(e, customerAddressRef, customerTINRef)}  id="input3" type = "text"  placeholder="Address" 
-            onChange={(e) => setcustomerAddress(e.target.value)} autoComplete="off"
-            onFocus={AddressF}
-            value={customerAddress}
-            onClick={() => handleClick(customerAddressRef)}
-            // onClick={handleClick}
-            required />
-
-          <label htmlFor="input4">TIN:</label>
-          <input  ref={customerTINRef} type="text" id="input4" placeholder="Tax Identification"  
-            onChange={(e) => setcustomerTIN(e.target.value)} autoComplete="off" value={customerTIN}
-            onFocus={TINF}
-            onKeyDown={(e) => handleKeyDown(e, customerTINRef, customerBusinessStyleRef)}
-            onClick={() => handleClick(customerTINRef)}
-            required/>
-
-
-        <label htmlFor="input4">Business Style:</label>
-          <input  ref={customerBusinessStyleRef} type="text" id="input45" placeholder="Business Style"  
-            onChange={(e) => setcustomerBusinessStyle(e.target.value)} autoComplete="off" value={customerBusinessStyle}
-            onFocus={BusinessStyleF}
-            onKeyDown={(e) => handleKeyDown(e, customerTINRef, customerBusinessStyleRef)}
-            onClick={() => handleClick(customerBusinessStyleRef)}
-
-            required/>
-        </div>
-
-
-        {/* Command buttons */}
-        <div style={{display:'flex'}} >
-          <button  ref={SaveRef} onClick={sendDataToMain} className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>SAVE</button>
-        </div>
-    </div>
-
-
-   <div className='keyboardScreen'>
-   {rows}
-   <button className="num-pad-key" style={{width:'98%',margin:'8px 10px'}} onClick={() => handleButtonClick(' ')}>SPACE</button>
- </div>
-
+    </Grid>
+  </Grid>
     {/* <div>
       <div className="num-pad" style={{width:'50% !important'}}>
       <div className="num-pad-row">

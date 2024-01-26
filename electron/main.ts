@@ -35,8 +35,8 @@ function createWindow() {
       sandbox: true, // Enable sandbox mode for additional security
 
     },
-    fullscreen: true, 
-    frame:false,
+    // fullscreen: true, 
+    // frame:false,
     
   })
 

@@ -6,6 +6,7 @@ import './css/CashPaymentEntry.css'
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // import { faBackspace, faBackward, faFastBackward, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import Swal from "sweetalert2";
+import { Grid } from '@mui/material';
 
 interface CashData {
   handleClose: () => void;
@@ -23,7 +24,7 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
   // const [amountReceivedFocus, setamountReceivedFocus] = useState(0);
   // const [inputValue, setInputValue] = useState('');
 
-  const amountReceivedRef = useRef(null);
+  const amountReceivedRef = useRef<HTMLInputElement>(null);
 
   // const handleInput = (value:number) => {
   //   setAmountReceived((prevValue) => {
@@ -184,7 +185,12 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
 
 
   const handleAmountReceivedChange = (value: string) => {
-    setAmountReceived(parseFloat(value));
+
+    const sanitizedValue = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+
+    // Handle the sanitized value
+    setAmountReceived(sanitizedValue);
+    // setAmountReceived(parseFloat(value));
   };
 
 
@@ -194,6 +200,20 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
   //     setCursorPosition(currentPosition);
   //   }
   // };
+
+  useEffect(() => {
+    if (amountReceivedRef.current){
+      amountReceivedRef.current.focus();
+      amountReceivedRef.current.select();
+    }
+  },[])
+
+  const HandleKeydown = (e:any) => {
+    if (e.key == 'Enter'){
+      handleOk();
+    }
+
+  }
 
 
   useEffect(() => {
@@ -206,74 +226,93 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
   return (
     <div>
     <div className="modal" >
-          <div className="modal-content-cashpayment" >
-          <h2 style={{ color: '#ffffff', backgroundColor: '#007bff', padding: '10px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
-        borderRadius: '5px', margin: '10px',
-        fontWeight: 'bold', textAlign: 'center'
-      }}>Cash Payment</h2>
+    <div className="modal-content-cashpayment" >
+              <h2 style={{ color: '#ffffff', backgroundColor: '#007bff', padding: '10px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
+            borderRadius: '5px', margin: '10px',
+            fontWeight: 'bold', textAlign: 'center'
+          }}>Cash Payment</h2>
 
-<div style={{display:'flex',flexDirection:'row'}}>
-    <div style={{display:'flex',flexDirection:'row' ,width:'120%' }}>
-        <div style={{display:'flex',flexDirection:'column' , border:' 2px solid #ccc', borderRadius: '8px',padding:'20px'}}>
-                <p style={{ fontSize: '20px', fontWeight: 'bold',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'}}>TOTAL AMOUNT DUE:</p>
-                    <p style={{ fontSize: '20px', fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue',  color: 'red', 
-                    padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px' ,textAlign:'end' }}>  Php {amountdue}</p>
-                
 
-            
-                <p style={{ fontSize: '20px', fontWeight: 'bold',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'}}>AMOUNT TENDERED</p>
-                    <input style={{ fontSize: '20px', fontWeight: 'bold', border: '1px solid', margin: '10px',  color: 'Black', 
-                    padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  ,textAlign:'end' }}
-                    type="text"
-                    onChange={(e) => handleAmountReceivedChange(e.target.value)}
-                    autoComplete="off"
-                    id="input1"
-                    ref={amountReceivedRef}
-                    value={amountReceived}
-                    required/>
+
+          {/* <div style={{display:'flex',flexDirection:'row'}}> */}
+          <Grid container className="CreditCard-Container" spacing={2}>
+
+            <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
+              
+            <div style={{display:'flex',flexDirection:'row' ,width:'100%' }}>
+                <div style={{display:'flex',flexDirection:'column' , border:' 2px solid #ccc', borderRadius: '8px',padding:'20px',width:'100%' }}>
+                        <p style={{ fontSize: '20px', fontWeight: 'bold',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'}}>TOTAL AMOUNT DUE:</p>
+                            <p style={{ fontSize: '20px', fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue',  color: 'red', 
+                            padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px' ,textAlign:'end' }}>  Php {amountdue}</p>
+                        
+
                     
+                        <p style={{ fontSize: '20px', fontWeight: 'bold',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'}}>AMOUNT TENDERED</p>
+                            <input style={{ fontSize: '20px', fontWeight: 'bold', border: '1px solid', margin: '10px',  color: 'Black', 
+                            padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  ,textAlign:'end',width:'93%',  appearance: 'textfield',WebkitAppearance: 'none', }}
+                            type="text" // Use type="tel" instead of type="number"
+                            pattern="[0-9]*[.]?[0-9]*" 
+                            onChange={(e) => handleAmountReceivedChange(e.target.value)}
+                            autoComplete="off"
+                            id="input1"
+                            ref={amountReceivedRef}
+                            value={amountReceived}
 
-        <p style={{ fontSize: '20px', fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue',  color: 'Black', 
-        padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  }}>TOTAL CHANGE: {changeDue.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        })}</p>
-                <img src= {Cash} style={{height:'200px',width:'100%',marginTop:'20px'}}/>
-       
-        </div>
-      </div>
+                            onKeyDown={(e)=> HandleKeydown(e)}
+                            required/>
+                            
+
+                <p style={{ fontSize: '20px', fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue',  color: 'Black', 
+                padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  }}>TOTAL CHANGE: {changeDue.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                })}</p>
+                        <img src= {Cash} style={{height:'200px',width:'100%',marginTop:'20px'}}/>
+              
+                </div>
+            </div>
+
+            </Grid>
+
+
+            <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
+              
+
+            <div className="num-pad" style={{width:'100%'}}>
+              <div className="num-pad-row">
+                <button className="num-pad-key" onClick={() => handleInput('1')}>1</button>
+                <button className="num-pad-key" onClick={() => handleInput('2')}>2</button>
+                <button className="num-pad-key" onClick={() => handleInput('3')}>3</button>
+              </div>
+              <div className="num-pad-row">
+                <button className="num-pad-key" onClick={() => handleInput('4')}>4</button>
+                <button className="num-pad-key" onClick={() => handleInput('5')}>5</button>
+                <button className="num-pad-key" onClick={() => handleInput('6')}>6</button>
+              </div>
+              <div className="num-pad-row">
+                <button className="num-pad-key" onClick={() => handleInput('7')}>7</button>
+                <button className="num-pad-key" onClick={() => handleInput('8')}>8</button>
+                <button className="num-pad-key" onClick={() => handleInput('9')}>9</button>
+              </div>
+              <div className="num-pad-row">
+                <button className="num-pad-key"style={{ width: '33%' }}  onClick={() => handleInput('.')}>.</button>
+                <button className="num-pad-key" style={{ width: '33%' }} onClick={() => handleInput('0')}>0</button>
+                <button className="num-pad-key"style={{ width: '33%'}} onClick={() => handleBackspace()}>Back</button>
+              </div>
+              <div className="num-pad-row">
+                <button className="num-pad-key" style={{ width: '33%'}} onClick={handleClose}> Close</button> 
+                <button className="num-pad-key" style={{ width: '33%'}} onClick={handleOk}> OK </button>
+                <button className="num-pad-key" style={{ width: '33%'}} onClick={clearInput}> Clear </button>
+              </div>
+            </div>
+
+            </Grid>
+          </Grid>
 
 
 
-      <div className="num-pad" style={{width:'50% !important'}}>
-      <div className="num-pad-row">
-        <button className="num-pad-key" onClick={() => handleInput('1')}>1</button>
-        <button className="num-pad-key" onClick={() => handleInput('2')}>2</button>
-        <button className="num-pad-key" onClick={() => handleInput('3')}>3</button>
-      </div>
-      <div className="num-pad-row">
-        <button className="num-pad-key" onClick={() => handleInput('4')}>4</button>
-        <button className="num-pad-key" onClick={() => handleInput('5')}>5</button>
-        <button className="num-pad-key" onClick={() => handleInput('6')}>6</button>
-      </div>
-      <div className="num-pad-row">
-        <button className="num-pad-key" onClick={() => handleInput('7')}>7</button>
-        <button className="num-pad-key" onClick={() => handleInput('8')}>8</button>
-        <button className="num-pad-key" onClick={() => handleInput('9')}>9</button>
-      </div>
-      <div className="num-pad-row">
-        <button className="num-pad-key"style={{ width: '33%' }}  onClick={() => handleInput('.')}>.</button>
-        <button className="num-pad-key" style={{ width: '33%' }} onClick={() => handleInput('0')}>0</button>
-        <button className="num-pad-key"style={{ width: '33%'}} onClick={() => handleBackspace()}>Back</button>
-      </div>
-      <div className="num-pad-row">
-        <button className="num-pad-key" style={{ width: '33%'}} onClick={handleClose}> Close</button> 
-        <button className="num-pad-key" style={{ width: '33%'}} onClick={handleOk}> OK </button>
-        <button className="num-pad-key" style={{ width: '33%'}} onClick={clearInput}> Clear </button>
-      </div>
+          {/* </div> */}
     </div>
-          </div>
-          </div>
     </div>
     </div>
   );

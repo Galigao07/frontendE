@@ -1,18 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
+// import axios from "axios";
 import './css/CreditCard.css'
 import Swal from "sweetalert2";
 import { Button, Grid, Table, Typography } from "@mui/material";
-import showErrorAlert from "../SwalMessage/ShowErrorAlert";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+
 
 
 interface CreditCardPaymentTrans {
     handleClose:() => void;
     amountdue:any;
+    CreditCardPayment:any;
 }
 
 const swalWithBootstrapButtons = Swal.mixin({
@@ -23,7 +22,7 @@ const swalWithBootstrapButtons = Swal.mixin({
     buttonsStyling: false
   })
 
-const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amountdue})=> {
+const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amountdue,CreditCardPayment})=> {
     const cardNoRef = useRef<HTMLInputElement>(null);
     const acquireBankRef = useRef<HTMLInputElement>(null);
     const cardIssuerRef = useRef<HTMLInputElement>(null);
@@ -47,6 +46,7 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
     })
 
     useEffect(() => {
+
         setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:amountdue})
 
         setTimeout(() => {
@@ -70,7 +70,9 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
     
             }).then(async (result) => {
             if (result.isConfirmed) {
-                console.log('Success')
+                console.log('Success',CreditCardPaymentList)
+
+                CreditCardPayment(CreditCardPaymentList)
                 setCreditCardPaymentData({
                     CardNo:'',
                     AcquireBank:'',
@@ -530,6 +532,8 @@ const onDelete = () => {
     setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:bal})
   },[totalAmountDue])
 
+
+
     return (
 
 
@@ -653,7 +657,7 @@ const onDelete = () => {
                                         <Button  onClick={SaveCreditPayment} disabled = {isEdit}  style={{
                                             backgroundColor: isEdit ? 'gray' : 'blue', // Different color when disabled
                                             cursor: isEdit ? 'not-allowed' : 'pointer', // Change cursor when disabled
-                                          }} >SAVE</Button>
+                                          }}>SAVE</Button>
                                     ):(
                                         <Button  onClick={handleClickAddToList} disabled = {isEdit}  style={{
                                             backgroundColor: isEdit ? 'gray' : 'blue', // Different color when disabled

@@ -1,0 +1,63 @@
+.TradeDiscount-Container label ,input{
+    text-align: start;
+    width: 100%;
+}
+
+.TradeDiscount-Container input{
+    text-align: start;
+    width: 49%;
+}
+
+
+.modal-content-TradeDiscount {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    width: 1000px;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-content-TradeDiscount Button {
+    margin-top: 15px;
+    padding: 8px 8px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: white;
+    font-size: 16px;
+
+    text-align: center;
+    transition: background-color 0.3s ease;
+  }
+
+  .Table {
+    width: 100%;
+    border-collapse: collapse;
+   
+  }
+  
+  td {
+    border: 1px solid #ccc;
+    padding: 4px;
+    cursor: pointer;
+    caret-color: transparent;
+  }
+
+
+   th {
+    border: 1px solid #ccc;
+    padding: 4px;
+    text-align: center;
+  }
+
+  .TradeDiscount-button {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .TradeDiscount-button Button{
+    width: 100%;
+    margin: 5px 5px 0 0;
+  }
