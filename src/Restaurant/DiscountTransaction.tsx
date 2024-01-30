@@ -184,6 +184,31 @@ const handleCheckboxChange = (index: number) => {
     setTransactionDiscountEntryList(updatedItems);
   };
   
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+
+
+      if (e.key === 'F5') {
+        e.preventDefault(); // Prevent the default browser refresh action for F5
+      }
+      else if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault(); // Prevent the default browser action for Control + N
+      }
+      else if (e.ctrlKey && e.key === 's') { // Control + S
+        e.preventDefault();
+        HandleClickSave();
+      } else if (e.key === 'Escape') {
+        e.preventDefault(); 
+        handleClose();
+      }
+    };
+  
+    window.addEventListener('keydown', handleKeyPress);
+  
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, []);   
 
     return (
 
@@ -214,7 +239,7 @@ const handleCheckboxChange = (index: number) => {
 
                             </Grid>
 
-                            <Grid item xs={12} style={{ height: '100%',width:'100%' }}>
+                            <Grid item xs={12} style={{ height: '300px',width:'100%' ,overflow:'auto'}}>
                                 <Table sx={{
                             fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                             overflow: 'auto'}}>

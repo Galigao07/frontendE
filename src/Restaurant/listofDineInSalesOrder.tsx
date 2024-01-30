@@ -102,6 +102,9 @@ const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handlec
     
 
 
+    const [isFocus,setisFocus] = useState<any>(0)
+
+    const [isFocusIndex,setisFocusIndex] = useState<boolean>(false)
 
 
 
@@ -223,6 +226,7 @@ const CloseButtonModal = () => {
 
           }
           if (e.keyCode === 27) {
+            e.preventDefault(); 
             ButtonModalOpen ? setButtonModalOpen(false) : handleclose();
           }
           
@@ -341,7 +345,10 @@ const OpenVireficationEntry = (type:any) => {
 }
 
 const CloseVerification = () => {
+  setisFocusIndex(true)
   setOpenVireficationModal(false)
+
+  setDiscountType('')
 }
 
 const OKVerification = (data:any) => {
@@ -369,19 +376,23 @@ const OKVerification = (data:any) => {
 //*************************SEÑIOR CITEZEN DISCOUNT ****************************/
 const OpenSeniorCitezenEntry = () => {
   setOpenSeniorCitezenDiscountModal(true)
+  setDiscountType('SC')
 }
 
 const CloseSeniorCitezenDiscount = () => {
   setOpenSeniorCitezenDiscountModal(false)
   setDiscountType('')
+  setisFocusIndex(true)
+
 }
 
 const SaveSeniorCitezenDiscount = (data:any) => {
-  setDiscountType('SC')
+
   console.log(data)
   setDisEntry(data)
   setDis(true)
   setOpenSeniorCitezenDiscountModal(false)
+  setisFocusIndex(true)
 }
 
 
@@ -394,7 +405,10 @@ const OpenItemDiscountEntry = () => {
   }
 
   else{
+    setisFocusIndex(true)
+    setisFocus(isFocus)
     showErrorAlert('Please Select Item!')
+
   }
 
 
@@ -403,10 +417,13 @@ const OpenItemDiscountEntry = () => {
 const CloseItemDiscountsEntry = () =>{
   setDiscountType('')
   setOpenItemDiscountModal(false)
+  setisFocusIndex(true)
+
 }
 const SaveItemDiscountEntry = (data:any) => {
   console.log(data)
   setOpenItemDiscountModal(false)
+  setisFocusIndex(true)
 }
 
 
@@ -420,11 +437,13 @@ const OpenTradeDiscountEntry = () => {
 const CloseTradeDiscountsEntry = () =>{
   setOpenTradeDiscountModal(false)
   setDiscountType('')
+  setisFocusIndex(true)
 
 }
 const SaveTradessDiscountEntry = (data:any) => {
   console.log('trade discount',data)
   setOpenTradeDiscountModal(false)
+  setisFocusIndex(true)
 }
 
 
@@ -439,27 +458,26 @@ const OpenTransactionDiscountEntry = () => {
 const CloseTransactionDiscountsEntry = () =>{
   setOpenTransactionDiscountModal(false)
   setDiscountType('')
+  setisFocusIndex(true)
 
 }
 const SaveTransactionDiscountEntry = (data:any) => {
   console.log('Transaction discount',data)
   setOpenTransactionDiscountModal(false)
+  setisFocusIndex(true)
 }
 
 
 useEffect(() => {
   if (!isNaN(parseFloat(DisEntry.SLessVat12))) {
-    setSubTotal(parseFloat(TotalAmountD) - (parseFloat(DisEntry.SLessVat12) + parseFloat(DisEntry.SLess20SCDiscount)));
+    setSubTotal(parseFloat(TotalAmountD.replace(',','')) - (parseFloat(DisEntry.SLessVat12) + parseFloat(DisEntry.SLess20SCDiscount)));
   } else {
     setSubTotal('0.00')
   }
   
-}, [DisEntry.SLessVat12, TotalAmountD, DisEntry.SLess20SCDiscount]);
+}, [DisEntry.SLessVat12, TotalAmountD, DisEntry.SLess20SCDiscount,isFocusIndex]);
 
 
-const [isFocus,setisFocus] = useState<any>(0)
-
-const [isFocusIndex,setisFocusIndex] = useState<any>(0)
 
 const PaymentModalHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) => {
   event.preventDefault();
@@ -469,13 +487,13 @@ const PaymentModalHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:
       CurrentRef.current.style.backgroundColor = 'white';
        if (index ==9){
         setisFocus(0)
-        setisFocusIndex(0)
+
 
        }
 
        else{
         setisFocus(index + 1)
-        setisFocusIndex(index + 1)
+
        }
       
   
@@ -490,11 +508,11 @@ const PaymentModalHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:
     CurrentRef.current.style.backgroundColor = 'white';
     if (index == 0){
       setisFocus(9)
-      setisFocusIndex(9)
+ 
 
     }else{
       setisFocus(index - 1)
-      setisFocusIndex(index - 1)
+
     }
 
 
@@ -540,6 +558,14 @@ if (event.key == 'Enter'){
 
 }
 
+const computeDiscount = () => {
+  if (!isNaN(parseFloat(DisEntry.SLessVat12))) {
+    setSubTotal(parseFloat(TotalAmountD) - (parseFloat(DisEntry.SLessVat12) + parseFloat(DisEntry.SLess20SCDiscount)));
+  } else {
+    setSubTotal('0.00')
+  }
+}
+
 
 useEffect(() => {
 
@@ -547,10 +573,55 @@ useEffect(() => {
     SettleSORef.current.focus();
     SettleSORef.current.style.backgroundColor = 'blue';
     setisFocus(3)
-    setisFocusIndex(3)
+
   }
 
-},[DisEntry.SLessVat12, TotalAmountD, DisEntry.SLess20SCDiscount])
+},[])
+
+
+const focusindex = () => {
+  if (isFocusIndex) {
+    if (SettleSORef.current) {
+      SettleSORef.current.focus();
+      SettleSORef.current.style.backgroundColor = 'blue';
+
+
+      setisFocus(3)
+      setisFocusIndex(false)
+      const refs = [
+        CancelSORef,
+        ViewCancelSORef,
+        PrintSORef,
+        SeniorDSORef,
+        PWDDSORef,
+        TradeDSORef,
+        TransactionDSORef,
+        ItemDSORef
+    ];
+    refs.forEach(ref => {
+        if (ref.current) {
+            ref.current.style.backgroundColor = 'white';
+        }
+    });
+    }
+  }
+
+}
+
+
+useEffect(() => {
+      focusindex();
+      const interval = setInterval(() => {
+        focusindex();
+
+      }, 500);
+      // Clear the interval when the component unmounts
+      return () => clearInterval(interval);
+}, [isFocusIndex]);
+
+
+
+
 
 
   return (

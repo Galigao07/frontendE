@@ -65,6 +65,33 @@ const CreditCardPayment: React.FC<CreditCardPaymentData> = ({handleClose,amountd
       const change = amountReceived - amountWithoutCommas;
       setChangeDue(change >= 0 ? change : 0);
     }, [amountReceived, amountdue]);
+
+
+    useEffect(() => {
+      const handleKeyPress = (e: KeyboardEvent) => {
+  
+  
+        if (e.key === 'F5') {
+          e.preventDefault(); // Prevent the default browser refresh action for F5
+        }
+        else if (e.ctrlKey && e.key === 'n') {
+          e.preventDefault(); // Prevent the default browser action for Control + N
+        }
+        else if (e.ctrlKey && e.key === 's') { // Control + S
+          e.preventDefault();
+          handleOk();
+        } else if (e.key === 'Escape') {
+          e.preventDefault(); 
+          handleClose();
+        }
+      };
+    
+      window.addEventListener('keydown', handleKeyPress);
+    
+      return () => {
+        window.removeEventListener('keydown', handleKeyPress);
+      };
+    }, []);   
   
     return (
       <div>

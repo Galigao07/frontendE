@@ -41,7 +41,7 @@ import CreditCardPayment from './CreditCard';
 import CreditCardPaymentEntry from './CreditCardPayment';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt, faArrowAltCircleDown, faArrowDown, faExpand, faExpandArrowsAlt, faChevronDown, faChevronCircleDown, faArrowUp, faAnglesUp, faAnglesDown} from '@fortawesome/free-solid-svg-icons';
+import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt, faArrowAltCircleDown, faArrowDown, faExpand, faExpandArrowsAlt, faChevronDown, faChevronCircleDown, faArrowUp, faAnglesUp, faAnglesDown, faSliders} from '@fortawesome/free-solid-svg-icons';
 // import CustomerDineIn from './customerEntryDineIn';
 import QRCode from 'qrcode-generator';
 import { Button, Dialog, DialogContent, DialogTitle, Grid, Table, Typography } from '@mui/material';
@@ -61,7 +61,15 @@ import Verification from './Verification';
 import { blue } from '@mui/material/colors';
 ///**************PRODUCT GRID DESIGN*******************//
 
+import { useDispatch, useSelector } from 'react-redux';
+import { setBooleanValue } from '../Redux/actions';
+import showErrorAlert from '../SwalMessage/ShowErrorAlert';
 
+
+import SeniorCitezenDiscount from './DiscountSeniorCitezen';
+import ItemDiscounts from './DiscountItems'
+import TradeDiscountList from './DiscountTrade'
+import TransactionDiscount from './DiscountTransaction';
 interface ProductList {
   long_desc: any;
   reg_price: any;
@@ -73,20 +81,26 @@ interface ProductData {
   addtocart:any;
   selectedProductData:any;
   isSelected:any;
+  IsModalOpenF: () => boolean;
 
 }
 
 
 
   
-const ProductGrid: React.FC<ProductData> = ({ products , addtocart ,selectedProductData,isSelected}) => {
+const ProductGrid: React.FC<ProductData> = ({ products , addtocart ,selectedProductData,isSelected,IsModalOpenF}) => {
+ 
+ 
+  const dispatch = useDispatch();
+  const booleanValue = useSelector((state: any) => state.booleanValue);
+ 
   const [quantity, setQuantity] = useState<number | 1>(1); // Adjust the initial state value
 
     const [Price, setPrice] = useState<number>(1);
     const ProductRef = useRef<HTMLDivElement>(null)
     const [isFocusIndex,setisFocusIndex] = useState<boolean>(true)
 
-
+  
 
 
 
@@ -126,7 +140,8 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
     const [isSelectedIndex, setisSelectedIndex] = useState<any>(null);
 
     const ProductRefs = useRef<any>([]);
-
+    const [isModalOpenFS, setIsModalOpenF] = useState<boolean>(false)
+    const isModalOpenx = IsModalOpenF();
     const handleproductclick = (product:any,index:any) => {
 
       selectedProductData({product,index})
@@ -144,6 +159,9 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
 
        
     };
+
+
+
 
 
     const addQuantity = () => {
@@ -167,16 +185,6 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
       }, [isSelectedIndex]);
 
 
-
-      // useEffect(() => {
-      //   setisSelectedIndex(isSelectedIndex)
-      //   setTimeout(() => {
-      //     if (ProductRefs.current[isSelectedIndex]) {
-      //       ProductRefs.current[isSelectedIndex].focus();
-      //     }
-      //   }, 50);
-      // }, []);
-
       useEffect(() => {
           setisSelectedIndex(isSelected)
         setTimeout(() => {
@@ -196,17 +204,70 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
 
         }
 
-
+        let isF1:boolean = false
+ 
       useEffect(() => {
-        focusindex();
-        const interval = setInterval(() => {
+        if (isF1){
           focusindex();
-        }, 500);
-        // Clear the interval when the component unmounts
-        return () => clearInterval(interval);
+          const interval = setInterval(() => {
+            focusindex();
+          }, 500);
+          // Clear the interval when the component unmounts
+          return () => clearInterval(interval);
+        } 
+
       }, [isSelectedIndex]);
 
 
+
+      useEffect(() => {
+        const intervalId = setInterval(() => {
+            // Dispatch action to set boolean value in Redux store
+            const isModalOpen = IsModalOpenF();
+          dispatch(setBooleanValue(isModalOpen))
+  
+          if (isModalOpen) {
+            localStorage.setItem('Modal','true')
+          }else {
+            localStorage.setItem('Modal','false')
+          }
+       
+          
+        }, 500); // Check every second
+    
+        // Clean up interval on component unmount
+        return () => clearInterval(intervalId);
+    }, [IsModalOpenF]); // Empty dependency array ensures the effect runs only once after the initial render
+    
+    
+      useEffect(() => {
+        const handleKeyPress = (event:any) => {
+          if (event.key === 'F2') {
+            event.preventDefault(); // Prevent default behavior of F2 key
+          const x = localStorage.getItem('Modal')
+          if (x == 'true') {
+            return;
+          }
+            setisSelectedIndex(0);
+            setTimeout(() => {
+              if (ProductRefs.current[0]) {
+                ProductRefs.current[0].focus();
+              }
+            }, 50);
+          }else if (event.key === 'F1') {
+
+            isF1 = false
+          }
+        };
+      
+        // Add event listener for keydown event
+        document.addEventListener('keydown', handleKeyPress);
+      
+        // Cleanup function to remove event listener when component unmounts
+        return () => {
+          document.removeEventListener('keydown', handleKeyPress);
+        };
+      }, [isSelected, ProductRefs]);
 
 
 
@@ -442,6 +503,7 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
         updatedItems.splice(selectedItemIndex, 1);
         setcartitems(updatedItems);
         closeModal();
+
       } else {
         console.error('Invalid selectedItemIndex or out of range:', selectedItemIndex);
         // Handle the situation when the index is invalid or out of range
@@ -500,15 +562,82 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
         const onClose = () => {
             setIsOpenTransModal(false);
         };
- 
+
+
+        const focusedRowRef = useRef<HTMLTableRowElement>(null);
+
+        const [selectedIndex, setSelectedIndex] = useState(0);
+
+        let isf3 : boolean = false
+
+        useEffect(() => {
+          const handleKeyPress = (e:any) => {
+  
+            switch (e.key) {
+              case 'F3':
+                e.preventDefault();
+                isf3 = true
+                setSelectedItemIndex(selectedIndex);
+                focusedRowRef.current && focusedRowRef.current.focus();
+                break;
+              default:
+                break;
+            }
+          };
+      
+          window.addEventListener('keydown', handleKeyPress);
+      
+          return () => {
+            window.removeEventListener('keydown', handleKeyPress);
+          };
+        }, [selectedIndex, setSelectedItemIndex, cartitems]);
+      
+
+        const handleKeydownTable = (e:any) => {
+          switch (e.key) {
+            case 'ArrowDown':
+              e.preventDefault();
+              if (selectedIndex < cartitems.length - 1) {
+                setSelectedIndex((prevIndex) => prevIndex + 1);
+              } else {
+                // If not in isf3 mode or at the end, wrap to the first item
+                setSelectedIndex(0);
+              }
+              break;
+
+            case 'ArrowUp':
+                e.preventDefault();
+                if (selectedIndex > 0) {
+                  setSelectedIndex((prevIndex) => prevIndex - 1);
+                } else {
+                  // If at the beginning, wrap to the last item
+                  setSelectedIndex(cartitems.length - 1);
+                }
+                break;
+        
+            case 'Enter':
+              e.preventDefault();
+              openModaltrans(selectedIndex)
+              break;
+        
+            // Add additional cases for other arrow keys if needed
+            default:
+              break;
+          }
+        }
+
 
     return (
       <div className="Transaction" style={{ overflowY: 'auto', maxHeight: '55%' ,
        border: '1px solid #ccc', borderRadius: '10px',
         boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
-        <Table className="OrderList" sx={{
+        <Table 
+            tabIndex={0} // Make the table focusable
+        className="OrderList" sx={{
                             fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
-                            overflow: 'auto'}} >
+                            overflow: 'auto'}} 
+                            
+                            >
           <thead>
             <tr>
               <th>Qty</th>
@@ -520,8 +649,17 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
           </thead>
           <tbody>
           {Array.isArray(cartitems) && cartitems.length > 0 ? (
-        cartitems.map((item, index) => (
-            <tr key={index} onClick={() => openModaltrans(index)}> 
+           cartitems.map((item, index) => (
+            <tr key={index} onClick={() => openModaltrans(index)}
+            onKeyDown={(e) => handleKeydownTable(e)}
+            ref={index === 0 ? focusedRowRef : null}
+            tabIndex={index === 0 ? 0 : undefined}
+            style={{ outline: selectedIndex === index ? '2px solid blue' : 'none',
+            backgroundColor: selectedIndex === index ? 'blue':'white' ,color : selectedIndex === index? 'white':'black'
+          
+          }} // Add focus style
+
+            > 
             <td style={{textAlign:'center'}}>{item.quantity}</td>
             <td title={item.description}>{item.description}</td>
             <td style={{textAlign:'end'}}>{parseFloat(item.price).toFixed(2)}</td>
@@ -618,22 +756,23 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
 interface CategoryData {
   category :any;
   onReceiveProducts:any;
+  IsModalOpen:() => boolean;
 }
-const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) => {
+const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts,IsModalOpen }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
-
+  const booleanValue = useSelector((state: any) => state.booleanValue);
+  const dispatch = useDispatch()
   const [selectedCategoryall, setSelectedCategoryall] = useState<boolean>(false);
 
     const [productscCat, setProducts] = useState([]);
 
-    const fetchData = async (x: any) => {
+    const fetchData = async (x: any,index:any) => {
 
       if (x == 'ALL'){
         setSelectedCategoryall(true)
 
       }else{
         setSelectedCategoryall(false)
-
       }
     
       try {
@@ -643,7 +782,53 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
             category:x,
           }
         });
+
+        setisSelectedIndexData(index)
         setSelectedCategory(x); // Assuming setSelectedCategory is defined elsewhere
+        setProducts(response.data); // Assuming setProducts is defined elsewhere
+        onReceiveProducts(response.data);
+        // if (onReceiveProducts) {
+        //   onReceiveProducts(response.data);
+        // }
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          const axiosError = error as AxiosError;
+
+          if (axiosError.response) {
+            // The request was made and the server responded with a status code
+            console.error('Server responded with a non-2xx status:', axiosError.response.data);
+          } else if (axiosError.request) {
+            // The request was made but no response was received
+            console.error('No response received:', axiosError.request);
+          } else {
+            // Something else happened while setting up the request
+            console.error('Error setting up the request:', axiosError.message);
+          }
+        } else {
+          // Handle non-Axios errors here
+          console.error('Non-Axios error:', error);
+        }
+      }
+    };
+
+    
+    const OnKeyPressfetchData = async (x: any) => {
+
+      if (x == 'ALL'){
+        setSelectedCategoryall(true)
+
+      }else{
+        setSelectedCategoryall(false)
+      }
+    
+      try {
+        // const response = await axios.get(`${BASE_URL}/api/product/${x}`);
+        const response = await axios.get(`${BASE_URL}/api/product-category/`,{
+          params: {
+            category:x,
+          }
+        });
+
         setProducts(response.data); // Assuming setProducts is defined elsewhere
         onReceiveProducts(response.data);
         // if (onReceiveProducts) {
@@ -671,7 +856,178 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
     };
   
 
+    const [isSelectedIndexData,setisSelectedIndexData] = useState(0)
+    const categoryRef = useRef<any>([]);
 
+
+
+
+    
+
+
+
+
+    // useEffect(() => {
+    //   const handleKeyPress = (event:any) => {
+    //     if (event.key === 'F1') {
+    //       event.preventDefault(); // Prevent default behavior of F1 key
+    //       if (categoryRef.current) {
+    //         categoryRef.current[isSelectedIndexData].focus(); // Focus on the first category item
+    //         // setisSelectedIndexData(isSelectedIndexData)
+     
+    //       }
+    //     }
+    //   };
+  
+    //   // Add event listener for keydown event
+    //   document.addEventListener('keydown', handleKeyPress);
+  
+    //   // Cleanup function to remove event listener when component unmounts
+    //   return () => {
+    //     document.removeEventListener('keydown', handleKeyPress);
+    //   };
+    // }, []); // Empty dependency array to run only once on component mount
+  
+
+    useEffect(() => {
+      const intervalId = setInterval(() => {
+          // Dispatch action to set boolean value in Redux store
+          const isModalOpen = IsModalOpen();
+        dispatch(setBooleanValue(isModalOpen))
+
+        if (isModalOpen) {
+          localStorage.setItem('Modal','true')
+        }else {
+          localStorage.setItem('Modal','false')
+        }
+     
+        
+      }, 500); // Check every second
+  
+      // Clean up interval on component unmount
+      return () => clearInterval(intervalId);
+  }, [IsModalOpen]); // Empty dependency array ensures the effect runs only once after the initial render
+  
+  
+
+    useEffect(() => {
+      const handleKeyPress = (event:any) => {
+        switch (event.key) {
+          case 'F1':
+            event.preventDefault();
+             // Prevent default behavior of F1 key
+            if (categoryRef.current) {
+
+              let x:any = IsModalOpen()
+              if (localStorage.getItem('Modal') === 'true') {
+                return;
+              }
+              if (isSelectedIndexData <= 0){
+                categoryRef.current[0].focus(); // Focus on the first category item
+                setisSelectedIndexData(0)
+  
+              } else{
+                categoryRef.current[isSelectedIndexData].focus(); // Focus on the first category item
+      
+              }
+            }
+            break;
+
+            case 'F2':
+              event.preventDefault(); // Prevent default behavior of F1 key
+              setisSelectedIndexData(-2)
+              setSelectedCategoryall(false)
+              break;
+          // Add cases for other keys if needed
+          default:
+            break;
+        }
+      };
+    
+      // Add event listener for keydown event
+      document.addEventListener('keydown', handleKeyPress);
+    
+      // Cleanup function to remove event listener when component unmounts
+      return () => {
+        document.removeEventListener('keydown', handleKeyPress);
+      };
+    }, []); // Empty dependency array to run only once on component mount
+    
+
+useEffect(() => {
+  if (categoryRef.current.length > 0) {
+    categoryRef.current[isSelectedIndexData].focus(); // Focus on the first category item
+    
+  }
+},[isSelectedIndexData])
+
+
+    const handleKeydownCategory = (e:any,index:any) => {
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+ 
+          if (selectedCategoryall){
+            setSelectedCategoryall(false)
+            setisSelectedIndexData(0);
+          }else {
+            if (isSelectedIndexData < category.length - 1) {
+              setisSelectedIndexData((prevIndex) => prevIndex + 1);
+  
+       
+            } else {
+              // If not in isf3 mode or at the end, wrap to the first item
+              setisSelectedIndexData(0);
+            }
+  
+          }
+
+          break;
+
+        case 'ArrowUp':
+            e.preventDefault();
+            if (isSelectedIndexData > 0) {
+              setisSelectedIndexData((prevIndex) => prevIndex - 1);
+              setSelectedCategoryall(false)
+            } else {
+              // If at the beginning, wrap to the last item
+              if (selectedCategoryall) {
+                setisSelectedIndexData(category.length - 1);
+                setSelectedCategoryall(false)
+       
+              } else {
+                setSelectedCategoryall(true)
+                setisSelectedIndexData(-1)
+              }
+     
+
+            }
+            // OnKeyPressfetchData(category[isSelectedIndexData].category)
+            break;
+    
+        case 'Enter':
+          e.preventDefault();
+          if (selectedCategoryall){
+            OnKeyPressfetchData('ALL')
+          } else {
+            OnKeyPressfetchData(category[isSelectedIndexData].category)
+          }
+  
+          break;
+    
+        // Add additional cases for other arrow keys if needed
+        default:
+          break;
+
+
+
+      }
+      
+      if (categoryRef.current[isSelectedIndexData]) {
+        categoryRef.current[isSelectedIndexData].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    
     
     const theme = useTheme();
     const matchesXs = useMediaQuery(theme.breakpoints.down('xs'));
@@ -731,10 +1087,11 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
     margin: '10px',
  }}
 >
-<Box
+<div
+    ref={categoryRef}
      key={0}
-     onClick={() => fetchData('ALL')}
-      sx={{
+     onClick={() => fetchData('ALL',-1)}
+      style={{
         border: '1px solid #ccc',
         padding: '5px',
         justifyContent: 'center',
@@ -746,7 +1103,7 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
         cursor: 'pointer',
         color: '#ffffff',
         backgroundColor:
-        selectedCategoryall ? '#ff9800' : '#007bff', // Change background color conditionally
+        selectedCategoryall ? 'darkBlue' : '#007bff', // Change background color conditionally
         textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
         fontWeight: 'bold',
         textAlign: 'center',
@@ -775,12 +1132,17 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
     >
       SHOW ALL
     </Typography>
-    </Box>
- {category.map((categoryItem: { category: any; }) => (
-    <Box
-      key={categoryItem.category}
-      onClick={() => fetchData(categoryItem.category)}
-      sx={{
+    </div>
+ {category.map((categoryItem:any,index:any ) => (
+    <div
+      key={index}
+      tabIndex={index}
+      ref={(ref) => (categoryRef.current[index] = ref)}
+      onClick={() => fetchData(categoryItem.category,index)}
+      onKeyDown={(e)=> handleKeydownCategory(e,index)}
+      
+      style={{
+        outline: isSelectedIndexData === index ? '2px solid blue' : 'none',
         border: '1px solid #ccc',
         padding: '5px',
         justifyContent: 'center',
@@ -792,7 +1154,8 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
         cursor: 'pointer',
         color: '#ffffff',
         backgroundColor:
-          selectedCategory === categoryItem.category ? '#ff9800' : '#007bff', // Change background color conditionally
+        // selectedCategory === categoryItem.category ? '#ff9800' : '#007bff', // Change background color conditionally
+        isSelectedIndexData === index ? 'darkBlue' : '#007bff', // Change background color conditionally
         textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
         fontWeight: 'bold',
         textAlign: 'center',
@@ -821,7 +1184,7 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts }) 
     >
       {categoryItem.category.toUpperCase()}
     </Typography>
-    </Box>
+    </div>
   ))}
 </Box>
     );
@@ -845,6 +1208,8 @@ const Restaurant: React.FC = () => {
   const [DiscountType, setDiscountType] = useState<any>('');
   const [TotalDue, setTotalDue] = useState<any>(0);
 
+  const dispatch = useDispatch();
+  const booleanValue = useSelector((state: any) => state.booleanValue);
 
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -1069,36 +1434,36 @@ const Restaurant: React.FC = () => {
     
     };
 
-  const HandleAddtocart = (event:any) => {
-    event.preventDefault();
-    if (event.key =='Enter'){
-      addtocarts();
-    }
+  // const HandleAddtocart = (event:any) => {
+  //   event.preventDefault();
+  //   if (event.key =='Enter'){
+  //     addtocarts();
+  //   }
 
-    if (event.key =='ArrowUp'){
-      addQuantity();
-    }
-    if (event.key =='ArrowDown'){
-      MinusQuantity();
-    }
+  //   if (event.key =='ArrowUp'){
+  //     addQuantity();
+  //   }
+  //   if (event.key =='ArrowDown'){
+  //     MinusQuantity();
+  //   }
 
-  }
+  // }
 
 
-  const HandleUpdatetocart = (event:any) => {
-    event.preventDefault();
-    if (event.key =='Enter'){
-      onUpdateToCart();
-    }
+  // const HandleUpdatetocart = (event:any) => {
+  //   event.preventDefault();
+  //   if (event.key =='Enter'){
+  //     onUpdateToCart();
+  //   }
 
-    if (event.key =='ArrowUp'){
-      addQuantity();
-    }
-    if (event.key =='ArrowDown'){
-      MinusQuantity();
-    }
+  //   if (event.key =='ArrowUp'){
+  //     addQuantity();
+  //   }
+  //   if (event.key =='ArrowDown'){
+  //     MinusQuantity();
+  //   }
 
-  }
+  // }
 
 
     interface selecteditemData {
@@ -1120,6 +1485,7 @@ const Restaurant: React.FC = () => {
         updatedItems.splice(selectedItemIndex, 1);
         setCartItems(updatedItems);
         closeModal();
+ 
 
       } else {
         console.error('Invalid selectedItemIndex or out of range:', selectedItemIndex);
@@ -1377,6 +1743,8 @@ const PaymentClickControlS = () => {
    const PaymentClick = () => {
     if (parseFloat(formattedTotalDue )!== 0){
       setPaymentOpenModal(true)
+
+
       setTimeout(() => {
         if (CashPaymentRef.current){
           CashPaymentRef.current?.focus();
@@ -2201,26 +2569,70 @@ const SelectTableOk = (searchItemindex: string) => {
 
     const [isKey, setIsKey] = useState<boolean>(false);
 
+    const [isModal,setisModal] = useState<boolean>(false)
+
     useEffect(() => {
       setTotalDue(calculateTotalDue);
     }, [isKey, calculateTotalDue]); // Include calculateTotalDue in the dependency array if it's used inside calculateTotalDue
     
+
+    const IsModalOpen = () => {
+      return (
+          CustomerDineInModal ||
+          SalesOrderListOpenModal ||
+          CashPaymentEntryModal ||
+          CustomeryPaymentModal ||
+          ReprintTransactionModal ||
+          CashBreakDownModal ||
+          ChargeToModal ||
+          CreditCardPaymentModal ||
+          CreditCardPaymentEntryModal ||
+          DebitCardPaymentModal ||
+          OpenVireficationModal ||
+          PaymentOpenModal ||
+          OtherCommandOpenModal ||
+          OrderTypeModal
+      );
+  }
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+        // Dispatch action to set boolean value in Redux store
+        const isModalOpen = IsModalOpen();
+        
+    
+        if (isModalOpen) {
+          localStorage.setItem('Modal','true')
+        }else {
+          localStorage.setItem('Modal','false')
+        }
+     
+      
+    }, 50); // Check every second
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+}, [IsModalOpen]); // Empty dependency array ensures the effect runs only once after the initial render
+
+
+
     useEffect(() => {
       const handleKeyPress = (e: KeyboardEvent) => {
-
+ 
 
         if (e.key === 'F5') {
           e.preventDefault(); // Prevent the default browser refresh action for F5
         }
-        if (e.ctrlKey && e.key === 'n') {
+
+        else if (e.ctrlKey && e.key === 'n') {
           e.preventDefault(); // Prevent the default browser action for Control + N
         }
-        if (e.ctrlKey && e.key === 's') { // Control + S
+        else if (e.ctrlKey && e.key === 's' || e.key === 'S' ) { // Control + S
           e.preventDefault();
                   if (CustomerDineInModal || SalesOrderListOpenModal || CashPaymentEntryModal || CustomeryPaymentModal || ReprintTransactionModal || CashBreakDownModal || ChargeToModal || CreditCardPaymentModal || CreditCardPaymentEntryModal || DebitCardPaymentModal || OpenVireficationModal) {
                 return;
                   }
-          if (DineIn) {
+          if (DineIn || userRank == 'Salesman') {
             SaveOrderClick();
           } else {
             setIsKey(true);
@@ -2231,6 +2643,24 @@ const SelectTableOk = (searchItemindex: string) => {
     
             setIsKey(false);
           }
+        } else if (e.key === 'Escape') {
+          e.preventDefault(); 
+        setPaymentOpenModal(false)
+        if (tableNoModal){
+          if(SelectTypeOfTransaction){
+            setSelectTypeOfTransaction(false)
+          }else{
+            setTableNoModal(false)
+            setOrderTypeModal(true)
+            setTimeout(() => {
+              DineInRef.current?.focus()
+            }, 500);
+          }
+      
+        } else if (OtherCommandOpenModal){
+          setOtherCommandOpenModal(false)
+        }
+    
         }
       };
     
@@ -2276,8 +2706,17 @@ const SelectTableOk = (searchItemindex: string) => {
     }, [refreshCart]); // Trigger effect when refreshCart changes
     
 
+useEffect(() => {
+if(OrderTypeModal){
+  setTimeout(() => {
+    DineInRef.current?.focus()
+  }, 500);
+}
+},[OrderTypeModal])
+   
 
-    
+
+
 
 const handleBackspace = () => {
 
@@ -2476,8 +2915,16 @@ useEffect(() => {
 
 
 //*************************VERIFICATION ****************************/
-const OpenVireficationEntry = () => {
+
+const [VeryficationType,setVeryficationType] = useState<string>('')
+const OpenVireficationEntry = (type:any) => {
   setOpenVireficationModal(true)
+
+  if (type === 'Senior'){
+    setPaymentOpenModal(false)
+  }
+
+  setVeryficationType(type)
 }
 
 const CloseVerification = () => {
@@ -2486,10 +2933,140 @@ const CloseVerification = () => {
 
 const OKVerification = (data:any) => {
   setOpenVireficationModal(false)
-  ReprintList()
+  
+  if (VeryficationType=='Delete Order'){
+    onDelete()
+    setisSelected(0)
+  } else if (VeryficationType ==='Reprint'){
+    ReprintList()
+  }
+  else if (VeryficationType == 'Senior'){
+    OpenSeniorCitezenEntry();
+  }
+
+  if (VeryficationType == 'Item'){
+    OpenItemDiscountEntry();
+  }
+
+  if (VeryficationType == 'Trade'){
+    OpenTradeDiscountEntry();
+  }
+  if (VeryficationType == 'Transaction'){
+    OpenTransactionDiscountEntry();
+  }
+
+
 
 
 }
+
+
+const [OpenItemDiscountModal,setOpenItemDiscountModal] = useState<boolean>(false)
+const [OpenTradeDiscountModal,setOpenTradeDiscountModal] = useState<boolean>(false)
+const [OpenTransactionDiscountModal,setOpenTransactionDiscountModal] = useState<boolean>(false)
+const [OpenSeniorCitezenDiscountModal,setOpenSeniorCitezenDiscountModal] = useState<boolean>(false)
+const [SelectedItemDiscount,setSelectedItemDiscount] = useState(null)
+const [TypeofDisCount,setTypeofDisCount] = useState<any>('')
+const [Dis,setDis] = useState<boolean>(false)
+const [DisEntry,setDisEntry] = useState<any>('')
+
+
+//*************************SEÑIOR CITEZEN DISCOUNT ****************************/
+const OpenSeniorCitezenEntry = () => {
+  setOpenSeniorCitezenDiscountModal(true)
+  setDiscountType('SC')
+}
+
+const CloseSeniorCitezenDiscount = () => {
+  setOpenSeniorCitezenDiscountModal(false)
+  setDiscountType('')
+
+
+}
+
+const SaveSeniorCitezenDiscount = (data:any) => {
+
+  console.log(data)
+  setDiscountData(data)
+  // setDisEntry(data)
+  setDis(true)
+  setOpenSeniorCitezenDiscountModal(false)
+
+}
+
+
+
+//*************************ITEM DISCOUNT TRANSACTION****************************/
+const OpenItemDiscountEntry = () => {
+  if (isSelected != null){
+    setOpenItemDiscountModal(true)
+    setDiscountType('ITEM')
+  }
+
+  else{
+
+    setisFocus(isFocus)
+    showErrorAlert('Please Select Item!')
+
+  }
+
+
+}
+
+const CloseItemDiscountsEntry = () =>{
+  setDiscountType('')
+  setOpenItemDiscountModal(false)
+
+
+}
+const SaveItemDiscountEntry = (data:any) => {
+  console.log(data)
+  setOpenItemDiscountModal(false)
+
+}
+
+
+//*************************TRADE DISCOUNT TRANSACTION****************************/
+
+const OpenTradeDiscountEntry = () => {
+  setOpenTradeDiscountModal(true)
+  setDiscountType('TRADE')
+}
+
+const CloseTradeDiscountsEntry = () =>{
+  setOpenTradeDiscountModal(false)
+  setDiscountType('')
+
+
+}
+const SaveTradessDiscountEntry = (data:any) => {
+  console.log('trade discount',data)
+  setOpenTradeDiscountModal(false)
+
+}
+
+
+
+//*************************TRANSACTION DISCOUNT TRANSACTION****************************/
+
+const OpenTransactionDiscountEntry = () => {
+  setOpenTransactionDiscountModal(true)
+  setDiscountType('TRANSACTION')
+}
+
+const CloseTransactionDiscountsEntry = () =>{
+  setOpenTransactionDiscountModal(false)
+  setDiscountType('')
+
+
+}
+const SaveTransactionDiscountEntry = (data:any) => {
+  console.log('Transaction discount',data)
+  setOpenTransactionDiscountModal(false)
+
+}
+
+
 
 
 
@@ -3766,6 +4343,8 @@ const closeCashPayment = async () => {
     }})
 
 }
+
+
 const [categoryHide,setcategoryHide] = useState<boolean>(true)
 
 const [isFocus,setisFocus] = useState<any>(0)
@@ -3897,6 +4476,54 @@ if (event.key == 'Enter'){
 
 }
 
+const HandleAddtocart = (event:any) => {
+
+  if (event.key =='Enter'){
+    event.preventDefault();
+    addtocarts();
+  }
+
+  if (event.key =='ArrowUp'){
+    event.preventDefault();
+    addQuantity();
+  }
+  if (event.key =='ArrowDown'){
+    event.preventDefault();
+    MinusQuantity();
+  }
+  if (event.key == 'Escape'){
+    CloseAddOrderModal();
+  }
+
+  
+
+}
+
+
+const HandleUpdatetocart = (event:any) => {
+
+  if (event.key =='Enter'){
+    event.preventDefault();
+    onUpdateToCart();
+  }
+
+  if (event.key =='ArrowUp'){
+    event.preventDefault();
+    addQuantity();
+  }
+  if (event.key =='ArrowDown'){
+    event.preventDefault();
+    MinusQuantity();
+  }
+  if (event.key == 'Escape') {
+    onClose();
+  }
+  if (event.key == 'Delete') {
+    setEditOrderModal(false)
+    OpenVireficationEntry('Delete Order')
+  }
+
+}
 
   return (
     <>
@@ -3963,7 +4590,7 @@ if (event.key == 'Enter'){
                          )}
                      </div>
             }
-            {categoryHide &&  <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} />}
+            {categoryHide &&  <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} IsModalOpen ={IsModalOpen} />}
              
             </div>
 
@@ -3987,7 +4614,7 @@ if (event.key == 'Enter'){
 
   
           <div className='Product-container' style={{ overflowY: 'auto', height: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
-            <ProductGrid products={products} addtocart={addToCart} selectedProductData={selectedProductData} isSelected ={isSelected}  />
+            <ProductGrid products={products} addtocart={addToCart} selectedProductData={selectedProductData} isSelected ={isSelected} IsModalOpenF = {IsModalOpen} />
            
           </div>
         </div>
@@ -4163,7 +4790,7 @@ if (event.key == 'Enter'){
                         display: 'flex',flexDirection: 'column',alignItems: 'center',
                         borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
                         borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
-                      onClick={OpenVireficationEntry}
+                      onClick={(e) => OpenVireficationEntry('Reprint')}
                       fullWidth >
                       <Typography
                         variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
@@ -4219,7 +4846,13 @@ if (event.key == 'Enter'){
 {DebitCardPaymentModal && <DebitCardPayment handleClose={CloseDebitCardPayment} amountdue={formattedTotalDue}/>}
 {OpenVireficationModal && <Verification handleClose={CloseVerification} VerificationEntry={OKVerification}/>}
 
-if (CustomerDineInModal || SalesOrderListOpenModal || CashPaymentEntryModal || CustomeryPaymentModal)
+{OpenSeniorCitezenDiscountModal && <SeniorCitezenDiscount handleClose={CloseSeniorCitezenDiscount} SeniorData={SaveSeniorCitezenDiscount} 
+                                              amountcover={formattedTotalDue} SeniorOrderData={cartItems}/>}
+{OpenItemDiscountModal && <ItemDiscounts handleClose={CloseItemDiscountsEntry}  SelectedItemDiscount={SelectedItemDiscount} DiscountedData={SaveItemDiscountEntry}/>}
+
+{OpenTradeDiscountModal && <TradeDiscountList handleClose={CloseTradeDiscountsEntry} SalesOrderListings ={cartItems} TradeData={SaveTradessDiscountEntry}/>}
+{OpenTransactionDiscountModal && <TransactionDiscount handleClose={CloseTransactionDiscountsEntry} SalesOrderListings ={cartItems} TransactionData={SaveTransactionDiscountEntry}/>}
+{/* if (CustomerDineInModal || SalesOrderListOpenModal || CashPaymentEntryModal || CustomeryPaymentModal) */}
 
 
 {OrderTypeModal && (
@@ -4561,74 +5194,84 @@ if (CustomerDineInModal || SalesOrderListOpenModal || CashPaymentEntryModal || C
           </div>
 
 
-{/* 
-          <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
-                    SELECT DISCOUNT</h2>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px'}}>
-       
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Señior Citezin Discount</p>
-              <img src= {Senior} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
+      
 
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
+      
+              {OrderType === 'TAKE OUT' && (
+          <><h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px', color: 'Blue' }}>
+                  SELECT DISCOUNT</h2>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px', margin: '5px' }}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               PWD Discount</p>
-              <img src= {pwdD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-            
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
+                    <div
+                      style={{
+                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
+                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                      }}
+                      onClick={(e) => OpenVireficationEntry('Senior')}
+                      >
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+                        Señior Citezin Discount</p>
+                      <img src={Senior} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Trade Discount</p>
-              <img src= {tradeD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
+                    <div
+                      style={{
+                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
+                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                      }}>
 
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+                        PWD Discount</p>
+                      <img src={pwdD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div>
 
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
+                    <div
+                      style={{
+                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
+                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                      }}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Transaction Discount</p>
-              <img src= {transactD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div> */}
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+                        Trade Discount</p>
+                      <img src={tradeD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div>
 
 
+                    <div
+                      style={{
+                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
+                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                      }}>
 
-            {/* <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}
-              onClick={CloseModal} >
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Close</p>
-              <img src= {CloseImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div> */}
-
-            {/* </div> */}
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+                        Transaction Discount</p>
+                      <img src={transactD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div>
 
 
 
+                    <div
+                      style={{
+                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
+                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                      }}
+                      onClick={CloseModal}>
+
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
+                        Close</p>
+                      <img src={CloseImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div>
+
+                  </div></> 
+                )}
+
+  
             
         </div>
         </div>
@@ -4908,3 +5551,5 @@ if (CustomerDineInModal || SalesOrderListOpenModal || CashPaymentEntryModal || C
 
 
 export default Restaurant;
+
+

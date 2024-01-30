@@ -68,10 +68,9 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
     
 
       if (e.key == 'Enter'){
-
+        e.preventDefault();
         if (NextRef.current){
           NextRef.current.focus()
-          NextRef.current.select()
         }
         
 
@@ -81,7 +80,7 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
 
     
     const HandleButtonKeydown = (e:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) => {
-
+      e.preventDefault();
       if(e.key == 'ArrowRight' || e.key == 'ArrowDwon'){
         if (NextRef.current){
           NextRef.current.focus();
@@ -92,7 +91,8 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
         }
       }
 
-      if (e.key == 'Enter'){
+      if (e.key == 'Enter' && CurrentRef.current){
+        
         if (index == 0) {
           handleVefication();
         }else if (index == 1){
@@ -101,6 +101,33 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
       }
       
     }
+
+
+    useEffect(() => {
+      const handleKeyPress = (e: KeyboardEvent) => {
+  
+  
+        if (e.key === 'F5') {
+          e.preventDefault(); // Prevent the default browser refresh action for F5
+        }
+        else if (e.ctrlKey && e.key === 'n') {
+          e.preventDefault(); // Prevent the default browser action for Control + N
+        }
+        else if (e.ctrlKey && e.key === 's') { // Control + S
+          e.preventDefault();
+          handleVefication();
+        } else if (e.key === 'Escape') {
+          e.preventDefault(); 
+          handleClose();
+        }
+      };
+    
+      window.addEventListener('keydown', handleKeyPress);
+    
+      return () => {
+        window.removeEventListener('keydown', handleKeyPress);
+      };
+    }, []);  
 
   
     return (
