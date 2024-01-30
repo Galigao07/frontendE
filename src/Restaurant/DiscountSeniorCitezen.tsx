@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Table, Typography } from "@mui/material";
@@ -29,6 +30,15 @@ const SeniorCitezenDiscount: React.FC<SeniorCitezenDiscountData> = ({handleClose
     const SeniorFulnnameRef = useRef<HTMLInputElement>(null);
     const SeniorTINRef = useRef<HTMLInputElement>(null);
     const SGuestCountRef = useRef<HTMLInputElement>(null);
+    const SaveButtonRef = useRef<HTMLButtonElement>(null)
+    const ViewListRef = useRef<HTMLButtonElement>(null)
+    const CloseRef = useRef<HTMLButtonElement>(null)
+
+
+
+
+
+
 
     const [SeniorDiscountData,setSeniorDiscountData] = useState({
         SeniorID:'',
@@ -56,12 +66,19 @@ useEffect(() => {
 
     const NetSale  =  parseFloat(amountcover) / (0.12 + 1)
     const NetSale12  =  parseFloat(amountcover) -  NetSale
+    let gCount:any = 0
+    if (SeniorOrderData[0].guest_count === null || SeniorOrderData[0].guest_count=== undefined){
+        gCount = 1
+    }else{
+        gCount = SeniorOrderData[0].guest_count
+    }
+
      setSeniorDiscountData({ ...SeniorDiscountData,
      SAmountCovered: amountcover ,
      SVatSales:amountcover,
      SeniorFulnname:SeniorOrderData[0].customer_name,
-     SeniorCount:SeniorOrderData[0].guest_count,
-     SGuestCount:SeniorOrderData[0].guest_count,
+     SeniorCount: String(gCount),
+     SGuestCount: String(gCount),
      SLessVat12 : NetSale12.toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3}),
      SNetOfVat: NetSale.toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3}),
      SDiscountedPrice:NetSale.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
@@ -79,7 +96,7 @@ useEffect(() => {
         }
     }, 100);
 
- console.log(SeniorOrderData)
+ console.log(SeniorDiscountData)
 
 },[])
 
@@ -102,14 +119,23 @@ const ComputeDisCount = () => {
     setSeniorDiscountData({ ...SeniorDiscountData,
         SAmountCovered: SAmountCoveredTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
         SVatSales: SAmountCoveredTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
-        SeniorCount:SeniorDiscountData.SGuestCount,
+        SeniorCount: SeniorDiscountData.SGuestCount,
         SLessVat12 : NetSale12.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
         SNetOfVat: NetSale.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
         SDiscountedPrice:DiscountedPrice.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
         SLess20SCDiscount:DisCount.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
    
 
-})}
+})
+
+if (SaveButtonRef.current){
+    setTimeout(() => {
+        SaveButtonRef.current?.focus();
+    }, 500);
+
+}
+
+}
 
 const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
     if (event.key === 'Enter') {
@@ -183,9 +209,79 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
     
     
     const HandleSave = () => {
-        console.log('qweeqwe')
         SeniorData(SeniorDiscountData)
     }
+
+
+
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            // e.preventDefault();
+    
+            
+          if (e.key === 'F5') {
+            e.preventDefault(); // Prevent the default browser refresh action for F5
+          }
+          else if (e.ctrlKey && e.key === 'n') {
+            e.preventDefault(); // Prevent the default browser action for Control + N
+          }
+          else if (e.ctrlKey && e.key === 's') { // Control + S
+            e.preventDefault();
+
+          } else if (e.key === 'Escape') {
+            e.preventDefault(); 
+            handleClose();
+          }
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+      
+        return () => {
+          window.removeEventListener('keydown', handleKeyPress);
+        };
+      }, []); 
+
+ 
+      const [isFocus,setisFocus] = useState<any>(0)
+      const HandleKeydownButton = (event:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) =>{
+
+        event.preventDefault();
+        if (event.key == 'ArrowRight' || event.key == 'ArrowDown') {
+            NextRef.current.focus();
+ 
+        
+            if (index == 1) {
+              setisFocus(0)
+            }else {
+              setisFocus(index + 1)
+            }
+         
+      
+        }
+      
+        if (event.key == 'ArrowLeft' || event.key == 'ArrowUp'){
+          BackRef.current.focus();
+
+      
+          setisFocus(index - 1)
+      
+      }
+      
+      if (event.key == 'Enter'){
+            event.preventDefault()
+         if (index == 0){
+            ViewList();
+         }
+         if (index == 1){
+          HandleSave()
+         }
+         if (index == 2){
+          handleClose()
+         }
+  
+      }
+      
+      }
 
     return (
         <>
@@ -202,7 +298,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                                 fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                 overflow: 'auto',width: '50%',}}>Senior ID
                         </Typography>
-                        <input type="text" placeholder="Senior ID" autoComplete="off" ref={SeniorIDRef}
+                        <input type="text" placeholder="Senior ID" autoComplete="off" ref={SeniorIDRef} id ='seniorId'
                             value={SeniorDiscountData.SeniorID} name="SeniorID"
                             onKeyDown={(e) => handleKeyDown(e, SeniorIDRef, SeniorFulnnameRef)} 
                             onChange={(e) => handleChange('SeniorID', e.target.value)}/>
@@ -322,9 +418,17 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
 
 
                     <div style={{ width: '100%', margin:'5px'}}>
-                        <Button style={{backgroundColor:'blue'}} onClick={ViewList}>View List</Button>
-                        <Button style={{backgroundColor:'blue'}} onClick={HandleSave}>SAVE</Button>
-                        <Button style={{backgroundColor:'red'}} onClick={handleClose}>EXIT</Button>
+                        <Button style={{backgroundColor:'blue'}}  ref= {ViewListRef}  
+                        onKeyDown={(e)=> HandleKeydownButton(e,CloseRef,ViewListRef,SaveButtonRef,0)}
+                        tabIndex={0} onClick={ViewList}>View List</Button>
+                        
+                        <Button style={{backgroundColor:'blue'}} ref= {SaveButtonRef}  
+                                         onKeyDown={(e)=> HandleKeydownButton(e,ViewListRef,SaveButtonRef,CloseRef,1)}
+                        tabIndex={1}  onClick={HandleSave}>SAVE</Button>
+                       
+                        <Button style={{backgroundColor:'red'}}   ref= {CloseRef}  
+                                     onKeyDown={(e)=> HandleKeydownButton(e,SaveButtonRef,CloseRef,ViewListRef,2)}
+                        tabIndex={2} onClick={handleClose}>EXIT</Button>
                     </div>
                 </div>
                 </div>

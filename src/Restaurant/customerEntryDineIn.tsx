@@ -150,6 +150,31 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
       }, []);
 
 
+      useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+    
+    
+          if (e.key === 'F5') {
+            e.preventDefault(); // Prevent the default browser refresh action for F5
+          }
+          else if (e.ctrlKey && e.key === 'n') {
+            e.preventDefault(); // Prevent the default browser action for Control + N
+          }
+          else if (e.ctrlKey && e.key === 's') { // Control + S
+            e.preventDefault();
+            sendDataToMain();
+          } else if (e.key === 'Escape') {
+            e.preventDefault(); 
+            handleclose();
+          }
+        };
+      
+        window.addEventListener('keydown', handleKeyPress);
+      
+        return () => {
+          window.removeEventListener('keydown', handleKeyPress);
+        };
+      }, []);  
     
        const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
         if (event.key === 'Enter') {

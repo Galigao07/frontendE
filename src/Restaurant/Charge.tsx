@@ -290,7 +290,34 @@ const SaveChargeToEvent = async () => {
             }
     };
     
-    
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+  
+  
+          if (e.key === 'F5') {
+            e.preventDefault(); // Prevent the default browser refresh action for F5
+          }
+          else if (e.ctrlKey && e.key === 'n') {
+            e.preventDefault(); // Prevent the default browser action for Control + N
+          }
+          else if (e.ctrlKey && e.key === 's') { // Control + S
+            e.preventDefault();
+            SaveChargeToEvent();
+          } else if (e.key === 'Escape') {
+            e.preventDefault(); 
+            handleClose();
+          }
+        };
+      
+        window.addEventListener('keydown', handleKeyPress);
+      
+        return () => {
+          window.removeEventListener('keydown', handleKeyPress);
+        };
+      }, []);   
+
+
+
     return (
     <div>
         

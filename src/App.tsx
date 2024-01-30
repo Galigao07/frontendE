@@ -21,7 +21,8 @@ import Homepage from './Home/home'
 // import OnlineTestApp from './OnlineTestApp';
 // import electron, { BrowserWindow } from 'electron';
 
-
+import { Provider } from 'react-redux';
+import store from './Redux/store';
 
 function App() {
   const navigate = useNavigate();
@@ -293,6 +294,8 @@ const logoutClick = async () => {
 
 
   return (
+
+    <Provider store={store}>
     <div> 
       {isLogin ? (
         userRank === 'Cashier' || userRank === 'Salesman' ? (
@@ -523,7 +526,7 @@ const logoutClick = async () => {
         <LoginForm />
       )}
     </div>
-
+</Provider>
   );
 }
 

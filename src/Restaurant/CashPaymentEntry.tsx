@@ -217,6 +217,28 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
 
 
   useEffect(() => {
+    const handleKeyPress = (e: { keyCode: number; preventDefault: () => void; }) => {
+      if (e.keyCode === 116) {
+        e.preventDefault(); // Prevent the default browser refresh action for F5 (key code 116)
+
+      }
+      if (e.keyCode === 27) {
+        e.preventDefault(); 
+        handleClose();
+      }
+      
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, []);
+
+
+
+  useEffect(() => {
 
     const amountWithoutCommas = amountdue.replace(/,/g, '')
     const change = amountReceived - amountWithoutCommas;
