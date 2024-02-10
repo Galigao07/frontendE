@@ -65,11 +65,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setBooleanValue } from '../Redux/actions';
 import showErrorAlert from '../SwalMessage/ShowErrorAlert';
 
-
+// import html2pdf from 'html2pdf.js';
 import SeniorCitezenDiscount from './DiscountSeniorCitezen';
 import ItemDiscounts from './DiscountItems'
 import TradeDiscountList from './DiscountTrade'
 import TransactionDiscount from './DiscountTransaction';
+import jsPDF from 'jspdf';
 interface ProductList {
   long_desc: any;
   reg_price: any;
@@ -3233,7 +3234,56 @@ const SaveTransactionDiscountEntry = (data:any) => {
        }    
       return receiptContent;
     };
+   
 
+    const triggerPrint = async () => {
+      try {
+          // Make a POST request to the Django backend endpoint
+          const response = await fetch(`${BASE_URL}/api/print/`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({}) // You can pass any data if needed
+          });
+  
+          // Check if the request was successful
+          if (response.ok) {
+              console.log('Print operation triggered successfully');
+          } else {
+              console.error('Failed to trigger print operation');
+          }
+      } catch (error) {
+          console.error('Error triggering print operation:', error);
+      }
+  };
+
+    // useEffect(() => {
+    //   // Establish WebSocket connection
+    //   const socket = new WebSocket(`ws://${BASE_URL}/ws/print/`);
+  
+    //   // Add event listener for WebSocket connection open
+    //   socket.addEventListener('open', () => {
+    //     console.log('WebSocket connection established');
+        
+    //     // Send message to backend
+    //     socket.send(JSON.stringify({ message: 'print' }));
+    //   });
+  
+    //   // Add event listener for WebSocket messages
+    //   socket.addEventListener('message', (event) => {
+    //     console.log('Message from server:', event.data);
+    //   });
+  
+    //   // Clean up WebSocket connection on component unmount
+    //   return () => {
+    //     socket.close();
+    //   };
+    // }, []);
+
+  // Now you can call saveAndPrintPDF whenever you need to save and print the PDF
+  // Example: saveAndPrintPDF();
+  
 
 //******** PRINT SALES ORDER AREA******** */
     const printReceipt = async (SOInfo: any,SONumber: any) => {
@@ -3354,9 +3404,19 @@ const SaveTransactionDiscountEntry = (data:any) => {
               doc.write(`<img src="${qrDataURI}" alt="QR Code"  style="max-width: 120px; display: inline-block;" />`);
               doc.write('</div>'); // Close the container div
               doc.close();
-  
+              console.log('999') /// Dont delete
+     
+              
+
+ 
+            
+              triggerPrint()
               setTimeout(async () => {
+                
                   iframeWindow.print();
+                
+
+               
               if (SOInfo.PaymentType ==='Sales Order'){
                 setOrderType('')
                 setOrderTypeModal(true)
@@ -3649,12 +3709,13 @@ if (iframe !== null) {
     doc.write('</div>'); // Close the container div
     doc.close();
 
-
+    console.log('999') /// Dont delete
      
   /* The above code is using setTimeout to execute a series of actions after a delay of 1000
   milliseconds. */
   setTimeout(() => {
     iframeWindow.print();
+
     localStorage.removeItem('cartData');
     setOrderType('')
     setOrderTypeModal(true)
@@ -5552,4 +5613,8 @@ const HandleUpdatetocart = (event:any) => {
 
 export default Restaurant;
 
+
+function html2pdf() {
+  throw new Error('Function not implemented.');
+}
 

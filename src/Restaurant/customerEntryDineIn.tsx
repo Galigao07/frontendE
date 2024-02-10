@@ -780,7 +780,7 @@ if (event.key == 'Enter'){
 
       <Grid container className="CreditCard-Container" spacing={2}>
 
-        <Grid item xs={12} md={3} style={{ height: '100%',width:'100%'}}>
+        <Grid item xs={12} md={3} >
           <div style={{width:'100%',height:'100%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
             <h2 style={{ color: '#007bff', padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
             borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid' }}
@@ -904,6 +904,7 @@ if (event.key == 'Enter'){
               style={{width:'100%'}} onClick={handleclose}>Exit</button>
           </div>
         </Grid>
+
       <Grid item xs={12} md={9} style={{ height: '100%',width:'100%'}}>
 
         {isDesktop && (

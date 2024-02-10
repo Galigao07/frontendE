@@ -40,15 +40,15 @@ function createWindow() {
     
   })
 
-  ipcMain.on('print-dialog', (event: any, args: any) => {
-    console.log('Print dialog shown.');
+//   ipcMain.on('print-dialog', (event: any, args: any) => {
+//     console.log('Print dialog shown.');
 
-    // auto click print button after 1 second
-    setTimeout(() => {
-        console.log('Auto clicking print button.');
-        win!.webContents.send('auto-print');
-    }, 1000);
-});
+//     // auto click print button after 1 second
+//     setTimeout(() => {
+//         console.log('Auto clicking print button.');
+//         win!.webContents.send('auto-print');
+//     }, 1000);
+// });
 
 
 
@@ -122,7 +122,7 @@ function createWindow() {
   //   win = null;
   // });
 
-  // Test active push message to Renderer-process.
+
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
   })
@@ -143,7 +143,55 @@ function createWindow() {
       splashScreen.close(); // Close the splash screen if it exists
     }
   });
+
+
+
+  win.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown' && input.control && input.key.toLowerCase() === 'p') {
+        console.log('Print preview is opened');
+        // Here you can perform actions or set flags indicating that print preview is open
+    }
+  });
+
+//   win.webContents.on('console-message', (_, level, message, lineNumber, sourceId) => {
+//     console.log('Print preview is opened', message, '', level);
+//     if (level === 1 && message === '999') {
+//         console.log('Print preview is opened');
+//         if (win && win.webContents) {
+//             console.log('Printing...');
+//             win.webContents.print({ silent: false, printBackground: true }, (success, errorType) => {
+//                 if (!success) {
+//                     console.error(`Failed to print: ${errorType}`);
+//                 } else {
+//                     console.log('Print Success');
+//                 }
+//             });
+//         } else {
+//             console.error('Invalid BrowserWindow instance');
+//         }
+//         // Here you can perform actions or set flags indicating that print preview is open
+//     }
+// });
+
+win.webContents.on('console-message', (_, level, message, lineNumber, sourceId) => {
+  console.log('Print preview is opened', message, '', level);
+  if (level === 1 && message === '999') {
+      console.log('Print preview is opened');
+      // Execute JavaScript to print the contents of the iframe
+      win?.webContents.print({ silent: true, printBackground: true });
+      console.log('Success');
+  }
+});
+
+
+  // Listen for when print preview is closed
+  win.webContents.on('destroyed', () => {
+    console.log('Print preview is closed');
+    // Here you can perform actions or reset flags indicating that print preview is closed
+  });
 }
+
+
 
 
 
@@ -185,25 +233,21 @@ ipcMain.on('closeApp', () => {
   app.quit();
 });
 
-ipcMain.on('silentPrint', () => {
+// ipcMain.on('silentPrint', () => {
+//   const win = new BrowserWindow({ show: false }); // Create a hidden window for printing
 
-
-  const win = new BrowserWindow({ show: false }); // Create a hidden window for printing
-
-  win.webContents.on('did-finish-load', () => {
-    win.webContents.print({ silent: true }, (success, errorType) => {
-      if (!success) {
-        dialog.showErrorBox('Print Error', `Failed to print: ${errorType}`);
-      }
-      win.close(); // Close the window after printing (optional)
-    });
-  });
-});
+//   win.webContents.on('did-finish-load', () => {
+//     win.webContents.print({ silent: true }, (success, errorType) => {
+//       if (!success) {
+//         dialog.showErrorBox('Print Error', `Failed to print: ${errorType}`);
+//       }
+//       win.close(); // Close the window after printing (optional)
+//     });
+//   });
+// });
 
 
 app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }

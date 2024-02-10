@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import  {useRef, useState, useEffect, ChangeEvent } from 'react';
-import { useNavigate  } from 'react-router-dom';
+// import { useNavigate  } from 'react-router-dom';
 import axios from 'axios';
 import './index.css';
 import logo from './logo.png';
 import Swal from 'sweetalert2';
 import BASE_URL from '../config';
 import { isMobile, isTablet } from 'react-device-detect';
-import { width } from '@fortawesome/free-solid-svg-icons/fa0';
-import { ipcRenderer } from 'electron';
+// import { width } from '@fortawesome/free-solid-svg-icons/fa0';
+// import { ipcRenderer } from 'electron';
   const LoginForm: React.FC  = () => {
     const usernameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
