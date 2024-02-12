@@ -45,7 +45,7 @@ import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt, faArrowAltCircleDo
 // import CustomerDineIn from './customerEntryDineIn';
 import QRCode from 'qrcode-generator';
 import { Button, Dialog, DialogContent, DialogTitle, Grid, Table, Typography } from '@mui/material';
-import { createTheme, ThemeProvider,Theme,makeStyles, useTheme  } from '@mui/material/styles';
+import { createTheme, ThemeProvider,Theme,makeStyles, useTheme, responsiveFontSizes  } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import Box from '@mui/material/Box';
 import styled from 'styled-components';
@@ -1406,11 +1406,12 @@ const Restaurant: React.FC = () => {
       const updatedItems = [...cartItems];
 
       updatedItems[index].quantity = updatedItems[index].quantity + quantity ;
-      updatedItems[index].totalAmount = ((updatedItems[index].quantity + quantity) * Price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      updatedItems[index].totalAmount = ((updatedItems[index].quantity) * Price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
       setCartItems(updatedItems);
-
+      AddPosExtended(cartItems[index])
 
     }else {
+
       const productToAdd = {
         quantity: quantity,
         description: selectedProduct.product.long_desc,
@@ -1418,7 +1419,7 @@ const Restaurant: React.FC = () => {
         totalAmount: calculateTotal(),
         barcode: selectedProduct.product.bar_code,
       };
-  
+      AddPosExtended(productToAdd)
       addToCart(productToAdd);
     }
 
@@ -1483,8 +1484,10 @@ const Restaurant: React.FC = () => {
     const onDelete = () => {
       if (selectedItemIndex !== null && selectedItemIndex >= 0 && selectedItemIndex < cartItems.length) {
         const updatedItems = [...cartItems];
+        DeletePosExtended(cartItems[selectedItemIndex])
         updatedItems.splice(selectedItemIndex, 1);
         setCartItems(updatedItems);
+     
         closeModal();
  
 
@@ -1501,6 +1504,7 @@ const Restaurant: React.FC = () => {
         updatedItems[selectedItemIndex].quantity = quantity;
         updatedItems[selectedItemIndex].totalAmount = calculateTotal();  // Update the quantity to the new value
         setCartItems(updatedItems);
+        AddPosExtended(cartItems[selectedItemIndex])
         closeModal();
       } else {
         console.error('Invalid selectedItemIndex or out of range:', selectedItemIndex);
@@ -1530,6 +1534,83 @@ const Restaurant: React.FC = () => {
 
   // ************************** END HERE ********************
 
+
+
+
+  const AddPosExtended = async (data:any) => {
+
+    try{
+
+      const response = await axios.post(`${BASE_URL}/api/extended-data/`, {data:data});
+
+      if (response.status==200){
+        console.log('added successfully')
+      }
+
+    }catch{
+      console.error('error');
+      
+    }
+
+  }
+
+  const UpdatePosExtended = async (data:any) => {
+
+    try{
+
+      const response = await axios.post(`${BASE_URL}/api/extended-data/`, data);
+
+      if (response.status==200){
+        console.log('Updated successfully')
+      }
+
+    }catch{
+      console.error('error');
+      
+    }
+
+  }
+
+
+  const DeletePosExtended = async (deleteData:any) => {
+
+    try{
+
+      const response = await axios.delete(`${BASE_URL}/api/extended-data/`, {
+         data: { deleteData: deleteData }
+        });
+
+      if (response.status==200){
+        console.log('Deleted successfully')
+      }
+
+    }catch{
+      console.error('error');
+      
+    }
+
+  }
+
+
+
+
+
+  const DeletePosExtendedAll = async () => {
+
+    try{
+
+      const response = await axios.delete(`${BASE_URL}/api/extended-data-terminal/`);
+
+      if (response.status==200){
+        console.log('Deleted successfully')
+      }
+
+    }catch{
+      console.error('error');
+      
+    }
+
+  }
 
 
 
@@ -3257,32 +3338,6 @@ const SaveTransactionDiscountEntry = (data:any) => {
           console.error('Error triggering print operation:', error);
       }
   };
-
-    // useEffect(() => {
-    //   // Establish WebSocket connection
-    //   const socket = new WebSocket(`ws://${BASE_URL}/ws/print/`);
-  
-    //   // Add event listener for WebSocket connection open
-    //   socket.addEventListener('open', () => {
-    //     console.log('WebSocket connection established');
-        
-    //     // Send message to backend
-    //     socket.send(JSON.stringify({ message: 'print' }));
-    //   });
-  
-    //   // Add event listener for WebSocket messages
-    //   socket.addEventListener('message', (event) => {
-    //     console.log('Message from server:', event.data);
-    //   });
-  
-    //   // Clean up WebSocket connection on component unmount
-    //   return () => {
-    //     socket.close();
-    //   };
-    // }, []);
-
-  // Now you can call saveAndPrintPDF whenever you need to save and print the PDF
-  // Example: saveAndPrintPDF();
   
 
 //******** PRINT SALES ORDER AREA******** */
@@ -3409,7 +3464,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
               
 
  
-            
+              DeletePosExtendedAll()
               triggerPrint()
               setTimeout(async () => {
                 
@@ -4013,6 +4068,9 @@ if (iframe !== null) {
     doc.write('</div>'); // Close the container div
     doc.close();
   // Remove the iframe after printing
+
+  DeletePosExtendedAll()
+  triggerPrint()
   setTimeout(() => {
     iframeWindow.print();
     // window.location.reload(); 

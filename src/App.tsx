@@ -18,6 +18,7 @@ import UserProfile from './Reference/UserProfile'
 import WaiterProfile from './Reference/WaiterProfile'
 import TableList from './Reference/TableList'
 import Homepage from './Home/home'
+import VideoUpload from './Reference/video'
 // import OnlineTestApp from './OnlineTestApp';
 // import electron, { BrowserWindow } from 'electron';
 
@@ -365,6 +366,7 @@ const logoutClick = async () => {
                      <Link  to="TableList">Table List</Link>
                      <Link  to="/chartofaccounts" target="_blank">Product Print Category</Link>
                      <Link  to="/chartofaccounts" target="_blank">POS Site Code</Link>
+                     <Link  to="/Video">Change Video</Link>
                  
                  </div>
                </div>
@@ -538,6 +540,7 @@ return <div>
     <Route path="/userProfile" element={<UserProfile />}></Route>
     <Route path="/WaiterProfile" element={<WaiterProfile />}></Route>
     <Route path="/TableList" element={<TableList />}></Route>
+    <Route path="/Video" element={<VideoUpload />}></Route>
     TableList
     </Routes> 
 </div>

@@ -19,7 +19,7 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@mui/material": "^5.15.1",
     "@reduxjs/toolkit": "^2.1.0",
-    "axios": "^1.6.2",
+    "axios": "^1.6.7",
     "html2pdf.js": "^0.10.1",
     "jspdf": "^2.5.1",
     "qrcode-generator": "^1.4.4",
