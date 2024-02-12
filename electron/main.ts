@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-inner-declarations */
-import { app, BrowserWindow,dialog,ipcMain} from 'electron'
+import { app, BrowserWindow,dialog,ipcMain,screen} from 'electron'
 import path from 'node:path'
+
 
 // The built directory structure
 //
@@ -17,7 +18,7 @@ let splashScreen : BrowserWindow | null
 let LOGIN : string | null
 process.env.DIST = path.join(__dirname, '../dist')
 process.env.VITE_PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public')
-
+const srcDirectory = path.resolve(__dirname);
 
 let win: BrowserWindow | null
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
@@ -253,6 +254,31 @@ app.on('activate', () => {
   }
 })
 
+const CreateExtendedMonitor = () => {
+  const displays = screen.getAllDisplays();
+  console.log('displays',displays)
+  // Loop through all displays
+  displays.forEach((display, index) => {
+      // Ignore primary display
+      if (index === 0) return;
+
+      // Create a new BrowserWindow for each external display
+      const extendedWindow = new BrowserWindow({
+          x: display.bounds.x,
+          y: display.bounds.y,
+          width: display.bounds.width,
+          height: display.bounds.height,
+          webPreferences: {
+              nodeIntegration: true // Enable Node.js integration in the renderer process
+          },
+          fullscreen : true
+      });
+      const htmlFilePath = path.resolve(srcDirectory, '..', 'extended.html');
+      console.log(htmlFilePath)
+      extendedWindow.loadFile(htmlFilePath);
+  });
+}
+
 
 // ipcMain.on('printIframeContent', (event, content) => {
 //   const printWindow = new BrowserWindow({ show: false });
@@ -301,4 +327,7 @@ app.on('activate', () => {
 //     });
 //   });
 // });
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow();
+  CreateExtendedMonitor();
+});
