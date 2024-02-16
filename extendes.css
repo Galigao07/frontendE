@@ -1,0 +1,98 @@
+.Container {
+    width: 95%;
+    height: 95%;
+    margin: 1%;
+
+
+}
+
+#body {
+    background-color: #007bff;
+}
+
+#TableContainer{
+    border: 3px solid blue;
+    border-radius: 10px;
+    background-color: white;
+}
+
+
+/* Hide the 'barcode' column */
+th.barcode {
+    display: none;
+}
+
+/* Define additional styles for other table elements as needed */
+th {
+    /* Add common styles for table headers and cells */
+    font-weight: bold;
+    font-size: 30px;
+    /* Add more styles as needed */
+}
+td {
+    /* Add common styles for table headers and cells */
+    font-size: 20px;
+    /* Add more styles as needed */
+}
+
+
+th.qty, td.qty {
+width: 10%;
+}
+
+th.description, td.description {
+width: 70%;
+}
+
+th.price, td.price {
+    width: 20%;
+    }
+th.amount, td.amount {
+        width: 20%;
+        }
+/* Define styles for other columns similarly */
+table {
+    padding-inline: 1%;
+}
+
+#tableDiv, #TotalDiv{
+    border: 3px solid blue;
+    border-radius: 10px;
+    background-color: white;
+    margin: 1%;
+}
+
+#tableDiv{
+
+  height: 80%;
+}
+
+ #TotalDiv{
+    display: flex;
+    flex-direction: column;
+    height: 15%;
+}
+
+#TotalDiv label{
+    font-weight: bold;
+    font-size: 25px;
+}
+
+#Data {
+
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+
+}
+
+#Data label {
+    padding-left: 1%;
+
+    margin-right: 10px; /* Adjust as needed */
+    width: 100%;
+}
+
+#Data #items,#amount,#tendered,#change {
+text-align: end;
+}
