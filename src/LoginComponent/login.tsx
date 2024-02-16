@@ -106,16 +106,16 @@ import { isMobile, isTablet } from 'react-device-detect';
     // };
   
     // const body = JSON.stringify({ username, password });
-  if (isMobile){
-    localStorage.setItem('isLogin', 'true');
-    localStorage.setItem('UserRank', 'SalesMan');
-    localStorage.setItem('FullName', 'FullName');
-    localStorage.setItem('UserID', '99999');
-    localStorage.setItem('UserName', 'SalesMan');
-    localStorage.setItem('TerminalNo', '1');
-    localStorage.setItem('SiteCode', '121');
-    window.location.reload();
-  }
+  // if (isMobile){
+  //   localStorage.setItem('isLogin', 'true');
+  //   localStorage.setItem('UserRank', 'SalesMan');
+  //   localStorage.setItem('FullName', 'FullName');
+  //   localStorage.setItem('UserID', '99999');
+  //   localStorage.setItem('UserName', 'SalesMan');
+  //   localStorage.setItem('TerminalNo', '1');
+  //   localStorage.setItem('SiteCode', '121');
+  //   window.location.reload();
+  // }
     try {
       const response = await axios.get(`${BASE_URL}/api/login/`, {
         params:{
@@ -156,16 +156,16 @@ import { isMobile, isTablet } from 'react-device-detect';
 const onSubmit = async (event:any) => {
   event.preventDefault();
   
-  if (isMobile){
-    localStorage.setItem('isLogin', 'true');
-    localStorage.setItem('UserRank', 'SalesMan');
-    localStorage.setItem('FullName', 'FullName');
-    localStorage.setItem('UserID', '99999');
-    localStorage.setItem('UserName', 'SalesMan');
-    localStorage.setItem('TerminalNo', '1');
-    localStorage.setItem('SiteCode', '121');
-    window.location.reload();
-  }
+  // if (isMobile){
+  //   localStorage.setItem('isLogin', 'true');
+  //   localStorage.setItem('UserRank', 'SalesMan');
+  //   localStorage.setItem('FullName', 'FullName');
+  //   localStorage.setItem('UserID', '99999');
+  //   localStorage.setItem('UserName', 'SalesMan');
+  //   localStorage.setItem('TerminalNo', '1');
+  //   localStorage.setItem('SiteCode', '121');
+  //   window.location.reload();
+  // }
     try {
       const response = await axios.get(`${BASE_URL}/api/login/`, {
         params:{

@@ -41,7 +41,7 @@ import CreditCardPayment from './CreditCard';
 import CreditCardPaymentEntry from './CreditCardPayment';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt, faArrowAltCircleDown, faArrowDown, faExpand, faExpandArrowsAlt, faChevronDown, faChevronCircleDown, faArrowUp, faAnglesUp, faAnglesDown, faSliders} from '@fortawesome/free-solid-svg-icons';
+import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt, faArrowAltCircleDown, faArrowDown, faExpand, faExpandArrowsAlt, faChevronDown, faChevronCircleDown, faArrowUp, faAnglesUp, faAnglesDown, faSliders, faAngleUp, faAngleDown, faAngleDoubleDown, faAngleDoubleUp} from '@fortawesome/free-solid-svg-icons';
 // import CustomerDineIn from './customerEntryDineIn';
 import QRCode from 'qrcode-generator';
 import { Button, Dialog, DialogContent, DialogTitle, Grid, Table, Typography } from '@mui/material';
@@ -71,6 +71,9 @@ import ItemDiscounts from './DiscountItems'
 import TradeDiscountList from './DiscountTrade'
 import TransactionDiscount from './DiscountTransaction';
 import jsPDF from 'jspdf';
+import eventEmitter from 'events';
+// import {setupWebSocket} from '../extended.js';
+
 interface ProductList {
   long_desc: any;
   reg_price: any;
@@ -1351,6 +1354,7 @@ const Restaurant: React.FC = () => {
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
+          inputRef.current.select();
         }
       }, 100); // 1000 millisecond
 
@@ -1522,6 +1526,7 @@ const Restaurant: React.FC = () => {
       setEditOrderModal(true)
       setTimeout(() => {
         inputRef.current?.focus()
+        inputRef.current?.select()
       }, 50);
    
       
@@ -1545,6 +1550,7 @@ const Restaurant: React.FC = () => {
 
       if (response.status==200){
         console.log('added successfully')
+        // sendData();
       }
 
     }catch{
@@ -2475,6 +2481,49 @@ const SelectTableOk = (searchItemindex: string) => {
 
 
 
+
+useEffect(() => {
+  const chatSocket = new WebSocket('ws://localhost:8001/ws/count/');
+
+  chatSocket.onopen = () => {
+    console.log('WebSocket connection established.');
+    const message = {
+      'message': 'Hello, world im back!'
+    };
+    chatSocket.send(JSON.stringify(message));
+  };
+
+  chatSocket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    console.log('Received data:', data);
+    fecthTableList();
+  };
+
+  chatSocket.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
+
+  return () => {
+    // Clean up WebSocket connection on component unmount
+    chatSocket.close();
+  };
+}, []); // Empty dependency array ensures this effect runs only once, on mount
+
+
+// useEffect(() => {
+//   // Fetch data initially when the component mounts
+//   fecthTableList();
+
+//   // Set up a timer to fetch data every 20 seconds
+//   const interval = setInterval(() => {
+//     fecthTableList();
+//     fecthQueList();
+//   }, 5000);
+
+//   // Clear the interval when the component unmounts
+//   return () => clearInterval(interval);
+// }, []);
+
  const fecthTableList = () => {
   if (TableList.length != 0){
   setLoading(false)
@@ -2755,19 +2804,7 @@ const SelectTableOk = (searchItemindex: string) => {
   
 //// FETCH DINE IN DATA EVERY 10 SECONDS ////
   
-    useEffect(() => {
-      // Fetch data initially when the component mounts
-      fecthTableList();
-  
-      // Set up a timer to fetch data every 20 seconds
-      const interval = setInterval(() => {
-        fecthTableList();
-        fecthQueList();
-      }, 5000);
-  
-      // Clear the interval when the component unmounts
-      return () => clearInterval(interval);
-    }, []); // Empty dependency array ensures the effect runs only once on mount
+
   
     useEffect(() => {
 
@@ -4464,7 +4501,7 @@ const closeCashPayment = async () => {
 }
 
 
-const [categoryHide,setcategoryHide] = useState<boolean>(true)
+const [categoryHide, setCategoryHide] = useState(true);
 
 const [isFocus,setisFocus] = useState<any>(0)
 
@@ -4644,6 +4681,11 @@ const HandleUpdatetocart = (event:any) => {
 
 }
 
+const CategoryHideClick = () => {
+  setCategoryHide(!categoryHide); // Toggle the category visibility
+};
+
+
   return (
     <>
     
@@ -4679,7 +4721,7 @@ const HandleUpdatetocart = (event:any) => {
 
 <div style={overlayStyle} />
 
-<Grid item xs={12} md={2} style={{ height: categoryHide ? '100%': '10%',width:'35%'}}>
+<Grid item xs={12} md={2} style={{ height: categoryHide ? '100%': '15%',width:'35%'}}>
 
       <div className="Category">
           <Typography      
@@ -4695,23 +4737,27 @@ const HandleUpdatetocart = (event:any) => {
          Category Section
             </Typography>
 
-            <div className='Category-container'  style={{ overflowY: 'auto', maxHeight: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
-            {isMobile && 
-                      <div style={{display:'flex',flexDirection:'column',alignItems:'center' }} >
-             
-                      {categoryHide ? (
-                       <div style={{marginBottom:'20px'}} >
-                                 <FontAwesomeIcon icon={faAnglesDown} style={{position:'absolute',margin:'5px'}} onClick={()=> setcategoryHide(false)}/>
-                         </div>
-               
-                         ):(
-                           <FontAwesomeIcon icon={faAnglesUp} style={{position:'absolute',margin:'5px'}} onClick={()=> setcategoryHide(true)}/>
-                         )}
-                     </div>
-            }
-            {categoryHide &&  <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} IsModalOpen ={IsModalOpen} />}
-             
+            <div className='Category-container' style={{ overflowY: 'auto', maxHeight: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
+           {isMobile && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center',height:'20px'}}>
+                  
+                  
+                  {categoryHide ? (
+                    <div style={{ marginBottom: '20px' }}>
+                      <FontAwesomeIcon icon={faAngleDoubleDown} style={{ position: 'absolute', margin: '5px', cursor: 'pointer', fontSize: '20px' }} onClick={CategoryHideClick} />
+                    </div>
+                  ) : (
+                    <FontAwesomeIcon icon={faAngleDoubleUp} style={{ position: 'absolute', cursor: 'pointer', fontSize: '20px' }} onClick={CategoryHideClick} />
+                  )}
+                
             </div>
+        )}   
+
+            <div style={{display: categoryHide ? 'block':'none'}}>
+            <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} IsModalOpen={IsModalOpen} />
+            </div>
+
+          </div>
 
       </div>
 
@@ -5507,7 +5553,7 @@ const HandleUpdatetocart = (event:any) => {
 {SelectTypeOfTransaction && (
         <div className="modal" >
              
-          <div className="modal-content" style={{width:'50%' ,display:'flex',flexDirection:'column' }}>
+          <div className="modal-content" style={{width:'100%' ,display:'flex',flexDirection:'column' }}>
           <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'red'}}>
               Select Type of Transaction
             </h2>
