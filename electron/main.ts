@@ -141,7 +141,7 @@ function createWindow() {
     win?.show();
     if (splashScreen) {
       executeAndRepeat();
-      splashScreen.close(); // Close the splash screen if it exists
+      splashScreen.close(); // Close the splash screen ifW it exists
     }
   });
 
@@ -258,7 +258,11 @@ const CreateExtendedMonitor = () => {
   const displays = screen.getAllDisplays();
   console.log('displays',displays)
   // Loop through all displays
-  displays.forEach((display, index) => {
+
+  if (displays.length === 1)
+{
+  CreateExtendedMonitorNew();  
+}  displays.forEach((display, index) => {
       // Ignore primary display
       if (index === 0) return;
 
@@ -278,7 +282,20 @@ const CreateExtendedMonitor = () => {
       extendedWindow.loadFile(htmlFilePath);
   });
 }
+const CreateExtendedMonitorNew = () => {
+  // Create a new BrowserWindow
+  const extendedWindow = new BrowserWindow({
+      webPreferences: {
+          nodeIntegration: true // Enable Node.js integration in the renderer process
+      },
+      fullscreen: true,
+    frame:false,
+  });
 
+  // Load the HTML file into the new window
+  const htmlFilePath = path.resolve(srcDirectory, '..', 'extended.html');
+  extendedWindow.loadFile(htmlFilePath);
+};
 
 // ipcMain.on('printIframeContent', (event, content) => {
 //   const printWindow = new BrowserWindow({ show: false });
