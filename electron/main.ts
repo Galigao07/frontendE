@@ -88,13 +88,6 @@ function createWindow() {
     }, 5000); // Repeat every 5 seconds (5000 milliseconds)
   }
   
-  // Call the function to start executing and repeating after a delay (e.g., when the window is opened)
-  // win.once('ready-to-show', () => {
-  //   createSplashScreen();
-  //   executeAndRepeat();
-  // });
-
-
 
 
   app.on('before-quit', async (event) => {
@@ -154,25 +147,7 @@ function createWindow() {
     }
   });
 
-//   win.webContents.on('console-message', (_, level, message, lineNumber, sourceId) => {
-//     console.log('Print preview is opened', message, '', level);
-//     if (level === 1 && message === '999') {
-//         console.log('Print preview is opened');
-//         if (win && win.webContents) {
-//             console.log('Printing...');
-//             win.webContents.print({ silent: false, printBackground: true }, (success, errorType) => {
-//                 if (!success) {
-//                     console.error(`Failed to print: ${errorType}`);
-//                 } else {
-//                     console.log('Print Success');
-//                 }
-//             });
-//         } else {
-//             console.error('Invalid BrowserWindow instance');
-//         }
-//         // Here you can perform actions or set flags indicating that print preview is open
-//     }
-// });
+
 
 win.webContents.on('console-message', (_, level, message, lineNumber, sourceId) => {
   console.log('Print preview is opened', message, '', level);
@@ -194,34 +169,6 @@ win.webContents.on('console-message', (_, level, message, lineNumber, sourceId) 
 
 
 
-
-
-// function createSplashScreen() {
-//   splashScreen = new BrowserWindow({
-//     width: 400,
-//     height: 300,
-//     frame: false,
-//     transparent: true,
-//     alwaysOnTop: true,
-//     // Other window properties for the splash screen...
-//   });
-
-//   splashScreen.loadFile('splash.html');
-
-//   splashScreen.once('ready-to-show', () => {
-//     splashScreen?.show();
-//     createWindow();
-//   });
-
-//   splashScreen.on('closed', () => {
-//     splashScreen = null;
-//   });
-// }
-
-// app.on('ready', createSplashScreen);
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     console.log('Close...');
@@ -233,19 +180,6 @@ app.on('window-all-closed', () => {
 ipcMain.on('closeApp', () => {
   app.quit();
 });
-
-// ipcMain.on('silentPrint', () => {
-//   const win = new BrowserWindow({ show: false }); // Create a hidden window for printing
-
-//   win.webContents.on('did-finish-load', () => {
-//     win.webContents.print({ silent: true }, (success, errorType) => {
-//       if (!success) {
-//         dialog.showErrorBox('Print Error', `Failed to print: ${errorType}`);
-//       }
-//       win.close(); // Close the window after printing (optional)
-//     });
-//   });
-// });
 
 
 app.on('activate', () => {
@@ -275,7 +209,7 @@ const CreateExtendedMonitor = () => {
           webPreferences: {
               nodeIntegration: true // Enable Node.js integration in the renderer process
           },
-          fullscreen : true
+          fullscreen : false
       });
       const htmlFilePath = path.resolve(srcDirectory, '..', 'extended.html');
       console.log(htmlFilePath)
@@ -289,7 +223,7 @@ const CreateExtendedMonitorNew = () => {
           nodeIntegration: true // Enable Node.js integration in the renderer process
       },
       fullscreen: true,
-    frame:false,
+    frame:true,
   });
 
   // Load the HTML file into the new window
@@ -297,53 +231,7 @@ const CreateExtendedMonitorNew = () => {
   extendedWindow.loadFile(htmlFilePath);
 };
 
-// ipcMain.on('printIframeContent', (event, content) => {
-//   const printWindow = new BrowserWindow({ show: false });
 
-//   printWindow.loadURL(`data:text/html,${encodeURIComponent(content)}`);
-
-//   printWindow.webContents.on('did-finish-load', () => {
-//     printWindow.webContents.print({ silent: true }, (success, failureReason) => {
-//       if (!success) {
-//         console.error('Failed to print:', failureReason);
-//       }
-//       printWindow.close();
-
-//       // Optionally, you can send an event back to the renderer process
-//       // event.sender.send('printingCompleted', success);
-//     });
-//   });
-// });
-
-// ipcMain.on('print-receipt', (event, receiptData) => {
-//   // Trigger printing operation using receiptData
-//   console.log('Received receipt data in main process:', receiptData);
-
-//   // Use default printer directly for printing
-//   Printer.getPrinters((printers: any[]) => {
-//     const defaultPrinter = printers.find((printer) => printer.isDefault);
-
-//     if (!defaultPrinter) {
-//       // Handle the case where no default printer is found
-//       console.error('No default printer found.');
-//       return;
-//     }
-
-//     const printOptions = {
-//       silent: true, // Perform a silent print without displaying the print dialog
-//       deviceName: defaultPrinter.name,
-//       pageSize: '200', // Adjust page size if needed
-//     };
-
-//     // Perform silent printing using the default printer
-//     Printer.print(printOptions, (success, errorType) => {
-//       if (!success) {
-//         // Handle printing failure
-//         console.error(`Failed to print: ${errorType}`);
-//       }
-//     });
-//   });
-// });
 app.whenReady().then(() => {
   createWindow();
   CreateExtendedMonitor();
