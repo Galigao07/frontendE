@@ -56,7 +56,7 @@ chatSocket.onmessage = async function(event) {
 //   console.log('Received message:', message);
   const data = JSON.parse(event.data);
   console.log('Received data:', data);
-//   document.querySelector("#socket").innerHTML = event.data;
+
     await LoadTable(event.data)
 
     let totalqty = 0
@@ -107,7 +107,7 @@ async function LoadTable(jsonString){
         change.textContent = 'CHANGE:';
     const monitorHeight = window.innerHeight * 0.95;
     const tableContainer = document.getElementById('TableContainer');
-
+//  document.querySelector("#socket").innerHTML = monitorHeight;
     tableContainer.style.height = monitorHeight + 'px';
     // Check if the parsed data is an array
     if (typeof jsonArray === 'object' && !Array.isArray(jsonArray)) {
@@ -176,7 +176,7 @@ async function LoadTable(jsonString){
             });
         }
         
-        else if (action === 'delete') {
+        else if (action === 'Delete') {
             const tbody = document.getElementById('tbodyid');
             const rows = tbody.querySelectorAll('tr');
         
