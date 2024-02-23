@@ -140,31 +140,31 @@ function createWindow() {
 
 
 
-  win.webContents.on('before-input-event', (event, input) => {
-    if (input.type === 'keyDown' && input.control && input.key.toLowerCase() === 'p') {
-        console.log('Print preview is opened');
-        // Here you can perform actions or set flags indicating that print preview is open
-    }
-  });
+//   win.webContents.on('before-input-event', (event, input) => {
+//     if (input.type === 'keyDown' && input.control && input.key.toLowerCase() === 'p') {
+//         console.log('Print preview is opened');
+//         // Here you can perform actions or set flags indicating that print preview is open
+//     }
+//   });
 
 
 
-win.webContents.on('console-message', (_, level, message, lineNumber, sourceId) => {
-  console.log('Print preview is opened', message, '', level);
-  if (level === 1 && message === '999') {
-      console.log('Print preview is opened');
-      // Execute JavaScript to print the contents of the iframe
-      win?.webContents.print({ silent: true, printBackground: true });
-      console.log('Success');
-  }
-});
+// win.webContents.on('console-message', (_, level, message, lineNumber, sourceId) => {
+//   console.log('Print preview is opened', message, '', level);
+//   if (level === 1 && message === '999') {
+//       console.log('Print preview is opened');
+//       // Execute JavaScript to print the contents of the iframe
+//       win?.webContents.print({ silent: true, printBackground: true });
+//       console.log('Success');
+//   }
+// });
 
 
-  // Listen for when print preview is closed
-  win.webContents.on('destroyed', () => {
-    console.log('Print preview is closed');
-    // Here you can perform actions or reset flags indicating that print preview is closed
-  });
+//   // Listen for when print preview is closed
+//   win.webContents.on('destroyed', () => {
+//     console.log('Print preview is closed');
+//     // Here you can perform actions or reset flags indicating that print preview is closed
+//   });
 }
 
 
