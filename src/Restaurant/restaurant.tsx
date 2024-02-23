@@ -1546,7 +1546,7 @@ const Restaurant: React.FC = () => {
 
     try{
 
-      const response = await axios.post(`${BASE_URL}/api/extended-data/`, {data:data});
+      const response = await axios.post(`${BASE_URL}/api/extended-data/`, {data:data,TableNo:TableNo,OrderType:OrderType});
 
       if (response.status==200){
         console.log('added successfully')
@@ -2497,6 +2497,8 @@ useEffect(() => {
     const data = JSON.parse(event.data);
     console.log('Received data:', data);
     fecthTableList();
+    fecthQueList();
+    LoadDataInExtended();
   };
 
   chatSocket.onerror = (error) => {
@@ -2508,6 +2510,51 @@ useEffect(() => {
     chatSocket.close();
   };
 }, []); // Empty dependency array ensures this effect runs only once, on mount
+  //***************Get data in extended before b-out***************** */
+  const LoadDataInExtended = () => {
+    const apiUrl = `${BASE_URL}/api/extended-data/`; // Replace with your actual site code
+    fetch(apiUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Load data befor b-out',data)
+        let tmp_table:any = 0
+        let tmp_ordertpye:any = ''
+        if (data.length !==0){
+          const updatedItems = data.map((item: { qty: any;table_no:any,order_type:any; }) => {
+            tmp_table = item.table_no
+            tmp_ordertpye = item.order_type
+            setOrderType(item.order_type)
+            return {
+                ...item,
+                quantity: parseInt(item.qty),
+            };
+        });
+  
+        setCartItems(updatedItems)
+       
+        setOrderTypeModal(false)
+        setTimeout(() => {
+          setTableNo(tmp_table)
+  
+          if (tmp_ordertpye = "DINE IN" ){
+            setDineIn(true)
+          }else{
+            setDineIn(false)
+          }
+        }, 1000);
+        }
+
+
+      })
+      .catch(error => {
+        console.error('There was a problem fetching the data:', error);
+      });
+  }
 
 
 // useEffect(() => {
@@ -2612,8 +2659,37 @@ useEffect(() => {
 
 
 
-   
 
+    // useEffect(() => {
+    //   const apiUrl = `${BASE_URL}/api/extended-data/`; // Replace with your actual site code
+    //   fetch(apiUrl)
+    //     .then(response => {
+    //       if (!response.ok) {
+    //         throw new Error('Network response was not ok');
+    //       }
+    //       return response.json();
+    //     })
+    //     .then(data => {
+    //       console.log('Load data befor b-out',data)
+
+    //       const updatedItems = data.map((item: { qty: any;table_no:any,order_type:any; }) => {
+    //         // setTableNo(item.table_no)
+    //         // setOrderType(item.order_type)
+    //         // setOrderTypeModal(false)
+    //         return {
+    //             ...item,
+    //             quantity: parseInt(item.qty),
+    //         };
+    //     });
+
+    //     setCartItems(updatedItems)
+    //     return;
+    //     })
+    //     .catch(error => {
+    //       console.error('There was a problem fetching the data:', error);
+    //     });
+
+    // },[])
 
 
    

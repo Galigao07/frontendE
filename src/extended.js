@@ -179,10 +179,12 @@ async function LoadTable(jsonString){
         else if (action === 'Delete') {
             const tbody = document.getElementById('tbodyid');
             const rows = tbody.querySelectorAll('tr');
-        
+    
             // Loop through all rows and remove the ones with the same barcode
             rows.forEach(row => {
-                const barcodeCell = row.querySelector('td:last-child:not([style="display: none;"]):not(:empty)');
+                const barcodeCell = row.querySelector('td:nth-child(5)');
+                // const barcodeCell = row.querySelector('td:last-child:not([style="display: none;"]):not(:empty)');
+            
                 if (barcodeCell && barcodeCell.innerText.trim() === dataq.barcode) {
                     // Remove the row if the barcode matches
                     row.remove();
@@ -195,7 +197,12 @@ async function LoadTable(jsonString){
       }
 
   
-}
+} else{
+    const tbody = document.getElementById('tbodyid');
+    const rowToRemove = tbody.querySelector('tr'); // Select the row to remove, you may need to adjust the selector
+    tbody.removeChild(rowToRemove);
+  }
+
 
 
     }
