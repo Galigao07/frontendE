@@ -2,7 +2,7 @@
 // extended.js
 
 const BASE_URL = 'http://127.0.0.1:8000';
-
+// const BASE_URL = 'http://192.168.68.114:8000';
 
 // const socket = new WebSocket('ws://localhost:8000/ws/extended'); 
 // let socketdata = null;
@@ -101,12 +101,13 @@ async function LoadTable(jsonString){
         const tendered = document.getElementById('tendered');
         const change = document.getElementById('change');
 
-        items.textContent = 'TOTAL ITEMS:';
-        amount.textContent = 'AMOUNT:';
-        tendered.textContent = 'AMOUNT TENDERED:';
-        change.textContent = 'CHANGE:';
+        items.textContent = '0.00';
+        amount.textContent = '0.00';
+        tendered.textContent = '0.00';
+        change.textContent = '0.00';
     const monitorHeight = window.innerHeight * 0.95;
     const tableContainer = document.getElementById('TableContainer');
+
 //  document.querySelector("#socket").innerHTML = monitorHeight;
     tableContainer.style.height = monitorHeight + 'px';
     // Check if the parsed data is an array
@@ -148,8 +149,11 @@ async function LoadTable(jsonString){
         row.appendChild(barcodecell);
 
         const tbody = document.getElementById('tbodyid');
+        const firstRow = tbody.firstChild; // Get the first row in the table body
 
-        tbody.appendChild(row);
+        // Insert the new row before the first row in the table body
+        tbody.insertBefore(row, firstRow);
+        // tbody.appendChild(row);
 
         } 
         
@@ -217,7 +221,7 @@ async function LoadDataBeforeBOut () {
         data.forEach(rowData => {
             const row = document.createElement('tr');
             const qtycell = document.createElement('td');
-            qtycell.innerText = rowData.qty;
+            qtycell.innerText = parseInt(rowData.qty);
             qtycell.style.textAlign = 'center'
             row.appendChild(qtycell);
             
@@ -452,8 +456,10 @@ async function fetchVideo() {
     if (!response.ok) {
         throw new Error('Network response was not ok');
     }
-    const data = await response.text();
-    return data
+    const data = await response.json();
+    console.log(data.data)
+
+    return data.data
 }
 
 
@@ -599,32 +605,29 @@ async function renderContent() {
 //#region 
         const videoData = await fetchVideo();
 
-        const videoDiv = document.createElement('div');
-        videoDiv.style.width = '100%'
 
-        // videoDiv.style.margin = '2% 1%'
+        const videoDiv = document.createElement('div');
+        videoDiv.style.width = '100%';
+        videoDiv.style.height = '100%'
         videoDiv.style.border = 'solid 3px blue'
         videoDiv.style.borderRadius = '10px'
-        
+        videoDiv.style.objectFit = 'cover';
         const videoElement = document.createElement('video');
         videoElement.style.width = '100%'
         const windowHeight = window.innerHeight;
-        const newHeight = windowHeight * 0.95; // 95% of the window's inner height
+        const newHeight = windowHeight * 0.95; 
         videoElement.style.borderRadius = '10px' 
         videoElement.style.height = `${newHeight}px`;
-        // videoElement.style.height = `${window.innerHeight}px`;
-
-        // Add an event listener to update the height if the window is resized
         videoElement.style.objectFit = 'cover';
         const sourceElement = document.createElement('source');
-        
+        videoElement.style.height = '100%'
         videoElement.setAttribute('controls', 'true');
+        videoElement.muted = true;
         videoElement.setAttribute('autoplay', 'autoplay'); // Add 'autoplay' attribute with value 'autoplay'
         videoElement.setAttribute('loop', 'loop'); // Add 'loop' attribute with value 'loop'
-        videoElement.muted = true;
-        
         sourceElement.setAttribute('src', videoData);
         sourceElement.setAttribute('type', 'video/mp4');
+    
         
         videoElement.appendChild(sourceElement);
         videoDiv.appendChild(videoElement);

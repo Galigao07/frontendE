@@ -8,7 +8,7 @@ import './HeaderdropDown.css'
 import LoginForm from './LoginComponent/login'
 import Swal from "sweetalert2"
 import Profile from './Dashboard/profile'
-import { Routes, useNavigate, Link,Route} from "react-router-dom";
+import { BrowserRouter as Router, Routes, useNavigate, Link,Route, BrowserRouter, NavLink} from "react-router-dom";
 // import CashReceipt from "../TaskPane/cashReceipt";
 import Restaurant from './Restaurant/restaurant';
 import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -19,11 +19,13 @@ import WaiterProfile from './Reference/WaiterProfile'
 import TableList from './Reference/TableList'
 import Homepage from './Home/home'
 import VideoUpload from './Reference/video'
+import TerminalRegistration from './Reference/TerminalRegistration'
+import SupplierSetup from './Reference/SupplierSetup'
 // import OnlineTestApp from './OnlineTestApp';
 // import electron, { BrowserWindow } from 'electron';
 
-import { Provider } from 'react-redux';
-import store from './Redux/store';
+// import { Provider } from 'react-redux';
+// import store from './Redux/store';
 
 function App() {
   const navigate = useNavigate();
@@ -296,12 +298,13 @@ const logoutClick = async () => {
 
   return (
 
-    <Provider store={store}>
+
     <div> 
       {isLogin ? (
         userRank === 'Cashier' || userRank === 'Salesman' ? (
             <Restaurant/>
         ) : (
+
           <main className={show ? 'space-toggle' : ''}>
           <Content /> 
           <header className={`header ${show ? 'space-toggle' : ''}`}>
@@ -315,58 +318,59 @@ const logoutClick = async () => {
                    <div className="dropdown-content">
    
                        <div className="nested11-dropdown">
-                         <Link to="#" id="cuztomizedid" onClick={handleCuztomizedClick} className="link-with-icon" >Customized Reports<i className="fas fa-caret-down"></i></Link>
+                         <NavLink to="#" id="cuztomizedid" onClick={handleCuztomizedClick} className="link-with-icon" >Customized Reports<i className="fas fa-caret-down"></i></NavLink>
                          
                                    <div className="nested11-dropdown-content" id="cuztomizedidContent" style={{ display: cuztomizedVisible ? 'block' : 'none' }}>
                                     
                                      <div className="nested12-dropdown" >
-                                       <Link to="#" onClick={handleBillingStatementClick} id="billingstatementid"  className="link-with-icon" style={{width: '95%'}}>Billing Statement<i className="fas fa-caret-down"></i></Link>
+                                       <NavLink to="#" onClick={handleBillingStatementClick} id="billingstatementid"  className="link-with-icon" style={{width: '95%'}}>Billing Statement<i className="fas fa-caret-down"></i></NavLink>
                                      
                                        <div className="nested12-dropdown-content" id="billingstatementidcontent" style={{ display: billingStatementVisible ? 'block' : 'none' }}>
-                                         <Link to="#">Posted Transactions</Link>
-                                         <Link to="#">Un-Posted Transactions</Link>
+                                         <NavLink to="#">Posted Transactions</NavLink>
+                                         <NavLink to="#">Un-Posted Transactions</NavLink>
                                        </div>
                                      </div>
                  
                                      <div className="nested13-dropdown" >
-                                       <Link to="#" id="ARsummaryid"  onClick={handleARSummaryClick} className="link-with-icon" style={{width: '95%'}}>AR Summary<i className="fas fa-caret-down"></i></Link>
+                                       <NavLink to="#" id="ARsummaryid"  onClick={handleARSummaryClick} className="link-with-icon" style={{width: '95%'}}>AR Summary<i className="fas fa-caret-down"></i></NavLink>
                                        <div className="nested13-dropdown-content" id="ARsummaryidContent" style={{ display: ARsummaryVisible ? 'block' : 'none' }}>
-                                         <Link to="#">Posted Transactions</Link>
-                                         <Link to="#">Un-Posted Transactions</Link>
+                                         <NavLink to="#">Posted Transactions</NavLink>
+                                         <NavLink to="#">Un-Posted Transactions</NavLink>
                                     
                                        </div>
                                      </div>
                
-                                     <Link to="#">Payment Details Reports</Link>
-                                     <Link  to="#">Collection Reports</Link>
-                                     <Link  to="#">Customer (Source Data)</Link>
-                                     <Link to="#">Open Account Billing</Link>
-                                     <Link  to="#">Check Acknowledgment Logbook</Link>
-                                     <Link to="#">Payable - RR/DR/SI Reports</Link>
-                                     <Link  to="#">Input Tax Reports</Link>
-                                     <Link  to="#">Document Posting Status</Link>
-                                     <Link  to="#">Cancel Document Status</Link>
-                                     <Link to="#">Cuztomized Aging Analysis Report</Link>
-                                     <Link to="#">Payables</Link>
-                                     <Link  to="#">Receivables</Link>
+                                     <NavLink to="#">Payment Details Reports</NavLink>
+                                     <NavLink  to="#">Collection Reports</NavLink>
+                                     <NavLink  to="#">Customer (Source Data)</NavLink>
+                                     <NavLink to="#">Open Account Billing</NavLink>
+                                     <NavLink  to="#">Check Acknowledgment Logbook</NavLink>
+                                     <NavLink to="#">Payable - RR/DR/SI Reports</NavLink>
+                                     <NavLink  to="#">Input Tax Reports</NavLink>
+                                     <NavLink  to="#">Document Posting Status</NavLink>
+                                     <NavLink  to="#">Cancel Document Status</NavLink>
+                                     <NavLink to="#">Cuztomized Aging Analysis Report</NavLink>
+                                     <NavLink to="#">Payables</NavLink>
+                                     <NavLink  to="#">Receivables</NavLink>
                                     </div>
                       </div>
-                       <Link to="#">Change Unit Location</Link>
-                       <Link to="#">Log as Different User</Link>
-                       <Link to="#">Exit Program</Link>
+                        <NavLink to="/Supplier-Setup">Supplier Details Setup</NavLink>
+                       <NavLink to="#">Change Unit Location</NavLink>
+                       <NavLink to="#">Log as Different User</NavLink>
+                       <NavLink to="#">Exit Program</NavLink>
                    </div>
                </div>
                <div className="dropdown">
                  <button className="dropbtn">Reference <i className="fas fa-caret-down"></i></button>
                  <div className="dropdown-content">
-                     <Link  to="/Profile" target="_blank">Product Profile</Link>
-                     <Link  to="WaiterProfile">Waiter List</Link>
-                     <Link  to="/chartofaccounts" target="_blank">Customer Details</Link>
-                     <Link  to="/chartofaccounts" target="_blank">Supplier Details</Link>
-                     <Link  to="TableList">Table List</Link>
-                     <Link  to="/chartofaccounts" target="_blank">Product Print Category</Link>
-                     <Link  to="/chartofaccounts" target="_blank">POS Site Code</Link>
-                     <Link  to="/Video">Change Video</Link>
+                     <NavLink  to="/Profile" target="_blank">Product Profile</NavLink>
+                     <NavLink  to="WaiterProfile">Waiter List</NavLink>
+                     <NavLink  to="/chartofaccounts" target="_blank">Customer Details</NavLink>
+                     <NavLink  to="/chartofaccounts" target="_blank">Supplier Details</NavLink>
+                     <NavLink  to="TableList">Table List</NavLink>
+                     <NavLink  to="/chartofaccounts" target="_blank">Product Print Category</NavLink>
+                     <NavLink  to="/chartofaccounts" target="_blank">POS Site Code</NavLink>
+                     <NavLink  to="/Video">Change Video</NavLink>
                  
                  </div>
                </div>
@@ -374,45 +378,45 @@ const logoutClick = async () => {
                <div className="dropdown">
                    <button className="dropbtn">Adminitration <i className="fas fa-caret-down"></i></button>
                    <div className="dropdown-content">
-                       <Link to="userProfile">User Account Control</Link> 
-                       <Link to="{% url 'UserDeatials' %}">POS Transaction</Link> 
+                       <NavLink to="userProfile">User Account Control</NavLink> 
+                       <NavLink to="{% url 'UserDeatials' %}">POS Transaction</NavLink> 
    
                      <div className="nested7-dropdown" >
-                       <Link to="#" id="unpostid" onClick={handleUnpostRepostClick} className="link-with-icon">Unpost Transaction<i className="fas fa-caret-down"></i></Link>
+                       <NavLink to="#" id="unpostid" onClick={handleUnpostRepostClick} className="link-with-icon">Unpost Transaction<i className="fas fa-caret-down"></i></NavLink>
                        <div className="nested7-dropdown-content" id="unpostidcontent" style={{ display : UnpostRepostVisible ? 'block' : 'none'}}>
-                           <Link to="#">By Date Transaction</Link>
-                           <Link to="#">By Reference No</Link>
+                           <NavLink to="#">By Date Transaction</NavLink>
+                           <NavLink to="#">By Reference No</NavLink>
                        </div>
                      </div>
    
    
                      <div className="nested4-dropdown" >
-                       <Link to="#" id="systemconfigid" onClick={handleSystemConfigClick} className="link-with-icon" >System Configuration<i className="fas fa-caret-down"></i></Link>
+                       <NavLink to="#" id="systemconfigid" onClick={handleSystemConfigClick} className="link-with-icon" >System Configuration<i className="fas fa-caret-down"></i></NavLink>
                        <div className="nested4-dropdown-content" id="systemconfigidcontent" style={{display: SystemConfigVisible ? 'block' : 'none'}}>
-                           <Link to="#">POS Settings </Link>
+                           <NavLink to="#">POS Settings </NavLink>
    
                            <div className="nested5-dropdown" >
-                             <Link to="#" id="transtypesetupid" onClick={handleTransactionTypeClick} className="link-with-icon" style={{width: '95%'}}>Tagging of Sales Transaction<i className="fas fa-caret-down"></i></Link>
+                             <NavLink to="#" id="transtypesetupid" onClick={handleTransactionTypeClick} className="link-with-icon" style={{width: '95%'}}>Tagging of Sales Transaction<i className="fas fa-caret-down"></i></NavLink>
                              <div className="nested5-dropdown-content" id="transtypesetupidcontent" style={{display : TransactionTypeVisible ? 'block' : 'none'}}>
-                                 <Link to="#">Debit Accounts for Sales</Link>
-                                 <Link to="#">Credit Accounts for Sales</Link>
-                                 <Link to="#">Per Category</Link>
-                                 <Link to="#">Credit Account for Sales Return</Link>
-                                 <Link to="#">Cost Sales</Link>
-                                 <Link to="#">Per Terminal</Link>
+                                 <NavLink to="#">Debit Accounts for Sales</NavLink>
+                                 <NavLink to="#">Credit Accounts for Sales</NavLink>
+                                 <NavLink to="#">Per Category</NavLink>
+                                 <NavLink to="#">Credit Account for Sales Return</NavLink>
+                                 <NavLink to="#">Cost Sales</NavLink>
+                                 <NavLink to="#">Per Terminal</NavLink>
                          
                              </div>
                            </div>
    
-                           <Link to="#">Cost of Sales Account Tagging</Link>
-                           <Link to="#">Tagging of SL Account for Sales</Link>
+                           <NavLink to="#">Cost of Sales Account Tagging</NavLink>
+                           <NavLink to="#">Tagging of SL Account for Sales</NavLink>
    
    
                          <div className="nested6-dropdown" >
-                           <Link to="#" id="Withheldtaxid"  onClick={handlewithHeldTaxClick}  className="link-with-icon">Card Machine Acct. Tittle Tagging<i className="fas fa-caret-down"></i></Link>
+                           <NavLink to="#" id="Withheldtaxid"  onClick={handlewithHeldTaxClick}  className="link-with-icon">Card Machine Acct. Tittle Tagging<i className="fas fa-caret-down"></i></NavLink>
                            <div className="nested6-dropdown-content" id="Withheldtaxidcontent" style={{display : withHeldTaxVisible ? 'block' : 'none'}}>
-                               <Link to="#">Credit Card</Link>
-                               <Link to="#">Debit Card</Link>
+                               <NavLink to="#">Credit Card</NavLink>
+                               <NavLink to="#">Debit Card</NavLink>
      
                        
                            </div>
@@ -420,10 +424,10 @@ const logoutClick = async () => {
    
    
                          <div className="nested7-dropdown" >
-                           <Link to="#" id="Withheldtaxid"  onClick={handlewithHeldTaxClick}  className="link-with-icon">Terminal price type Setup<i className="fas fa-caret-down"></i></Link>
+                           <NavLink to="#" id="Withheldtaxid"  onClick={handlewithHeldTaxClick}  className="link-with-icon">Terminal price type Setup<i className="fas fa-caret-down"></i></NavLink>
                            <div className="nested7-dropdown-content" id="Withheldtaxidcontent" style={{display : withHeldTaxVisible ? 'block' : 'none'}}>
-                               <Link to="#">Default Price Type</Link>
-                               <Link to="#">Allowed Price Type</Link>
+                               <NavLink to="#">Default Price Type</NavLink>
+                               <NavLink to="#">Allowed Price Type</NavLink>
      
                        
                            </div>
@@ -431,45 +435,35 @@ const logoutClick = async () => {
    
    
                            
-                           <Link to="#">Reset Number Generator </Link>
-                           <Link to="#">Database Syncronize</Link>
-                           <Link to="#">Tagging POS Site Code </Link>
-                           <Link to="#">Revenue Tagging</Link>
+                           <NavLink to="#">Reset Number Generator </NavLink>
+                           <NavLink to="#">Database Syncronize</NavLink>
+                           <NavLink to="#">Tagging POS Site Code </NavLink>
+                           <NavLink to="#">Revenue Tagging</NavLink>
                        </div>
                      </div>
   
-                       <Link to="#">System Settings</Link>
-                       <Link to="#">Clear Login Errors</Link>
+                       <NavLink to="#">System Settings</NavLink>
+                       <NavLink to="#">Clear Login Errors</NavLink>
    
                      <div className="nested10-dropdown" >
-                       <Link to="#" id="utilityid" onClick={handleUtilityClick} className="link-with-icon">Company Setup<i className="fas fa-caret-down"></i></Link>
+                       <NavLink to="#" id="utilityid" onClick={handleUtilityClick} className="link-with-icon">Company Setup<i className="fas fa-caret-down"></i></NavLink>
                        
                        <div className="nested10-dropdown-content" id="utilityidContent" style={{display: UtilityVisible ? 'block' : 'none'}}>
-                           <Link to="#">Client Details Setup</Link>
-                           <Link to="#">Company Details Setup</Link>
-                           <Link to="#">Terminal Setup</Link>
-                           <Link to="#">Terminal Registration</Link>
+                           <NavLink to="#">Client Details Setup</NavLink>
+                           <NavLink to="/Supplier-Setup">Supplier Details Setup</NavLink>
+                           <NavLink to="#">Terminal Setup</NavLink>
+                           <NavLink to="/Terminal-Registration">Terminal Registration</NavLink>
                        </div>
                       </div>
-   
-   
-                      <div className="nested10-dropdown" >
-                       <Link to="#" id="utilityid" onClick={handleUtilityClick} className="link-with-icon">Delete/Clears Records & Tables<i className="fas fa-caret-down"></i></Link>
-                       
-                       <div className="nested10-dropdown-content" id="utilityidContent" style={{display: UtilityVisible ? 'block' : 'none'}}>
-                           <Link to="#">Delete Transaction</Link>
-                           <Link to="#">Clear Tables</Link>
-                 
-                       </div>
-                      </div>
+
    
                    </div>
                </div>
                <div className="dropdown">
                    <button className="dropbtn">Utility <i className="fas fa-caret-down"></i></button>
                    <div className="dropdown-content">
-                       <Link to="#">User Account Control</Link>
-                       <Link to="#">System Configuration</Link>
+                       <NavLink to="#">User Account Control</NavLink>
+                       <NavLink to="#">System Configuration</NavLink>
                    </div>
                </div>
                </div>       
@@ -482,22 +476,22 @@ const logoutClick = async () => {
                   <div>
                       <span className={`nav-header-name ${show ? 'show' : null}`}>TASK PANE</span>
                       <div className="nav-list" >
-                      <Link className={active === "1" ? "nav-link active" : "nav-link"} to="/TaskPane/SalesInvoice" title="Sales Invoice">
+                      <NavLink className={active === "1" ? "nav-link active" : "nav-link"} to="/TaskPane/SalesInvoice" title="Sales Invoice">
                          <FontAwesomeIcon icon={faDollarSign} className="nav-link-icon" key={1} id={"icon1"} onClick={handleClick} />
                          <span className={`nav-link-name ${show ? 'show' : ''}`}     onClick={handleClick}>Cash Count</span>
-                         </Link>
-                          <Link  className={active === "2" ? "nav-link active" : "nav-link"} to="/TaskPane/POS"  title="POS" >
+                         </NavLink>
+                          <NavLink  className={active === "2" ? "nav-link active" : "nav-link"} to="/TaskPane/POS"  title="POS" >
                           <FontAwesomeIcon icon={faReceipt} className="nav-link-icon"  key={2} id={"2"} onClick={handleClick}></FontAwesomeIcon>
                               <span className={`nav-link-name ${show ? 'show' : null}`} onClick={handleClick}>X Reading And Z reading</span>    
-                          </Link>  
-                          <Link  className={active === "3" ? "nav-link active" : "nav-link"} to="/TaskPane/Inventory"   title="Inventory">
+                          </NavLink>  
+                          <NavLink  className={active === "3" ? "nav-link active" : "nav-link"} to="/TaskPane/Inventory"   title="Inventory">
                           <FontAwesomeIcon icon={faListAlt} className="nav-link-icon"  key={3} id={"3"} onClick={handleClick}></FontAwesomeIcon>
                               <span className={`nav-link-name ${show ? 'show' : null}`}  onClick={handleClick}>Reports</span>    
-                          </Link>  
-                          <Link className={active === "9" ? "nav-link active" : "nav-link"} key={9} id={"9"} onClick={() => logoutClick()} title="Logout" to={''}>
+                          </NavLink>  
+                          <NavLink className={active === "9" ? "nav-link active" : "nav-link"} key={9} id={"9"} onClick={() => logoutClick()} title="Logout" to={''}>
                               <FontAwesomeIcon icon={faPowerOff} className="nav-link-icon" key={9} id={"9"} onClick={() => logoutClick()}></FontAwesomeIcon>
                               <span className={`nav-link-name ${show ? 'show' : null}`}  onClick={() => logoutClick()}>Logout</span>    
-                          </Link>   
+                          </NavLink>   
                       </div>
                       
                       <br/><br/>
@@ -523,28 +517,40 @@ const logoutClick = async () => {
           </aside>
     
          </main>
+
         )
       ) : (
         <LoginForm />
       )}
     </div>
-</Provider>
-  );
+    // <Provider store={store}>
+    // </Provider>
+      );
+
 }
 
+
 function Content() {
-return <div>
+  return(
+  <div>
+
     <Routes>
-    <Route path="/" element={<Homepage />}></Route>
-    <Route path="/Profile" element={<Profile />}></Route>
-    <Route path="/userProfile" element={<UserProfile />}></Route>
-    <Route path="/WaiterProfile" element={<WaiterProfile />}></Route>
-    <Route path="/TableList" element={<TableList />}></Route>
-    <Route path="/Video" element={<VideoUpload />}></Route>
-    TableList
-    </Routes> 
-</div>
-}
+        <Route path="/" element={<Homepage />}></Route>
+        <Route path="/Profile" element={<Profile />}></Route>
+        <Route path="/userProfile" element={<UserProfile />}></Route>
+        <Route path="/WaiterProfile" element={<WaiterProfile />}></Route>
+        <Route path="/TableList" element={<TableList />}></Route>
+        <Route path="/Video" element={<VideoUpload />}></Route>
+        <Route path="/Terminal-Registration" element={<TerminalRegistration />}></Route>
+        <Route path="/Supplier-Setup" element={<SupplierSetup />}></Route>
+      </Routes> 
+
+     
+
+    
+  </div>
+  ) 
+  }
 
 
 export default App

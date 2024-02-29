@@ -42,37 +42,26 @@ import CreditCardPaymentEntry from './CreditCardPayment';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt, faArrowAltCircleDown, faArrowDown, faExpand, faExpandArrowsAlt, faChevronDown, faChevronCircleDown, faArrowUp, faAnglesUp, faAnglesDown, faSliders, faAngleUp, faAngleDown, faAngleDoubleDown, faAngleDoubleUp} from '@fortawesome/free-solid-svg-icons';
-// import CustomerDineIn from './customerEntryDineIn';
 import QRCode from 'qrcode-generator';
 import { Button, Dialog, DialogContent, DialogTitle, Grid, Table, Typography } from '@mui/material';
 import { createTheme, ThemeProvider,Theme,makeStyles, useTheme, responsiveFontSizes  } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import Box from '@mui/material/Box';
-import styled from 'styled-components';
 import { isDesktop, isMobile,isTablet } from 'react-device-detect';
-import { css } from '@emotion/react';
 import { ClipLoader } from 'react-spinners';
-import { BrowserWindow,ipcRenderer } from 'electron';
-import { webContents } from 'electron';
-import { IpcRendererEvent } from 'electron/renderer';
 import DebitCardPayment from './DebitCard';
 import { faExpandAlt } from '@fortawesome/free-solid-svg-icons/faExpandAlt';
 import Verification from './Verification';
-import { blue } from '@mui/material/colors';
 ///**************PRODUCT GRID DESIGN*******************//
 
-import { useDispatch, useSelector } from 'react-redux';
-import { setBooleanValue } from '../Redux/actions';
-import showErrorAlert from '../SwalMessage/ShowErrorAlert';
 
-// import html2pdf from 'html2pdf.js';
+import showErrorAlert from '../SwalMessage/ShowErrorAlert';
 import SeniorCitezenDiscount from './DiscountSeniorCitezen';
 import ItemDiscounts from './DiscountItems'
 import TradeDiscountList from './DiscountTrade'
 import TransactionDiscount from './DiscountTransaction';
 import jsPDF from 'jspdf';
 import eventEmitter from 'events';
-// import {setupWebSocket} from '../extended.js';
 
 interface ProductList {
   long_desc: any;
@@ -95,8 +84,7 @@ interface ProductData {
 const ProductGrid: React.FC<ProductData> = ({ products , addtocart ,selectedProductData,isSelected,IsModalOpenF}) => {
  
  
-  const dispatch = useDispatch();
-  const booleanValue = useSelector((state: any) => state.booleanValue);
+
  
   const [quantity, setQuantity] = useState<number | 1>(1); // Adjust the initial state value
 
@@ -142,7 +130,7 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
     const [open, setOpen] = useState<boolean>(false);
 
     const [isSelectedIndex, setisSelectedIndex] = useState<any>(null);
-
+    const [productsPerRow, setProductsPerRow] = useState<any>(0);
     const ProductRefs = useRef<any>([]);
     const [isModalOpenFS, setIsModalOpenF] = useState<boolean>(false)
     const isModalOpenx = IsModalOpenF();
@@ -224,24 +212,24 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
 
 
 
-      useEffect(() => {
-        const intervalId = setInterval(() => {
-            // Dispatch action to set boolean value in Redux store
-            const isModalOpen = IsModalOpenF();
-          dispatch(setBooleanValue(isModalOpen))
+    //   useEffect(() => {
+    //     const intervalId = setInterval(() => {
+    //         // Dispatch action to set boolean value in Redux store
+    //         const isModalOpen = IsModalOpenF();
+    //       dispatch(setBooleanValue(isModalOpen))
   
-          if (isModalOpen) {
-            localStorage.setItem('Modal','true')
-          }else {
-            localStorage.setItem('Modal','false')
-          }
+    //       if (isModalOpen) {
+    //         localStorage.setItem('Modal','true')
+    //       }else {
+    //         localStorage.setItem('Modal','false')
+    //       }
        
           
-        }, 500); // Check every second
+    //     }, 500); // Check every second
     
-        // Clean up interval on component unmount
-        return () => clearInterval(intervalId);
-    }, [IsModalOpenF]); // Empty dependency array ensures the effect runs only once after the initial render
+    //     // Clean up interval on component unmount
+    //     return () => clearInterval(intervalId);
+    // }, [IsModalOpenF]); // Empty dependency array ensures the effect runs only once after the initial render
     
     
       useEffect(() => {
@@ -305,12 +293,12 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
 const Handlekeydown = (e:any,index:any) => {
 e.preventDefault()
   if (e.key === 'ArrowUp' && index > 0) {
-    if (index > 4){
-      setisSelectedIndex(index - 5);
+    if (index > productsPerRow -1 ){
+      setisSelectedIndex(index - productsPerRow);
     }
 
   } else if (e.key === 'ArrowDown' && index < products.length - 1) {
-    setisSelectedIndex(index + 5);
+    setisSelectedIndex(index + productsPerRow);
   }
 
   else if (e.key === 'ArrowLeft' && index > 0) {
@@ -326,9 +314,37 @@ else if (e.key == 'Enter'){
 
 }
 
+
+
+useEffect(() => {
+  function handleResize() {
+    const container = document.getElementById('product-id'); // Adjust 'your-container-id' to your actual container ID
+    if (container !== null) {
+      // Calculate the number of products per row based on container width and product width
+      const containerWidth = container.clientWidth;
+      const productWidth = 140; // Assuming each product has a width of 140px
+      const newProductsPerRow = Math.floor(containerWidth / productWidth);
+      setProductsPerRow(newProductsPerRow);
+    }
+  }
+
+  // Initial calculation on component mount
+  handleResize();
+
+  // Add event listener for window resize
+  window.addEventListener('resize', handleResize);
+
+  // Cleanup function to remove event listener
+  return () => {
+    window.removeEventListener('resize', handleResize);
+  };
+}, []); // Empty dependency array ensures that this effect runs only once on component mount
+
+
+
   return (
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '5px' ,margin:'10px'}}>
+      <div id = "product-id" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '5px' ,margin:'10px'}}>
           {products.map((product:any,index) => (
               <div key={index}
               tabIndex={index}
@@ -764,8 +780,8 @@ interface CategoryData {
 }
 const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts,IsModalOpen }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const booleanValue = useSelector((state: any) => state.booleanValue);
-  const dispatch = useDispatch()
+  // const booleanValue = useSelector((state: any) => state.booleanValue);
+  // const dispatch = useDispatch()
   const [selectedCategoryall, setSelectedCategoryall] = useState<boolean>(false);
 
     const [productscCat, setProducts] = useState([]);
@@ -893,24 +909,24 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts,IsM
     // }, []); // Empty dependency array to run only once on component mount
   
 
-    useEffect(() => {
-      const intervalId = setInterval(() => {
-          // Dispatch action to set boolean value in Redux store
-          const isModalOpen = IsModalOpen();
-        dispatch(setBooleanValue(isModalOpen))
+  //   useEffect(() => {
+  //     const intervalId = setInterval(() => {
+  //         // Dispatch action to set boolean value in Redux store
+  //         const isModalOpen = IsModalOpen();
+  //       dispatch(setBooleanValue(isModalOpen))
 
-        if (isModalOpen) {
-          localStorage.setItem('Modal','true')
-        }else {
-          localStorage.setItem('Modal','false')
-        }
+  //       if (isModalOpen) {
+  //         localStorage.setItem('Modal','true')
+  //       }else {
+  //         localStorage.setItem('Modal','false')
+  //       }
      
         
-      }, 500); // Check every second
+  //     }, 500); // Check every second
   
-      // Clean up interval on component unmount
-      return () => clearInterval(intervalId);
-  }, [IsModalOpen]); // Empty dependency array ensures the effect runs only once after the initial render
+  //     // Clean up interval on component unmount
+  //     return () => clearInterval(intervalId);
+  // }, [IsModalOpen]); // Empty dependency array ensures the effect runs only once after the initial render
   
   
 
@@ -1212,8 +1228,8 @@ const Restaurant: React.FC = () => {
   const [DiscountType, setDiscountType] = useState<any>('');
   const [TotalDue, setTotalDue] = useState<any>(0);
 
-  const dispatch = useDispatch();
-  const booleanValue = useSelector((state: any) => state.booleanValue);
+  // const dispatch = useDispatch();
+  // const booleanValue = useSelector((state: any) => state.booleanValue);
 
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -2483,7 +2499,13 @@ const SelectTableOk = (searchItemindex: string) => {
 
 
 useEffect(() => {
-  const chatSocket = new WebSocket('ws://localhost:8001/ws/count/');
+  var url = new URL(BASE_URL);
+
+// Reconstruct the URL without the port
+var urlWithoutPort = url.hostname;
+// var urlWithoutPort = url.protocol + "//" + url.hostname + url.pathname + url.search + url.hash;
+
+  const chatSocket = new WebSocket(`ws://${urlWithoutPort}:8001/ws/count/`);
 
   chatSocket.onopen = () => {
     console.log('WebSocket connection established.');
@@ -2546,7 +2568,7 @@ useEffect(() => {
           }else{
             setDineIn(false)
           }
-        }, 1000);
+        }, 2000);
         }
 
 
