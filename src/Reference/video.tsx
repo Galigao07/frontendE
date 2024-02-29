@@ -55,7 +55,7 @@ const VideoUpload = () => {
         const fetchData = async () => {
             try {
                 const response = await axios.get(`${BASE_URL}/api/video-upload/`);
-                setVideoUrl2(response.data); // Assuming response.data is the video URL
+                setVideoUrl2(response.data.data); // Assuming response.data is the video URL
             } catch (error) {
                 console.error('Error fetching video URL:', error);
             }
@@ -88,7 +88,7 @@ const VideoUpload = () => {
             {videoUrl && (
                 <div>
                     <h3 style={{textAlign:'center'}}>Uploaded Video</h3>
-                    <video controls autoPlay loop>
+                    <video controls autoPlay loop style={{width:'100%',height:'100%'}} >
                         <source src={videoUrl} type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
@@ -99,7 +99,7 @@ const VideoUpload = () => {
     { videoUrl2 && (
                 <div>
                     <h3 style={{textAlign:'center'}}>Current Video</h3>
-                    <video controls autoPlay loop>
+                    <video controls autoPlay loop muted preload='auto' style={{width:'100%',height:'100%'}}>
                         <source src={videoUrl2} type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>

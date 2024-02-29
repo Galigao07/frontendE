@@ -3,7 +3,9 @@
 /* eslint-disable no-inner-declarations */
 import { app, BrowserWindow,dialog,ipcMain,screen} from 'electron'
 import path from 'node:path'
-
+import VideoUpload from '../src/Reference/video'
+// mport * as path from 'path';
+import * as url from 'url';
 
 // The built directory structure
 //
@@ -122,8 +124,10 @@ function createWindow() {
   })
 
   if (VITE_DEV_SERVER_URL) {
+    console.log('asdasdasdasdas')
     win.loadURL(VITE_DEV_SERVER_URL)
   } else {
+    // console.log('asdasdasdasdas')
     win.loadFile('dist/index.html')
     // win.loadFile(path.join(process.env.DIST, 'index.html'))
   }
@@ -207,28 +211,54 @@ const CreateExtendedMonitor = () => {
           width: display.bounds.width,
           height: display.bounds.height,
           webPreferences: {
-              nodeIntegration: true // Enable Node.js integration in the renderer process
+              nodeIntegration: true, // Enable Node.js integration in the renderer process
+              contextIsolation: false, // or true, depending on your setup
+              webSecurity: false // This allows loading local files in Electron
           },
           fullscreen : false
       });
-      const htmlFilePath = path.resolve(srcDirectory, '..', 'extended.html');
-      console.log(htmlFilePath)
-      extendedWindow.loadFile(htmlFilePath);
+      // const srcDirectory = app.getAppPath(); // Assuming dataFile.txt is in the app directory
+      // // console.log('aaaa',srcDirectory)
+      // const htmlFilePath = path.join(srcDirectory, 'src', 'extended.html');
+      // // const htmlFilePath = path.resolve(srcDirectory, '..', 'extended.html');
+      // // console.log(htmlFilePath)
+      // extendedWindow.loadFile(htmlFilePath);
+      // extendedWindow.loadFile('extended.html')
+
+      extendedWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'extended.html'),
+        protocol: 'file:',
+        slashes: true
+    }));
   });
 }
 const CreateExtendedMonitorNew = () => {
   // Create a new BrowserWindow
   const extendedWindow = new BrowserWindow({
       webPreferences: {
-          nodeIntegration: true // Enable Node.js integration in the renderer process
+        nodeIntegration: true, // or false, depending on your setup
+        contextIsolation: false, // or true, depending on your setup
+        webSecurity: false // This allows loading local files in Electron
       },
       fullscreen: true,
     frame:true,
   });
-
+  // console.log('aaaa',srcDirectory)
   // Load the HTML file into the new window
-  const htmlFilePath = path.resolve(srcDirectory, '..', 'extended.html');
-  extendedWindow.loadFile(htmlFilePath);
+  // const srcDirectory = app.getAppPath(); // Assuming dataFile.txt is in the app directory
+  // const tmpPath = 'file//' + __dirname + './src/extended.html'
+  // console.log('aaaa',VITE_DEV_SERVER_URL)
+  // const htmlFilePath = path.join(tmpPath)
+  // const htmlFilePath = path.join(tmpPath, 'src', 'extended.html');
+  // extendedWindow.loadFile(htmlFilePath);
+
+  extendedWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'extended.html'),
+    protocol: 'file:',
+    slashes: true
+}));
+// extendedWindow.loadFile('extended.html')
+
 };
 
 
