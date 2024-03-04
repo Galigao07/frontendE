@@ -17,6 +17,13 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    // "baseUrl": "./",
+    // "paths": {
+    //   "@/*" :[
+    //     "src/*"
+    //   ],
+    //   "Reference/*":["./src/Reference/*"]
+    // },
 
     /* Linting */
     "strict": true,

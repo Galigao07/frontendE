@@ -1,0 +1,34 @@
+
+.Supplier-container{
+    border: 0 solid rgba(0,0,0,.125);
+   border-radius: 10px;
+   box-shadow: 2px 2px 4px rgba(0, 0, 0, .5), -2px -2px 4px rgba(255, 255, 255, 0.1);
+   padding: 20px;
+   margin-bottom: 5px;
+
+
+}
+.Supplier-entry {
+    display: flex;
+    flex-direction: row;
+ 
+}
+
+.form-group {
+    width: 100%;  
+    padding: 5px;
+}
+
+.form-group input, label{
+width: 100%;
+}
+
+.Supplier-setup {
+    box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+    background-color: #fff;
+    background-clip: border-box;
+    border: 0 solid rgba(0,0,0,.125);
+    border-radius: 0.25rem;
+    border-top: 3px solid #007bff;
+    padding: 40px;
+}

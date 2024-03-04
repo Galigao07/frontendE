@@ -1,16 +1,16 @@
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import { BrowserRouter } from 'react-router-dom';
-import React from 'react';
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  // <React.StrictMode>
-  //   <App />
-  // </React.StrictMode>,
-  <BrowserRouter>
-  <App/>
-</BrowserRouter>
-)
+// import ReactDOM from 'react-dom/client'
+// import App from './App.tsx'
+// import './index.css'
+// import { BrowserRouter } from 'react-router-dom';
+// import React from 'react';
+// ReactDOM.createRoot(document.getElementById('root')!).render(
+//   // <React.StrictMode>
+//   //   <App />
+//   // </React.StrictMode>,
+//   <BrowserRouter>
+//   <App/>
+// </BrowserRouter>
+// )
 
 // Remove Preload scripts loading
 // postMessage({ payload: 'removeLoading' }, '*')
@@ -19,3 +19,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 // window.ipcRenderer.on('main-process-message', (_event, message) => {
 //   console.log(message)
 // })
+import React from 'react';
+// import ReactDOM from 'react-dom';
+import { HashRouter } from 'react-router-dom';
+import App from './App.tsx'
+import ReactDOM from 'react-dom/client'
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+  <React.StrictMode>
+    <HashRouter>
+      <App />
+    </HashRouter>
+  </React.StrictMode>
+);

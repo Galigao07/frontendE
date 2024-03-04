@@ -93,23 +93,23 @@ ul{
     justify-content: center;
 }
 
-.login-input, .login-select{
-    width: 80%;
+.login-body .login-input{
+    width: 90%;
     margin-top: 10px;
     outline: none;
     border: none;
     border-bottom: 2px solid var(--second-color);
     border-radius: 7px;
     padding: 3%;
-    box-sizing: border-box;
+    /* box-sizing: border-box; */
     font-size: 17px;
 }
 
 .login-input:focus{
-    border-bottom: 4px solid #303376;
+    border-top:none;
 }
 
-.btn-login{
+.btn-login,.btn-exit{
     background-color: #303376;
     color: #fff;
     width: 75%;
@@ -138,11 +138,19 @@ ul{
 }
 
 .btn-login:hover{
-    width: 80%;
-    padding: 5px;
+    background-color: blue;
+    /* width: 80%; */
+    /* padding: 5px; */
 } 
 
-
+.btn-exit {
+    background-color: rgb(255, 0, 0);
+}
+.btn-exit:hover{
+    background-color: blue;
+    /* width: 80%; */
+    /* padding: 5px; */
+} 
 
 .login-row {
     width: 90%;
@@ -151,3 +159,25 @@ ul{
     padding: 10px; /* Add padding to see the effect clearly */
     border-radius: 10px;
   }
+
+  .login-body .form-group{
+   display: flex;
+   flex-direction: column;
+align-items: center;
+
+  }
+
+
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .header-img img {
+    animation: rotate infinite 10s linear; /* Adjust duration and timing function as needed */
+  }
+  

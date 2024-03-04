@@ -1,0 +1,80 @@
+.Cashbreakdown-container input,label {
+    text-align: end;
+    margin: 2px;
+}
+.Cashbreakdown-container button {
+margin: 5px;
+width: 100%;
+padding: 5px;
+font-size: 15px;
+font-weight: bold;
+border-radius: 5px;
+cursor: pointer;
+color: #ffff;
+border-color: transparent;
+}
+.CashCount-Container{
+    margin-top: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+}
+.Container {
+    position: relative;
+    box-shadow: 0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2);
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1 solid rgba(0,0,0,.125);
+    border-radius: 0.25rem;
+    border-top: 3px solid #007bff;
+
+}
+
+.filter {
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+
+}
+
+.filter-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+}
+
+.filter-group button {
+    margin-top: 20px;
+    height:38px;
+    width: 50px;
+}
+ .table-container{
+    margin: 10px;
+ }
+
+ .modal-content-cashcount {
+    margin-top: 50px;
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 800px;
+    max-height: 100%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+.btn-filter{
+    background-color: blue;
+    color: white;
+    cursor: pointer;
+    border-radius: 20px;
+    border: none;
+    font-weight: bold;
+}
+
+.btn-filter:hover{
+    background-color: rgb(63, 224, 63);
+    color: black;
+}

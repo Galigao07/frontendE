@@ -242,7 +242,7 @@ useEffect(() => {
           <div className="Cashbreakdown-container">
 
  
-                    <div style={{}}>
+                    <div style={{ display: 'flex', flexDirection: 'row' }}>
                         <label style={{ width: '100%', textAlign: 'center'}}> 1000 PHP: </label>
                 
                         <input type="number" name="OneThousand" value={denominations.OneThousand} 

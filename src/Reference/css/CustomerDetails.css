@@ -1,0 +1,234 @@
+
+.right{
+    border:1px solid #dee2e6;
+    padding: 10px;
+  border-radius: 5px;}
+  .contact-primary {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+
+.PrimarySub{
+    border:1px solid #dee2e6;
+    padding: 10px;
+    border-radius: 5px;
+    width: 49%;
+    margin: 5px;
+
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    /* padding-bottom: 5px; */
+}
+.contact{
+    margin: 5px;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    border:1px solid #dee2e6;  
+    border-radius: 5px;
+}
+
+.form-group1.vat input{
+   height: 20px;
+}
+.form-group1.vat {
+    border-radius: 5px;
+    margin-top: 10px;
+    padding: 5px;
+    border:1px solid #dee2e6;  
+   
+}
+.form-group1.status {
+    display: flex;
+}
+.form-group.customer {
+    display: flex;
+}
+/* .form-group.customer {
+    display: flex;
+    flex-direction:column ;
+} */
+
+.form-group.customer label{
+    font-size: small;
+width: 50%;
+}
+
+.form-group1.status input{
+  height: 20px;
+       
+ }
+
+.col-sm-3{
+    margin-left: 10%;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+}
+
+
+/* .btn-tools{
+    width: 10%;
+    height: 30px;
+} */
+
+.status{
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+h3{
+position: relative;
+bottom: 10px;
+}
+
+.avatar-upload .avatar-edit {
+    position: absolute;
+    z-index: 1;
+
+    }
+    .avatar-upload .avatar-edit input {
+    display: none;
+    }
+    .avatar-upload .avatar-edit input + label {
+    position: relative;
+    left: 100px;
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    margin-bottom: 0;
+    border: solid;
+    border-radius: 100%;
+    z-index: 2;
+    border: 1px solid;
+    background-color: rgb(47, 255, 75);
+    /* box-shadow: 0px 10px 2px 0px rgba(0, 0, 0, 0.12); */
+    cursor: pointer;
+    font-weight: normal;
+    transition: all 0.2s ease-in-out;
+    }
+    .avatar-upload .avatar-edit input + label:hover {
+      content: white;
+      background: #4156e0;
+    /* background: #f1f1f1; */
+    
+    border-color: #050505;
+    }
+    .avatar-upload .avatar-edit input + label:after {
+    /* content: "\f093"; */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 700;
+    color: #121111;
+    position: absolute;
+    /* top: 2px; */
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: small;
+    margin: auto;
+    }
+    .avatar-upload .avatar-preview {
+    
+    width: 100px;
+    height: 100px;
+    position: relative;
+    border-radius: 100%;
+    border: 1px solid #21309f;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.1);
+    }
+    .avatar-upload .avatar-preview > div {
+    
+    width: 70%;
+    height: 70%;
+    border-radius: 100%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    }
+.form-group.image{
+
+    border:1px solid #dee2e6;  
+}
+
+.avatar-preview{
+    margin-left: 20px;
+}
+.form-group.customer input{
+     width: 100%;
+    
+    }
+
+.form-group.customer .icon-search{
+  position: relative;
+  top:7px;
+  right: 20px;
+   }
+   
+/* .customer-ul-list{
+    position: absolute;
+    margin-top: 20px;
+}
+ul li {
+    cursor: pointer;
+} */
+
+/* input[readonly],textarea[readonly],select[disabled]{
+    background-color: #d4d2d2 !important;
+} */
+
+.customer-ul-list{
+    overflow: auto;
+    width: 40%;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #495057;
+    vertical-align: middle;
+    border-width: 1px;
+    border-style: solid;
+    border-color: -internal-light-dark(rgb(118, 118, 118), rgb(133, 133, 133));
+    border-radius: 0px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.075);
+    position: absolute;
+    z-index: 1;
+    background-color: #ffffff;
+    padding: 0.375rem;
+    margin-left: 10px;
+    margin-top: 0;
+    margin-bottom: 5px;
+    height: 200px;
+}
+
+.customer-ul-list li{
+    cursor: pointer;
+    text-rendering: auto;
+    color: fieldtext;
+    letter-spacing: normal;
+    word-spacing: normal;
+    line-height: normal;
+    text-transform: none;
+    text-indent: 0px;
+    text-shadow: none;
+    display: block;
+    line-height: 1.5;
+}
+.customer-ul-list li:hover{
+    outline: none;
+    background-color: var(--second-color);
+}
+
+.customer-ul-list li:focus{
+    outline: none;
+    background-color: var(--second-color);
+}
+
+.input[disabled],.textarea[disabled],.select[disabled]{
+    background-color: #f2f2f2 !important;
+}

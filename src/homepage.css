@@ -65,6 +65,10 @@ main{
     
 }
 
+.sidebar > .nav-link{
+
+}
+
 .nav {
     display: flex;
     flex-direction: column;
@@ -104,7 +108,7 @@ main{
     color: var(--first-color-alt)
 }
 
-.nav-logo, .nav-link {
+ .nav-logo, .nav-link {
     display: grid;
     grid-template-columns: max-content max-content;
     padding: .5rem 0 .5rem 1.5rem;
@@ -126,19 +130,22 @@ main{
     color: var(--first-color-alt);
 }
 
-.nav-link {
-    position: relative;
-    color: var(--first-color-alt);
-    transition: 0.10s;
-    margin-bottom: .5rem;
-    border: 1px solid #1016c8;
-    border-radius: 8px;
-    box-shadow: 1px 1px 1px rgb(6, 15, 197);
-    margin-right: 3px;
-    margin-left: 3px;
-    width:95%;
-    background-color:#007bff;
-}
+ .nav-link {
+        position: relative;
+        color: var(--first-color-alt);
+        transition: 0.10s;
+        margin-bottom: .5rem;
+        border: 1px solid #1016c8;
+        border-radius: 8px;
+        box-shadow: 1px 1px 1px rgb(6, 15, 197);
+        margin-right: 3px;
+        margin-left: 3px;
+        width:75%;
+        background-color:#007bff;
+    }
+    
+  
+   
 
 .nav-link-name {
     /* color: var(--first-color); */
@@ -328,6 +335,8 @@ main{
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         visibility:visible ;
     }
+
+ 
 
     .show.nav-details{
         visibility: hidden;

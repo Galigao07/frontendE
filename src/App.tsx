@@ -8,7 +8,7 @@ import './HeaderdropDown.css'
 import LoginForm from './LoginComponent/login'
 import Swal from "sweetalert2"
 import Profile from './Dashboard/profile'
-import { BrowserRouter as Router, Routes, useNavigate, Link,Route, BrowserRouter, NavLink} from "react-router-dom";
+import {Router, Routes, useNavigate, Link,Route, NavLink} from "react-router-dom";
 // import CashReceipt from "../TaskPane/cashReceipt";
 import Restaurant from './Restaurant/restaurant';
 import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -21,12 +21,18 @@ import Homepage from './Home/home'
 import VideoUpload from './Reference/video'
 import TerminalRegistration from './Reference/TerminalRegistration'
 import SupplierSetup from './Reference/SupplierSetup'
+import ClientSetup from './Reference/ClientSetup'
+import CustomerDetails from './Reference/CustomerDetails'
+import SupplierDetails from './Reference/SupplierDetails'
+import CashCount from './Reference/CashCount'
+import XreadZred from './Reference/XreadZread'
 // import OnlineTestApp from './OnlineTestApp';
 // import electron, { BrowserWindow } from 'electron';
 
 // import { Provider } from 'react-redux';
 // import store from './Redux/store';
-
+import { createBrowserHistory } from 'history';
+const history = createBrowserHistory();
 function App() {
   const navigate = useNavigate();
   // const [count, setCount] = useState(0)
@@ -295,6 +301,50 @@ const logoutClick = async () => {
   //   history.push(`/TaskPane/`);
   // };
 
+  useEffect(() =>{
+    console.log('asdasdddddddddddddddddddddddddddddddddddd')
+
+  },[])
+
+
+  
+  useEffect(() => {
+    const sidebutton = document.getElementById('sidebutton');
+    const sidebutton1 = document.getElementById('sidebutton1');
+    const sidebutton2 = document.getElementById('sidebutton2');
+    const sidebutton3 = document.getElementById('sidebutton3');
+  
+    if (show) {
+      // If show is true, set the width to '75%' for all relevant elements
+      if (sidebutton) {
+        sidebutton.style.width = '75%';
+      }
+      if (sidebutton1) {
+        sidebutton1.style.width = '75%';
+      }
+      if (sidebutton2) {
+        sidebutton2.style.width = '75%';
+      }
+      if (sidebutton3) {
+        sidebutton3.style.width = '75%';
+      }
+    } else {
+      // If show is false, set the width to '20%' for all relevant elements
+      if (sidebutton) {
+        sidebutton.style.width = '20%';
+      }
+      if (sidebutton1) {
+        sidebutton1.style.width = '20%';
+      }
+      if (sidebutton2) {
+        sidebutton2.style.width = '20%';
+      }
+      if (sidebutton3) {
+        sidebutton3.style.width = '20%';
+      }
+    }
+  }, [show]);
+  
 
   return (
 
@@ -306,7 +356,9 @@ const logoutClick = async () => {
         ) : (
 
           <main className={show ? 'space-toggle' : ''}>
-          <Content /> 
+        
+          <Content/> 
+
           <header className={`header ${show ? 'space-toggle' : ''}`}>
               <div className="header-toggle" >
                   <i className="fas fa-bars" onClick={() => setShow(!show)}></i>
@@ -324,7 +376,6 @@ const logoutClick = async () => {
                                     
                                      <div className="nested12-dropdown" >
                                        <NavLink to="#" onClick={handleBillingStatementClick} id="billingstatementid"  className="link-with-icon" style={{width: '95%'}}>Billing Statement<i className="fas fa-caret-down"></i></NavLink>
-                                     
                                        <div className="nested12-dropdown-content" id="billingstatementidcontent" style={{ display: billingStatementVisible ? 'block' : 'none' }}>
                                          <NavLink to="#">Posted Transactions</NavLink>
                                          <NavLink to="#">Un-Posted Transactions</NavLink>
@@ -363,14 +414,14 @@ const logoutClick = async () => {
                <div className="dropdown">
                  <button className="dropbtn">Reference <i className="fas fa-caret-down"></i></button>
                  <div className="dropdown-content">
-                     <NavLink  to="/Profile" target="_blank">Product Profile</NavLink>
-                     <NavLink  to="WaiterProfile">Waiter List</NavLink>
-                     <NavLink  to="/chartofaccounts" target="_blank">Customer Details</NavLink>
-                     <NavLink  to="/chartofaccounts" target="_blank">Supplier Details</NavLink>
-                     <NavLink  to="TableList">Table List</NavLink>
-                     <NavLink  to="/chartofaccounts" target="_blank">Product Print Category</NavLink>
-                     <NavLink  to="/chartofaccounts" target="_blank">POS Site Code</NavLink>
-                     <NavLink  to="/Video">Change Video</NavLink>
+                     <NavLink     to="/Profile" target="_blank">Product Profile</NavLink>
+                     <NavLink     to="WaiterProfile">Waiter List</NavLink>
+                     <NavLink     to="/Customer-Details" >Customer Details</NavLink>
+                     <NavLink     to="/Supplier-Details" >Supplier Details</NavLink>
+                     <NavLink     to="TableList">Table List</NavLink>
+                     <NavLink     to="/chartofaccounts" target="_blank">Product Print Category</NavLink>
+                     <NavLink     to="/chartofaccounts" target="_blank">POS Site Code</NavLink>
+                     <NavLink     to="/Video">Change Video</NavLink>
                  
                  </div>
                </div>
@@ -378,14 +429,14 @@ const logoutClick = async () => {
                <div className="dropdown">
                    <button className="dropbtn">Adminitration <i className="fas fa-caret-down"></i></button>
                    <div className="dropdown-content">
-                       <NavLink to="userProfile">User Account Control</NavLink> 
-                       <NavLink to="{% url 'UserDeatials' %}">POS Transaction</NavLink> 
+                       <NavLink    to="userProfile">User Account Control</NavLink> 
+                       <NavLink  to="{% url 'UserDeatials' %}">POS Transaction</NavLink> 
    
                      <div className="nested7-dropdown" >
-                       <NavLink to="#" id="unpostid" onClick={handleUnpostRepostClick} className="link-with-icon">Unpost Transaction<i className="fas fa-caret-down"></i></NavLink>
+                       <NavLink   to="#" id="unpostid" onClick={handleUnpostRepostClick} className="link-with-icon">Unpost Transaction<i className="fas fa-caret-down"></i></NavLink>
                        <div className="nested7-dropdown-content" id="unpostidcontent" style={{ display : UnpostRepostVisible ? 'block' : 'none'}}>
-                           <NavLink to="#">By Date Transaction</NavLink>
-                           <NavLink to="#">By Reference No</NavLink>
+                           <NavLink    to="#">By Date Transaction</NavLink>
+                           <NavLink    to="#">By Reference No</NavLink>
                        </div>
                      </div>
    
@@ -393,30 +444,30 @@ const logoutClick = async () => {
                      <div className="nested4-dropdown" >
                        <NavLink to="#" id="systemconfigid" onClick={handleSystemConfigClick} className="link-with-icon" >System Configuration<i className="fas fa-caret-down"></i></NavLink>
                        <div className="nested4-dropdown-content" id="systemconfigidcontent" style={{display: SystemConfigVisible ? 'block' : 'none'}}>
-                           <NavLink to="#">POS Settings </NavLink>
+                           <NavLink    to="#">POS Settings </NavLink>
    
                            <div className="nested5-dropdown" >
                              <NavLink to="#" id="transtypesetupid" onClick={handleTransactionTypeClick} className="link-with-icon" style={{width: '95%'}}>Tagging of Sales Transaction<i className="fas fa-caret-down"></i></NavLink>
                              <div className="nested5-dropdown-content" id="transtypesetupidcontent" style={{display : TransactionTypeVisible ? 'block' : 'none'}}>
-                                 <NavLink to="#">Debit Accounts for Sales</NavLink>
-                                 <NavLink to="#">Credit Accounts for Sales</NavLink>
-                                 <NavLink to="#">Per Category</NavLink>
-                                 <NavLink to="#">Credit Account for Sales Return</NavLink>
-                                 <NavLink to="#">Cost Sales</NavLink>
-                                 <NavLink to="#">Per Terminal</NavLink>
+                                 <NavLink   to="#">Debit Accounts for Sales</NavLink>
+                                 <NavLink   to="#">Credit Accounts for Sales</NavLink>
+                                 <NavLink   to="#">Per Category</NavLink>
+                                 <NavLink   to="#">Credit Account for Sales Return</NavLink>
+                                 <NavLink   to="#">Cost Sales</NavLink>
+                                 <NavLink   to="#">Per Terminal</NavLink>
                          
                              </div>
                            </div>
    
-                           <NavLink to="#">Cost of Sales Account Tagging</NavLink>
-                           <NavLink to="#">Tagging of SL Account for Sales</NavLink>
+                           <NavLink   to="#">Cost of Sales Account Tagging</NavLink>
+                           <NavLink   to="#">Tagging of SL Account for Sales</NavLink>
    
    
                          <div className="nested6-dropdown" >
                            <NavLink to="#" id="Withheldtaxid"  onClick={handlewithHeldTaxClick}  className="link-with-icon">Card Machine Acct. Tittle Tagging<i className="fas fa-caret-down"></i></NavLink>
                            <div className="nested6-dropdown-content" id="Withheldtaxidcontent" style={{display : withHeldTaxVisible ? 'block' : 'none'}}>
-                               <NavLink to="#">Credit Card</NavLink>
-                               <NavLink to="#">Debit Card</NavLink>
+                               <NavLink    to="#">Credit Card</NavLink>
+                               <NavLink   to="#">Debit Card</NavLink>
      
                        
                            </div>
@@ -424,10 +475,10 @@ const logoutClick = async () => {
    
    
                          <div className="nested7-dropdown" >
-                           <NavLink to="#" id="Withheldtaxid"  onClick={handlewithHeldTaxClick}  className="link-with-icon">Terminal price type Setup<i className="fas fa-caret-down"></i></NavLink>
+                           <NavLink  to="#" id="Withheldtaxid"  onClick={handlewithHeldTaxClick}  className="link-with-icon">Terminal price type Setup<i className="fas fa-caret-down"></i></NavLink>
                            <div className="nested7-dropdown-content" id="Withheldtaxidcontent" style={{display : withHeldTaxVisible ? 'block' : 'none'}}>
-                               <NavLink to="#">Default Price Type</NavLink>
-                               <NavLink to="#">Allowed Price Type</NavLink>
+                               <NavLink   to="#">Default Price Type</NavLink>
+                               <NavLink   to="#">Allowed Price Type</NavLink>
      
                        
                            </div>
@@ -435,10 +486,10 @@ const logoutClick = async () => {
    
    
                            
-                           <NavLink to="#">Reset Number Generator </NavLink>
-                           <NavLink to="#">Database Syncronize</NavLink>
-                           <NavLink to="#">Tagging POS Site Code </NavLink>
-                           <NavLink to="#">Revenue Tagging</NavLink>
+                           <NavLink   to="#">Reset Number Generator </NavLink>
+                           <NavLink   to="#">Database Syncronize</NavLink>
+                           <NavLink   to="#">Tagging POS Site Code </NavLink>
+                           <NavLink   to="#">Revenue Tagging</NavLink>
                        </div>
                      </div>
   
@@ -449,7 +500,7 @@ const logoutClick = async () => {
                        <NavLink to="#" id="utilityid" onClick={handleUtilityClick} className="link-with-icon">Company Setup<i className="fas fa-caret-down"></i></NavLink>
                        
                        <div className="nested10-dropdown-content" id="utilityidContent" style={{display: UtilityVisible ? 'block' : 'none'}}>
-                           <NavLink to="#">Client Details Setup</NavLink>
+                           <NavLink to="/Client-Setup">Client Details Setup</NavLink>
                            <NavLink to="/Supplier-Setup">Supplier Details Setup</NavLink>
                            <NavLink to="#">Terminal Setup</NavLink>
                            <NavLink to="/Terminal-Registration">Terminal Registration</NavLink>
@@ -462,8 +513,8 @@ const logoutClick = async () => {
                <div className="dropdown">
                    <button className="dropbtn">Utility <i className="fas fa-caret-down"></i></button>
                    <div className="dropdown-content">
-                       <NavLink to="#">User Account Control</NavLink>
-                       <NavLink to="#">System Configuration</NavLink>
+                       <NavLink  to="#">User Account Control</NavLink>
+                       <NavLink  to="#">System Configuration</NavLink>
                    </div>
                </div>
                </div>       
@@ -476,19 +527,19 @@ const logoutClick = async () => {
                   <div>
                       <span className={`nav-header-name ${show ? 'show' : null}`}>TASK PANE</span>
                       <div className="nav-list" >
-                      <NavLink className={active === "1" ? "nav-link active" : "nav-link"} to="/TaskPane/SalesInvoice" title="Sales Invoice">
+                      <NavLink id='sidebutton' className={active === "1" ? "nav-link active" : "nav-link"} to="/Cash-Count" title="Sales Invoice">
                          <FontAwesomeIcon icon={faDollarSign} className="nav-link-icon" key={1} id={"icon1"} onClick={handleClick} />
                          <span className={`nav-link-name ${show ? 'show' : ''}`}     onClick={handleClick}>Cash Count</span>
                          </NavLink>
-                          <NavLink  className={active === "2" ? "nav-link active" : "nav-link"} to="/TaskPane/POS"  title="POS" >
+                          <NavLink id='sidebutton1'  className={active === "2" ? "nav-link active" : "nav-link"} to="/Xread-Zread"  title="POS" >
                           <FontAwesomeIcon icon={faReceipt} className="nav-link-icon"  key={2} id={"2"} onClick={handleClick}></FontAwesomeIcon>
                               <span className={`nav-link-name ${show ? 'show' : null}`} onClick={handleClick}>X Reading And Z reading</span>    
                           </NavLink>  
-                          <NavLink  className={active === "3" ? "nav-link active" : "nav-link"} to="/TaskPane/Inventory"   title="Inventory">
+                          <NavLink id='sidebutton2'   className={active === "3" ? "nav-link active" : "nav-link"} to="/TaskPane/Inventory"   title="Inventory">
                           <FontAwesomeIcon icon={faListAlt} className="nav-link-icon"  key={3} id={"3"} onClick={handleClick}></FontAwesomeIcon>
                               <span className={`nav-link-name ${show ? 'show' : null}`}  onClick={handleClick}>Reports</span>    
                           </NavLink>  
-                          <NavLink className={active === "9" ? "nav-link active" : "nav-link"} key={9} id={"9"} onClick={() => logoutClick()} title="Logout" to={''}>
+                          <NavLink id='sidebutton3'  className={active === "9" ? "nav-link active" : "nav-link"} key={9} onClick={() => logoutClick()} title="Logout" to={''}>
                               <FontAwesomeIcon icon={faPowerOff} className="nav-link-icon" key={9} id={"9"} onClick={() => logoutClick()}></FontAwesomeIcon>
                               <span className={`nav-link-name ${show ? 'show' : null}`}  onClick={() => logoutClick()}>Logout</span>    
                           </NavLink>   
@@ -515,7 +566,9 @@ const logoutClick = async () => {
                   </div>       
               </nav>    
           </aside>
+  
     
+        
          </main>
 
         )
@@ -529,28 +582,25 @@ const logoutClick = async () => {
 
 }
 
-
-function Content() {
+const Content = () => {
   return(
-  <div>
-
     <Routes>
-        <Route path="/" element={<Homepage />}></Route>
-        <Route path="/Profile" element={<Profile />}></Route>
-        <Route path="/userProfile" element={<UserProfile />}></Route>
-        <Route path="/WaiterProfile" element={<WaiterProfile />}></Route>
-        <Route path="/TableList" element={<TableList />}></Route>
-        <Route path="/Video" element={<VideoUpload />}></Route>
-        <Route path="/Terminal-Registration" element={<TerminalRegistration />}></Route>
-        <Route path="/Supplier-Setup" element={<SupplierSetup />}></Route>
-      </Routes> 
-
-     
-
-    
-  </div>
-  ) 
-  }
+      <Route path="/" element={<Homepage />} />
+      <Route path="/Profile" element={<Profile />} />
+      <Route path="/userProfile" element={<UserProfile />} />
+      <Route path="/WaiterProfile" element={<WaiterProfile />} />
+      <Route path="/TableList" element={<TableList />} />
+      <Route path="/Video" element={<VideoUpload />} />
+      <Route path="/Terminal-Registration" element={<TerminalRegistration />} />
+      <Route path="/Supplier-Setup" element={<SupplierSetup />} />
+      <Route path="/Client-Setup" element={<ClientSetup />} />
+      <Route path="/Supplier-Details" element={<SupplierDetails />} />
+      <Route path="/Customer-Details" element={<CustomerDetails />} />
+      <Route path="/Cash-Count" element={<CashCount />} />
+      <Route path="/Xread-Zread" element={<XreadZred />} />
+    </Routes>
+  );
+};
 
 
 export default App
