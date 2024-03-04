@@ -1,0 +1,97 @@
+.XZContainer{
+
+    display: flex;
+    margin-left: 10px;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sub-container{
+    position: relative;
+    box-shadow: 0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2);
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1 solid rgba(0,0,0,.125);
+    border-radius: 0.25rem;
+    border-top: 3px solid #007bff;
+
+    padding:20px;
+    padding-top: 0px;
+}
+
+
+.body-container{
+    position: relative;
+    box-shadow: 0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2);
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1 solid rgba(0,0,0,.125);
+    border-radius: 0.25rem;
+    border-top: 3px solid #007bff;
+    padding:20px;   
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.xcontainer{
+    border: 1px solid;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 10px;
+}
+
+ .xcontainer .form-group{
+    display: flex;
+    flex-direction: row;
+}
+
+.xcontainer .form-group input{
+ text-align: end;
+}
+
+.button-container{
+    display: flex;
+    flex-direction: row;
+    margin-top: 10px;
+    justify-content: space-evenly;
+}
+.button-container button{
+    font-weight: bold;
+    height: 30px;
+    width: 30%;
+    background-color: blue;
+    color: white;
+    border-radius: 20px;
+    border: none;
+}
+.button-container button:hover{
+    cursor: pointer;
+    background-color: rgb(42, 232, 42);
+    color: black;
+   
+}
+
+.filter {
+    display: flex;
+    flex-direction: row;
+
+}
+
+.filter-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group button {
+    height:38px;
+    width: 100%;
+}
+tbody tr:hover{
+background-color: #007bff;
+color: #fff;
+
+}
+

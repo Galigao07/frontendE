@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-inner-declarations */
-import { app, BrowserWindow,dialog,ipcMain,screen} from 'electron'
-import path from 'node:path'
-import VideoUpload from '../src/Reference/video'
-// mport * as path from 'path';
+import { app, BrowserWindow,dialog,ipcMain,screen,session,protocol} from 'electron'
+import { truncate } from 'original-fs';
+// import path from 'node:path'
+import path from 'path';
 import * as url from 'url';
 
 // The built directory structure
@@ -32,28 +32,20 @@ function createWindow() {
     // icon: path.join(process.env.VITE_PUBLIC, 'logo.svg'),
     show: false,
     webPreferences : {
-      nodeIntegration: false,
-      contextIsolation: true,
+      nodeIntegration: true,
+      contextIsolation: false,
+      webSecurity: false,
+      allowRunningInsecureContent: true,
       preload: path.join(__dirname, 'preload.js'),
-      sandbox: true, // Enable sandbox mode for additional security
+      // sandbox: true, // Enable sandbox mode for additional security
 
+      enableBlinkFeatures: 'HTML5HistoryAPI',
+      session: session.fromPartition('persist:name'), // create a new session
     },
-    // fullscreen: true, 
-    // frame:false,
+    fullscreen: false, 
+    frame:true,
     
   })
-
-//   ipcMain.on('print-dialog', (event: any, args: any) => {
-//     console.log('Print dialog shown.');
-
-//     // auto click print button after 1 second
-//     setTimeout(() => {
-//         console.log('Auto clicking print button.');
-//         win!.webContents.send('auto-print');
-//     }, 1000);
-// });
-
-
 
   win.on('close', async () => {
     const isLogin = await win?.webContents.executeJavaScript('window.localStorage.getItem("isLogin")');
@@ -124,12 +116,12 @@ function createWindow() {
   })
 
   if (VITE_DEV_SERVER_URL) {
-    console.log('asdasdasdasdas')
+
     win.loadURL(VITE_DEV_SERVER_URL)
   } else {
-    // console.log('asdasdasdasdas')
-    win.loadFile('dist/index.html')
-    // win.loadFile(path.join(process.env.DIST, 'index.html'))
+    const srcDirectory = app.getAppPath()
+    win.loadURL(`file://${path.join(srcDirectory, '/dist/index.html')}`);
+
   }
 
 
@@ -142,33 +134,6 @@ function createWindow() {
     }
   });
 
-
-
-//   win.webContents.on('before-input-event', (event, input) => {
-//     if (input.type === 'keyDown' && input.control && input.key.toLowerCase() === 'p') {
-//         console.log('Print preview is opened');
-//         // Here you can perform actions or set flags indicating that print preview is open
-//     }
-//   });
-
-
-
-// win.webContents.on('console-message', (_, level, message, lineNumber, sourceId) => {
-//   console.log('Print preview is opened', message, '', level);
-//   if (level === 1 && message === '999') {
-//       console.log('Print preview is opened');
-//       // Execute JavaScript to print the contents of the iframe
-//       win?.webContents.print({ silent: true, printBackground: true });
-//       console.log('Success');
-//   }
-// });
-
-
-//   // Listen for when print preview is closed
-//   win.webContents.on('destroyed', () => {
-//     console.log('Print preview is closed');
-//     // Here you can perform actions or reset flags indicating that print preview is closed
-//   });
 }
 
 
@@ -240,7 +205,7 @@ const CreateExtendedMonitorNew = () => {
         contextIsolation: false, // or true, depending on your setup
         webSecurity: false // This allows loading local files in Electron
       },
-      fullscreen: true,
+      fullscreen: false,
     frame:true,
   });
   // console.log('aaaa',srcDirectory)
@@ -262,7 +227,11 @@ const CreateExtendedMonitorNew = () => {
 };
 
 
+
 app.whenReady().then(() => {
   createWindow();
   CreateExtendedMonitor();
+
+
+  
 });

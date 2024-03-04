@@ -63,6 +63,17 @@ import TransactionDiscount from './DiscountTransaction';
 import jsPDF from 'jspdf';
 import eventEmitter from 'events';
 
+
+
+const swalWithBootstrapButtons = Swal.mixin({
+  customClass: {
+    confirmButton: 'btn btn-success',
+    cancelButton: 'btn btn-danger'
+  },
+  buttonsStyling: false
+})
+
+
 interface ProductList {
   long_desc: any;
   reg_price: any;
@@ -322,7 +333,7 @@ useEffect(() => {
     if (container !== null) {
       // Calculate the number of products per row based on container width and product width
       const containerWidth = container.clientWidth;
-      const productWidth = 140; // Assuming each product has a width of 140px
+      const productWidth = 150; // Assuming each product has a width of 140px
       const newProductsPerRow = Math.floor(containerWidth / productWidth);
       setProductsPerRow(newProductsPerRow);
     }
@@ -1615,8 +1626,6 @@ const Restaurant: React.FC = () => {
 
 
 
-
-
   const DeletePosExtendedAll = async () => {
 
     try{
@@ -1636,17 +1645,6 @@ const Restaurant: React.FC = () => {
 
 
 
-
-    // let receiptContentainer = 'Receipt\n\n';
-
-
-    const swalWithBootstrapButtons = Swal.mixin({
-      customClass: {
-        confirmButton: 'btn btn-success',
-        cancelButton: 'btn btn-danger'
-      },
-      buttonsStyling: false
-    })
   const CloseLogout = () =>{
     setCloseTerminalModal(false)
     setOrderTypeModal(true)
@@ -1656,7 +1654,8 @@ const Restaurant: React.FC = () => {
   }
 
     const logoutClick = async () => {
-
+      // localStorage.clear();
+      // window.location.reload();
       swalWithBootstrapButtons.fire({
           title: 'Confirmation',
           text: "Do you want logout?",
@@ -1665,45 +1664,29 @@ const Restaurant: React.FC = () => {
           confirmButtonText: 'Yes',
           cancelButtonText: 'No',
           reverseButtons: true
-        }).then((result) => {
+        }).then(async(result) => {
           if (result.isConfirmed) {
-        //  localStorage.isLogin = false
-         localStorage.setItem('isLogin','false')
-         localStorage.setItem('UserRank', '');
-         localStorage.setItem('FullName', '');
-         localStorage.setItem('UserID', '');
-         localStorage.setItem('UserName', '');
-
-              // try {
-              //     const instance = axios.create({
-              //         xsrfHeaderName: 'X-CSRFToken',     
-              //         xsrfCookieName: 'csrftoken',    
-              //     });
-              //         const headers = {
-              //             'X-CSRFToken':  localStorage.csrfToken
-              //         };
-
-              //         instance.post('http://localhost:8000/api/logout', {}, {
-              //         withCredentials: true,  // Send cookies along with the request
-              //         headers: headers  // Include the CSRF token in the headers
-              //     })
+              try {
+                const response = await axios.get(`${BASE_URL}/api/logout/`, {
+                  params:{
+                    UserID:localStorage.getItem("UserID"),
+                    TransID : localStorage.getItem("TransID")
+                    }});
+                  if (response.status==200){
+                    localStorage.clear();
+                    window.location.reload();
+                  }
               
-              //     .then(() => {
-              //         localStorage.removeItem('username');
-              //         localStorage.removeItem('token');
-              //         localStorage.removeItem('setLogin');
-              //         localStorage.removeItem('csrfToken');
-                
-                      window.location.reload();
-              //     })
 
-              // } catch (error) {
-              //      console.error('Error during logout:', error);
-              // }
+              } catch (error) {
+                   console.error('Error during logout:', error);
+              }
           } 
         })
 
     };
+
+
 
 
     const CloseTerminal = () => {
@@ -1718,7 +1701,23 @@ const Restaurant: React.FC = () => {
     setCloseTerminalModal(false)
     }
 
+    const endShitf =  async () => {
 
+      try {
+        const response2 = await axios.get(`${BASE_URL}/api/end-shift/`, {
+          params:{
+            UserID:localStorage.getItem("UserID"),
+            TransID : localStorage.getItem("TransID")
+            }});
+          if (response2.status==200){
+            localStorage.clear();
+            window.location.reload();
+          }
+      }catch(error:any){
+        showErrorAlert(error.message.data)
+      }
+
+    }
     const CloseCashBreakDownModal = () => {
       setCashBreakDownModal(false)
       setOrderTypeModal(true)
@@ -1730,25 +1729,25 @@ const Restaurant: React.FC = () => {
     /// ************************* END *************************************** //
 
 const CashBreakDownDataList = async (data:any) => {
-  setCashBreakDownModal(false)
-
-
   try {
-    const response = await axios.get(`${BASE_URL}/api/company-details/`)
 
+    const response = await axios.post(`${BASE_URL}/api/cash-breakdown/`,{data:data,TransID:localStorage.getItem('TransID')});
     if (response.status==200){
-      PrintCashBreakDown(data,response.data.DataInfo)
-      // localStorage.clear();
-      // window.location.reload();
+  
+      const response1 = await axios.get(`${BASE_URL}/api/company-details/`)
+
+      if (response1.status==200){
+        setCashBreakDownModal(false)
+        PrintCashBreakDown(data,response1.data.DataInfo)
+
+      }
     }
+
+   
   
   } catch {
     console.log('error')
   }
-
-
-
-
 
 }
   
@@ -4551,11 +4550,11 @@ if (currentHours > 12) {
     doc.write(`<img src="${qrDataURI}" alt="QR Code"  style="max-width: 120px; display: inline-block;" />`);
     doc.write('</div>'); // Close the container div
     doc.close();
-  // Remove the iframe after printing
+    triggerPrint()
   setTimeout(() => {
     iframeWindow.print();
     // window.location.reload(); 
-
+    endShitf();
     setOrderType('')
     setOrderTypeModal(true)
     setTimeout(() => {
@@ -5713,13 +5712,13 @@ const CategoryHideClick = () => {
       Price: {parseFloat(selectedProduct?.product.reg_price).toFixed(2)}
       </Typography>
 
-    <div className="input-group">
-    <button className="btn" style={{backgroundColor:'white',color:'red' ,border:'solid'}} onClick={MinusQuantity} ><FontAwesomeIcon icon={faMinus}/> </button>
-      <input type="number" ref={inputRef}  inputMode="numeric"  placeholder="Quantity" value={quantity} onChange={handleQuantityChange} 
-       style={{width:'60%' ,margin:'10px', fontSize:'20px',fontWeight:'bold',textAlign:'center'}}
-       onKeyDown={(event) => HandleAddtocart(event)}
-       />
-      <button className="btn" style={{backgroundColor:'white',color:'blue' ,border:'solid'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  style={{ verticalAlign: 'middle' }}/></button>
+    <div className="input-group" style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
+    <button className="btn-minus" style={{backgroundColor:'white',color:'red' ,border:'solid',marginTop:'0'}} onClick={MinusQuantity} ><FontAwesomeIcon icon={faMinus}/> </button>
+        <input type="number" ref={inputRef}  inputMode="numeric"  placeholder="Quantity" value={quantity} onChange={handleQuantityChange} 
+        style={{width:'70%' ,fontWeight:'bold',textAlign:'center',height:'40px',margin:'0',padding:'0'}}
+        onKeyDown={(event) => HandleAddtocart(event)}
+        />
+        <button className="btn-add" style={{backgroundColor:'white',color:'blue' ,border:'solid',marginTop:'0'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  style={{ verticalAlign: 'middle' }}/></button>
     </div>
 
     <p className='TotalDue'>Total Due: {calculateTotal()}</p>
@@ -5744,10 +5743,20 @@ const CategoryHideClick = () => {
               
             <h1 className="threeDText">{selectedItemIndexData?.selectedItem.description}</h1>
             <img src={image} style={{ maxWidth: '200px', maxHeight: '150px', marginBottom: '10px' }} />
-            <p className='Price'>Price: {parseFloat(selectedItemIndexData?.selectedItem.price).toFixed(2)}</p>
-            <div className="input-group">
+
+
+    
+            <Typography      
+              sx={{
+              fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
+              color: '#0d12a1', borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+              Price: {parseFloat(selectedItemIndexData?.selectedItem.price).toFixed(2)}
+            </Typography>
+
+            {/* <p className='Price' >Price: {parseFloat(selectedItemIndexData?.selectedItem.price).toFixed(2)}</p> */}
+            <div className="input-group" style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
         
-            <button className="btn" style={{backgroundColor:'white',color:'red' ,border:'solid'}} onClick={MinusQuantity} >
+            <button className="btn-minus" style={{backgroundColor:'white',color:'red' ,border:'solid',marginTop:'0'}} onClick={MinusQuantity} >
                 <FontAwesomeIcon icon={faMinus}  />
 
                 </button>
@@ -5760,14 +5769,12 @@ const CategoryHideClick = () => {
                       onChange={handleQuantityChange}
                       onKeyDown={(event) => HandleUpdatetocart(event)}
                       style={{
-                        width: '60%',
-                        margin: '10px',
-                        fontSize: '20px',
+                        width: '70%',
                         fontWeight: 'bold',
                         textAlign: 'center',
                       }}
                     />
-                <button className="btn" style={{backgroundColor:'white',color:'blue' ,border:'solid'}} onClick={addQuantity}>
+                <button className="btn-add" style={{backgroundColor:'white',color:'blue' ,border:'solid',marginTop:'0'}} onClick={addQuantity}>
                 <FontAwesomeIcon icon={faPlus} />
 
                 </button>

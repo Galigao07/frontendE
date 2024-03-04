@@ -422,41 +422,36 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
             </div>
             </div>
             <div className="Transaction" style={{ overflow: 'auto' ,height:'250px',width:'100%', border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '1px' }}>
+              <Table className="Userlist" sx={{
+                        fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
+                        overflow: 'auto'
+                    }}>
+                              <thead>
+                                  <tr>
+                                  <th>ID Code</th>
+                                  <th>Number of Tables</th>
+                                  <th>Table Start@</th>
+                                  <th>Site Code</th>
+                                  </tr>
+                      
 
-            <Table className="Userlist" sx={{
-    fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
-    overflow: 'auto'
-}}>
-                    <thead>
-                                <tr>
-                                <th>ID Code</th>
-                                <th>Number of Tables</th>
-                                <th>Table Start@</th>
-                                <th>Site Code</th>
-                                </tr>
-                    
-
-                            </thead>
-                            <tbody>
-                            {Array.isArray(users) && users.length > 0 ? (
-            users.map((item, index) => (
-                <tr key={index} onClick={() => handleRetrieveUserData(index)} > 
-                <td style={{textAlign:'center'}}>{item.details_id}</td>
-                <td title={item.fullname}>{parseInt(item.table_no)}</td>
-                <td style={{textAlign:'start'}}>{String(item.table_start)}</td>
-                <td style={{textAlign:'start'}}>{item.site_code}</td>
-            
-        </tr>
-    ))
-    ) : (
-    <tr>
-        <td colSpan={4}>No items in the transaction</td>
-    </tr>
-    )}
-                
-
-                            </tbody>
-                        </Table>
+                              </thead>
+                              <tbody>
+                  {Array.isArray(users) && users.length > 0 ? (
+                  users.map((item, index) => (
+                  <tr key={index} onClick={() => handleRetrieveUserData(index)} > 
+                  <td style={{textAlign:'center'}}>{item.details_id}</td>
+                  <td title={item.fullname}>{parseInt(item.table_no)}</td>
+                  <td style={{textAlign:'start'}}>{String(item.table_start)}</td>
+                  <td style={{textAlign:'start'}}>{item.site_code}</td>
+              
+                  </tr> ))
+                      ) : (
+                  <tr>
+                    <td colSpan={4}>No items in the transaction</td>
+                  </tr> )}
+                  </tbody>
+              </Table>
             </div>
             </Grid>
 

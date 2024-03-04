@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import  {useRef, useState, useEffect, ChangeEvent } from 'react';
-// import { useNavigate  } from 'react-router-dom';
 import axios from 'axios';
-import './index.css';
+import './login.css';
 import logo from './logo.png';
 import Swal from 'sweetalert2';
 import BASE_URL from '../config';
 import { isMobile, isTablet } from 'react-device-detect';
-// import { width } from '@fortawesome/free-solid-svg-icons/fa0';
-// import { ipcRenderer } from 'electron';
   const LoginForm: React.FC  = () => {
     const usernameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
@@ -95,27 +92,6 @@ import { isMobile, isTablet } from 'react-device-detect';
 
   const handleLogin = async () => {
 
-  
-    // const config = {
-    //   headers: {
-    //     'Accept': 'application/json',
-    //     'Content-Type': 'application/json',
-    //     'X-CSRFToken': localStorage.csrfToken as string // Assuming localStorage.csrfToken is a string
-    //   },
-    //   // withCredentials: true
-    // };
-  
-    // const body = JSON.stringify({ username, password });
-  // if (isMobile){
-  //   localStorage.setItem('isLogin', 'true');
-  //   localStorage.setItem('UserRank', 'SalesMan');
-  //   localStorage.setItem('FullName', 'FullName');
-  //   localStorage.setItem('UserID', '99999');
-  //   localStorage.setItem('UserName', 'SalesMan');
-  //   localStorage.setItem('TerminalNo', '1');
-  //   localStorage.setItem('SiteCode', '121');
-  //   window.location.reload();
-  // }
     try {
       const response = await axios.get(`${BASE_URL}/api/login/`, {
         params:{
@@ -128,7 +104,7 @@ import { isMobile, isTablet } from 'react-device-detect';
         console.log(response.data);
         const { Info }: { Info?: any } = response.data; // Adjust 'Info' type as per the actual structure
         if (Info) {
-          const { UserRank, FullName, UserID, UserName, TerminalNo, SiteCode }: any = Info; // Adjust types as per the actual structure
+          const { UserRank, FullName, UserID, UserName, TerminalNo, SiteCode,TransID }: any = Info; // Adjust types as per the actual structure
           localStorage.setItem('isLogin', 'true');
           localStorage.setItem('UserRank', UserRank);
           localStorage.setItem('FullName', FullName);
@@ -136,6 +112,7 @@ import { isMobile, isTablet } from 'react-device-detect';
           localStorage.setItem('UserName', UserName);
           localStorage.setItem('TerminalNo', TerminalNo);
           localStorage.setItem('SiteCode', SiteCode);
+          localStorage.setItem('TransID', TransID);
           window.location.reload();
           // Process the extracted data as needed
         }
@@ -156,51 +133,7 @@ import { isMobile, isTablet } from 'react-device-detect';
 const onSubmit = async (event:any) => {
   event.preventDefault();
   
-  // if (isMobile){
-  //   localStorage.setItem('isLogin', 'true');
-  //   localStorage.setItem('UserRank', 'SalesMan');
-  //   localStorage.setItem('FullName', 'FullName');
-  //   localStorage.setItem('UserID', '99999');
-  //   localStorage.setItem('UserName', 'SalesMan');
-  //   localStorage.setItem('TerminalNo', '1');
-  //   localStorage.setItem('SiteCode', '121');
-  //   window.location.reload();
-  // }
-    try {
-      const response = await axios.get(`${BASE_URL}/api/login/`, {
-        params:{
-        username : username,
-        password : password
-        }
-      });
   
-      if (response.status === 200) {
-        console.log(response.data);
-        const { Info }: { Info?: any } = response.data; // Adjust 'Info' type as per the actual structure
-        if (Info) {
-          const { UserRank, FullName, UserID, UserName, TerminalNo, SiteCode }: any = Info; // Adjust types as per the actual structure
-          localStorage.setItem('isLogin', 'true');
-          localStorage.setItem('UserRank', UserRank);
-          localStorage.setItem('FullName', FullName);
-          localStorage.setItem('UserID', UserID);
-          localStorage.setItem('UserName', UserName);
-          localStorage.setItem('TerminalNo', TerminalNo);
-          localStorage.setItem('SiteCode', SiteCode);
-          window.location.reload();
-          // Process the extracted data as needed
-        }
-  
-   
-        // channel.postMessage({ type: 'login' });
-      }
-    } catch (error) {
-      Swal.fire({
-        title: 'Log in Error',
-        text: 'Error Username or Password',
-        icon: 'info',
-        confirmButtonText: 'OK'
-      });
-    }
   };
 
  
@@ -303,11 +236,11 @@ const handleKeyDown = (event :any, BackRef : any, nextRef:any) => {
         </div>
         
         
-        <div className='form-group'>
+        <div className='Button-Container'>
           <button className="btn-login" type='submit' ref={loginBtnRef} onClick={handleLogin}  >
             Login
           </button>
-          <button className="btn-login" style={{backgroundColor:'red'}} type='button'  onClick={closeApp}>
+          <button className="btn-exit"  type='button'  onClick={closeApp}>
             Exit
           </button>
           
