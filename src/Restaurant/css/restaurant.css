@@ -362,6 +362,42 @@ p.TotalDue {
   box-shadow: 0 3px red ;
 }
 
+.Change-Container {
+  position: relative;
+  box-shadow: 0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2);
+  background-color: #fff;
+  background-clip: border-box;
+  border: 1 solid rgba(0,0,0,.125);
+  border-radius: 0.25rem;
+  border-top: 3px solid #007bff;
+  padding:20px;   
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.Change-Container button{
+  font-size: 20px;
+  font-weight: bold;
+  background-color: #0d12a1;
+}
+
+
+
+.Change-Container p{
+font-weight:bolder ;
+  }
+
+.Change-Container p{
+font-weight:900px ;
+}
+.change-subcontainer{
+  border: 1 solid rgba(0,0,0,.125);
+  box-shadow: 0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2);
+  margin: 5px;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  text-shadow:  0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2);
+}
 
 
 /* .num-pad {

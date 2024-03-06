@@ -1238,6 +1238,8 @@ const Restaurant: React.FC = () => {
   const [DiscountData, setDiscountData] = useState<any>('');
   const [DiscountType, setDiscountType] = useState<any>('');
   const [TotalDue, setTotalDue] = useState<any>(0);
+  const [chatSocket, setChatSocket] = useState<WebSocket | null>(null);
+  const [TableOnprocess,setTableOnprocess] = useState<any>(null)
 
   // const dispatch = useDispatch();
   // const booleanValue = useSelector((state: any) => state.booleanValue);
@@ -1253,7 +1255,7 @@ const Restaurant: React.FC = () => {
   
 
 
-
+  const [ChangeModal, setChangeModal] = useState<boolean>(false);
   const [DebitCardPaymentModal, setDebitCardPaymentModal] = useState<boolean>(false);
   const [CreditCardPaymentEntryModal, setCreditCardPaymentEntryModal] = useState<boolean>(false);
   const [CreditCardPaymentModal, setCreditCardPaymentModal] = useState<boolean>(false);
@@ -1322,8 +1324,9 @@ const Restaurant: React.FC = () => {
   const [TypeAndTable, setTypeAndTable] = useState<TypeAndTableState>({ ordertTYpe: '', tableNo: '' });
   const [CustomerOrderInfo, setCustomerOrderInfo] = useState<any>([]);
   // const onlineTestApp = new OnlineTestApp();
-  const [AmountTendered,setAmountTendered] = useState<number>(0)
-  const [ChangeAmount,setChangeAmount] = useState<number>(0)
+  const [AmountTendered,setAmountTendered] = useState<any>(0)
+  const [ChangeAmount,setChangeAmount] = useState<any>(0)
+  const [AmountDue,setAmountDue] = useState<any>(0)
 
   const [showIframe, setShowIframe] = useState<boolean>(false);
   const SideCode = localStorage.getItem('SiteCode');
@@ -1746,7 +1749,7 @@ const CashBreakDownDataList = async (data:any) => {
    
   
   } catch {
-    console.log('error')
+    console.log('error-cash breakdown')
   }
 
 }
@@ -1784,6 +1787,8 @@ const CashBreakDownDataList = async (data:any) => {
         
     const RefreshModule = () => {
       window.location.reload();
+      DeletePosExtendedAll()
+      setTableOnprocess(null)
     }
 
 
@@ -2161,6 +2166,7 @@ const CloseCustomerPaymentModal = async () => {
       setDiscountData('')
       setCartItems('')
       setTableNo('')
+      DeletePosExtendedAll()
     }})
 
 
@@ -2187,6 +2193,7 @@ const CloseModal = async () => {
         setCartItems('')
         setTableNo('')
       setOrderTypeModal(true)
+      DeletePosExtendedAll()
       setTimeout(() => {
         DineInRef.current?.focus()
       }, 50);
@@ -2202,9 +2209,19 @@ const CloseModal = async () => {
   if (SelectTypeOfTransaction) {
     setSelectTypeOfTransaction(false);
 
+    //// to refress selected table ///
+    if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+      const message = {
+        'message': 0,
+        'TableNO':false,
+      };
+      chatSocket.send(JSON.stringify(message));
+    }
+
   }
 
 }
+
 
 
 ///************ SELECT TYPE OF TRANSACTION*************** */
@@ -2213,6 +2230,8 @@ const CloseSalesOrderListOpenModal = () => {
   setSalesOrderListOpenModal(false)
   setTableNoModal(true)
   setTableNo('')
+  DeletePosExtendedAll()
+  setTableOnprocess(null)
   setTimeout(() => {
     TableNoRef.current?.focus();
     TableNoRef.current?.select();
@@ -2250,7 +2269,6 @@ const settlebillData = async (data:any) => {
     });
 
   console.log(response.data)
-
   setCartItems1(response.data)
   setCartItems(response.data)
    
@@ -2394,8 +2412,19 @@ const CloseDebitCardPayment = () => {
 
    
 const SelectTable = (index:any) => {
-  setTableNo(index.table_count);
 
+  if (index.table_count=== TableOnprocess){
+    return;
+
+  }
+  setTableNo(index.table_count);
+  if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+    const message = {
+      'message': index.table_count,
+      'TableNO':true,
+    };
+    chatSocket.send(JSON.stringify(message));
+  }
   setQueNo('')
   if (index.Paid === 'N') {
     setSelectTypeOfTransaction(true)
@@ -2432,6 +2461,9 @@ const SelectQue = (index:any) => {
 const SelectTableOk = (searchItemindex: string) => {
 
   if (showTable) {
+  if (parseInt(searchItemindex) === TableOnprocess){
+    return;
+  }
     if (parseFloat(searchItemindex) <= TableList.length) {
       const index = TableList.findIndex(item => item.table_count === parseFloat(searchItemindex) && item.Paid === 'N');
         console.log(index)
@@ -2476,61 +2508,61 @@ const SelectTableOk = (searchItemindex: string) => {
         });
       
         setQueNo('')
-      }
-    
-    
-    // else {
-    //   Swal.fire({
-    //     title: 'Error',
-    //     text: `Selected Que is Not Existed Please Select Another Que No`,
-    //     icon: 'info',
-    //     confirmButtonText: 'OK'
-    //   });
-    
-    //   setTableNo('')
-    // }
+      }}};
+
+
+useEffect(()=> {
+  if (localStorage.getItem('UserRank') ==='Cashier'){
+    LoadDataInExtended();
   }
 
-
-};
-
-
-
+},[])
 
 useEffect(() => {
   var url = new URL(BASE_URL);
-
-// Reconstruct the URL without the port
-var urlWithoutPort = url.hostname;
+  // Reconstruct the URL without the port
+  var urlWithoutPort = url.hostname;
 // var urlWithoutPort = url.protocol + "//" + url.hostname + url.pathname + url.search + url.hash;
 
-  const chatSocket = new WebSocket(`ws://${urlWithoutPort}:8001/ws/count/`);
+  const socket = new WebSocket(`ws://${urlWithoutPort}:8001/ws/count/`);
 
-  chatSocket.onopen = () => {
+  socket.onopen = () => {
     console.log('WebSocket connection established.');
     const message = {
       'message': 'Hello, world im back!'
     };
-    chatSocket.send(JSON.stringify(message));
+    socket.send(JSON.stringify(message));
   };
 
-  chatSocket.onmessage = (event) => {
+  socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     console.log('Received data:', data);
+    const TableRecieve = data.message.message
+
+    if (TableRecieve){
+      setTableOnprocess(TableRecieve)
+      // console.log('table on Going Process',TableRecieve)
+    }
+    else{
+        setTableOnprocess(0)
+      
+    }
     fecthTableList();
     fecthQueList();
-    LoadDataInExtended();
+
   };
 
-  chatSocket.onerror = (error) => {
+  socket.onerror = (error) => {
     console.error('WebSocket error:', error);
   };
 
+  setChatSocket(socket)
   return () => {
     // Clean up WebSocket connection on component unmount
-    chatSocket.close();
+    socket.close();
   };
-}, []); // Empty dependency array ensures this effect runs only once, on mount
+}, []); 
+
   //***************Get data in extended before b-out***************** */
   const LoadDataInExtended = () => {
     const apiUrl = `${BASE_URL}/api/extended-data/`; // Replace with your actual site code
@@ -2543,11 +2575,18 @@ var urlWithoutPort = url.hostname;
       })
       .then(data => {
         console.log('Load data befor b-out',data)
+        let tmp_queNO:any = 0
         let tmp_table:any = 0
         let tmp_ordertpye:any = ''
         if (data.length !==0){
-          const updatedItems = data.map((item: { qty: any;table_no:any,order_type:any; }) => {
-            tmp_table = item.table_no
+          const updatedItems = data.map((item: { qty: any;table_no:any,que_no:any,order_type:any; }) => {
+          
+            if (item.que_no == 0){
+              tmp_table = item.table_no
+            }else{
+              tmp_queNO = item.que_no
+        
+            }
             tmp_ordertpye = item.order_type
             setOrderType(item.order_type)
             return {
@@ -2556,13 +2595,23 @@ var urlWithoutPort = url.hostname;
             };
         });
   
-        setCartItems(updatedItems)
+   
        
         setOrderTypeModal(false)
         setTimeout(() => {
-          setTableNo(tmp_table)
-  
+          if (tmp_table == 0){
+              setQueNo(tmp_queNO)
+
+          }else{
+            setTableNo(tmp_table)
+            setTableOnprocess(tmp_table)
+            setCartItems(updatedItems)
+          }
+
+          
+          setTableOnprocess(tmp_table)
           if (tmp_ordertpye = "DINE IN" ){
+
             setDineIn(true)
           }else{
             setDineIn(false)
@@ -2577,20 +2626,6 @@ var urlWithoutPort = url.hostname;
       });
   }
 
-
-// useEffect(() => {
-//   // Fetch data initially when the component mounts
-//   fecthTableList();
-
-//   // Set up a timer to fetch data every 20 seconds
-//   const interval = setInterval(() => {
-//     fecthTableList();
-//     fecthQueList();
-//   }, 5000);
-
-//   // Clear the interval when the component unmounts
-//   return () => clearInterval(interval);
-// }, []);
 
  const fecthTableList = () => {
   if (TableList.length != 0){
@@ -2633,17 +2668,17 @@ var urlWithoutPort = url.hostname;
         .catch(error => {
           console.error('There was a problem fetching the data:', error);
         });
- };
+};
 
 
-    const addToCart = (item: any) => {
+const addToCart = (item: any) => {
         // Create a new array by spreading the existing cartItems and adding the new item to it
         const updatedCartItems = [...cartItems, item];
     
         setCartItems(updatedCartItems);
-      };
+};
 
-      const calculateTotalDue = () => {
+const calculateTotalDue = () => {
         let totalDue = 0;
         for (const item of cartItems) {
           let amountWithoutCommas :any = 0;
@@ -2665,57 +2700,21 @@ var urlWithoutPort = url.hostname;
           totalDue = totalDue - (parseFloat(DiscountData.SLess20SCDiscount) + parseFloat(DiscountData.SLessVat12))
         }
         return totalDue.toFixed(2);
-      };
+};
       
-      const formattedTotalDue = Number(calculateTotalDue()).toLocaleString(undefined, {
+const formattedTotalDue = Number(calculateTotalDue()).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      }); 
+}); 
 
-      const handleProductsFromCategory = (productsFromCategory: React.SetStateAction<any[]>) => {
+const handleProductsFromCategory = (productsFromCategory: React.SetStateAction<any[]>) => {
         setProducts([]); 
         setProducts(productsFromCategory);
-    };
-
-
-
-
-
-    // useEffect(() => {
-    //   const apiUrl = `${BASE_URL}/api/extended-data/`; // Replace with your actual site code
-    //   fetch(apiUrl)
-    //     .then(response => {
-    //       if (!response.ok) {
-    //         throw new Error('Network response was not ok');
-    //       }
-    //       return response.json();
-    //     })
-    //     .then(data => {
-    //       console.log('Load data befor b-out',data)
-
-    //       const updatedItems = data.map((item: { qty: any;table_no:any,order_type:any; }) => {
-    //         // setTableNo(item.table_no)
-    //         // setOrderType(item.order_type)
-    //         // setOrderTypeModal(false)
-    //         return {
-    //             ...item,
-    //             quantity: parseInt(item.qty),
-    //         };
-    //     });
-
-    //     setCartItems(updatedItems)
-    //     return;
-    //     })
-    //     .catch(error => {
-    //       console.error('There was a problem fetching the data:', error);
-    //     });
-
-    // },[])
-
+};
 
    
-    //***************PRODUCT***************** */
-    useEffect(() => {
+//***************PRODUCT***************** */
+useEffect(() => {
       const fetchData = async () => {
           try {
               const response = await axios.get(`${BASE_URL}/api/product/`);
@@ -2735,11 +2734,11 @@ var urlWithoutPort = url.hostname;
       };
       
       fetchData();
-  }, []);
+}, []);
   
 
   //***************CATEGORY***************** */
-      useEffect(() => {
+useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await axios.get(`${BASE_URL}/api/product/category/`);
@@ -2759,7 +2758,7 @@ var urlWithoutPort = url.hostname;
         };
         
         fetchData();
-    }, []);
+ }, []);
 
 
 
@@ -2804,7 +2803,7 @@ var urlWithoutPort = url.hostname;
     }, [isKey, calculateTotalDue]); // Include calculateTotalDue in the dependency array if it's used inside calculateTotalDue
     
 
-    const IsModalOpen = () => {
+const IsModalOpen = () => {
       return (
           CustomerDineInModal ||
           SalesOrderListOpenModal ||
@@ -2821,9 +2820,9 @@ var urlWithoutPort = url.hostname;
           OtherCommandOpenModal ||
           OrderTypeModal
       );
-  }
+}
 
-  useEffect(() => {
+useEffect(() => {
     const intervalId = setInterval(() => {
         // Dispatch action to set boolean value in Redux store
         const isModalOpen = IsModalOpen();
@@ -2844,7 +2843,7 @@ var urlWithoutPort = url.hostname;
 
 
 
-    useEffect(() => {
+useEffect(() => {
       const handleKeyPress = (e: KeyboardEvent) => {
  
 
@@ -2897,15 +2896,13 @@ var urlWithoutPort = url.hostname;
       return () => {
         window.removeEventListener('keydown', handleKeyPress);
       };
-    }, [DineIn, TotalDue, SaveOrderClick, PaymentClickControlS]);
+}, [DineIn, TotalDue, SaveOrderClick, PaymentClickControlS]);
   
 //// FETCH DINE IN DATA EVERY 10 SECONDS ////
   
 
   
-    useEffect(() => {
-
-
+useEffect(() => {
       const storedCartDataString = localStorage.getItem('cartData');
       const storeDataInfo = localStorage.getItem('DataInfo');
 
@@ -2919,8 +2916,9 @@ var urlWithoutPort = url.hostname;
       } else {
         console.error('No cart data found in localStorage');
       }
-    }, [refreshCart]); // Trigger effect when refreshCart changes
-    
+}, [refreshCart]); // Trigger effect when refreshCart changes
+
+
 
 useEffect(() => {
 if(OrderTypeModal){
@@ -2930,6 +2928,7 @@ if(OrderTypeModal){
 }
 },[OrderTypeModal])
    
+
 
 
 
@@ -3031,7 +3030,6 @@ const handleInput = (value: string | number) => {
 
   
 };
-
 
 
 const ChangeViewToQue = () => {
@@ -3597,11 +3595,11 @@ const SaveTransactionDiscountEntry = (data:any) => {
      
               
 
- 
+         
               DeletePosExtendedAll()
-              triggerPrint()
+              // triggerPrint()
               setTimeout(async () => {
-                
+               
                   iframeWindow.print();
                 
 
@@ -3626,6 +3624,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
                 }
                 setShowIframe(false)
                 setDineIn(false)
+            
               }
       
             }, 1000); 
@@ -3639,7 +3638,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
       // Example data (replace with actual receipt content and logo source)
       const receiptContent = generateReceipt();
     // Replace with the actual path to your logo image
-    
+
       const iframe = generateReceiptIframe(receiptContent, {logo});
 
       // ipcRenderer.send('print-receipt', ReceiptContentAll); 
@@ -4088,6 +4087,7 @@ if (iframe !== null) {
 
             description = 'TOTAL DUE:';
             data = formattedTotalDue || ''; 
+            setAmountDue(formattedTotalDue)
             spaces = AlignmentSpace(description, data);
             receiptContent1 = `<div style="margin-top:-9px; padding: 0;font-weight: bold;">${description}${spaces}${data}</div>`;
 
@@ -4204,13 +4204,14 @@ if (iframe !== null) {
   // Remove the iframe after printing
 
   DeletePosExtendedAll()
-  triggerPrint()
+  // triggerPrint()
   setTimeout(() => {
     iframeWindow.print();
     // window.location.reload(); 
 
     setOrderType('')
     setOrderTypeModal(true)
+    setChangeModal(true)
     setTimeout(() => {
       DineInRef.current?.focus()
     }, 50);
@@ -4550,7 +4551,7 @@ if (currentHours > 12) {
     doc.write(`<img src="${qrDataURI}" alt="QR Code"  style="max-width: 120px; display: inline-block;" />`);
     doc.write('</div>'); // Close the container div
     doc.close();
-    triggerPrint()
+    // triggerPrint()
   setTimeout(() => {
     iframeWindow.print();
     // window.location.reload(); 
@@ -4593,6 +4594,7 @@ const closeCashPayment = async () => {
       setCartItems('')
       setTableNo('')
       setDiscountData('')
+      DeletePosExtendedAll()
     }})
 
 }
@@ -4781,6 +4783,19 @@ const HandleUpdatetocart = (event:any) => {
 const CategoryHideClick = () => {
   setCategoryHide(!categoryHide); // Toggle the category visibility
 };
+
+
+const ChangeModalClose = () => {
+  setChangeModal(false)
+  setTimeout(() => {
+    if (DineInRef.current) {
+      DineInRef.current.focus();
+    }
+  }, 100);
+
+}
+
+
 
 
   return (
@@ -4979,7 +4994,7 @@ const CategoryHideClick = () => {
                     </Button>
                       )
              
-                )}
+                     )}
          
                         <Button
                           style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
@@ -5244,12 +5259,15 @@ const CategoryHideClick = () => {
         (TableList.map(item => (
             <div key={item.table_count} className={item.Paid} onClick={() => SelectTable(item)}
               style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
-                alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                alignItems: 'center',borderRadius: '10px',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                 borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                backgroundColor:item.Paid  === 'N' ? 'RED' : '', }}>
+                cursor:TableOnprocess === item.table_count ? 'not-allowed': 'pointer',
+                backgroundColor: TableOnprocess === item.table_count ? 'yellow' : item.Paid  === 'N' ? 'blue' : '', }}>
 
-                <p key={item.table_count} style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'20px' ,fontWeight:'bold' ,color:'blue'}}>
-                        {item.table_count}</p>
+                <Typography key={item.table_count} style={{ textShadow: '0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)', transform: 'translateZ(5px)' , 
+                  fontSize: TableOnprocess === item.table_count ? '15px':'20px'
+                 ,fontWeight:'bold' ,color: TableOnprocess === item.table_count ? 'Blue':'white'}}>
+                {TableOnprocess === item.table_count ? `On going ${item.table_count}` : item.table_count} </Typography>
                 <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
 
             </div>
@@ -5296,19 +5314,19 @@ const CategoryHideClick = () => {
           <button className="num-pad-key" onClick={() => handleInput('9')}>9</button>
         </div>
         <div className="num-pad-row" >
-        <button className="num-pad-key" style={{ width: '33%',height:'100%'}} onClick={() => handleBackspace()}>
+        <button className="num-pad-key" style={{ width: '33%'}} onClick={() => handleBackspace()}>
    
           <Typography      
         sx={{
-          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.5rem' }}}>
+          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.3rem' }}}>
                   Back
           </Typography>
           </button>
-          <button className="num-pad-key" style={{ width: '33%',height:'100%'}}  onClick={() => handleInput('0')}>0</button>
+          <button className="num-pad-key" style={{ width: '33%'}}  onClick={() => handleInput('0')}>0</button>
           <button className="num-pad-key" style={{ width: '33%',height:'100%',padding:'9% 0'}}  onClick={ChangeViewToQue}>
           <Typography      
         sx={{
-          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.5rem' }}}>
+          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.3rem' }}}>
                {showTable ? 'Que No':'Table No'}
           </Typography>
     
@@ -5320,7 +5338,7 @@ const CategoryHideClick = () => {
 
             <Typography      
         sx={{
-          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.5rem' }}}>
+          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.3rem' }}}>
                    Close
           </Typography>
             </button>
@@ -5808,6 +5826,34 @@ const CategoryHideClick = () => {
           </div>
         </div>
       )}
+
+{ChangeModal && (
+        <div className="modal" > 
+          <div className="modal-content">
+            <div className='Change-Container'>
+              <div className='change-subcontainer'>
+                <label style={{fontSize:'30px',color:'white'}}>Amount Tendered:</label>
+                <p style={{fontSize:'30px',fontWeight:'bold',textAlign:'end'}}>
+                {parseFloat(AmountTendered).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</p>
+              </div>
+              <div className='change-subcontainer'>
+                <label style={{fontSize:'30px',color:'white'}}>Amount Due:</label>
+                <p style={{fontSize:'30px',fontWeight:'bold',textAlign:'end'}}>
+                {parseFloat(AmountDue).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</p>
+              </div>
+    
+              <div className='change-subcontainer'>
+                <label style={{fontSize:'30px',color:'white'}}>Change:</label>
+                <p style={{fontSize:'30px',fontWeight:'bold',textAlign:'end'}}>
+                {ChangeAmount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</p>
+              </div>
+
+            <button className="btn" style={{width:'100%'}} onClick={ChangeModalClose}>OK</button>
+            </div>
+           
+          </div>
+        </div>
+      )}
   
 </Grid>
 </>
@@ -5815,15 +5861,5 @@ const CategoryHideClick = () => {
 };
 
 
-
-
-
-
-
 export default Restaurant;
-
-
-function html2pdf() {
-  throw new Error('Function not implemented.');
-}
 

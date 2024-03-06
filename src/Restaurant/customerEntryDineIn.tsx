@@ -95,9 +95,7 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
 
       useEffect(() => {
     const fetchData = async () => {
-
-
-    const tableNo = typeandtable.tableNo; // Accessing TableNo
+      const tableNo = typeandtable.tableNo; // Accessing TableNo
   
       if (tableNo !== null) {
         try {
@@ -192,7 +190,7 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
 };
 
 
-const   sendDataToMain = () => {
+const  sendDataToMain = () => {
   if (customer === '' || guestCount === '' || waiter === '' || waiterID === '') {
         Swal.fire({
           title: 'Fields Required',
@@ -214,7 +212,8 @@ const   sendDataToMain = () => {
           GuestCount: guestCount,
           Waiter: waiter,
           PaymentType:'Sales Order',
-          waiterID:waiterID
+          waiterID:waiterID,
+          QueNO:QueNo
         });
       } else {
         handlemodaldata({
@@ -223,7 +222,7 @@ const   sendDataToMain = () => {
           Waiter: waiter,
           PaymentType:'Sales Order Take Out',
           waiterID:waiterID,
-          Que:QueNo,
+          QueNO:QueNo,
         });
       }
 
