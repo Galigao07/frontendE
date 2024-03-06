@@ -206,31 +206,31 @@ const handleUtilityClick = () => {
 
 const [localIpAddress, setLocalIpAddress] = useState('');
 
-useEffect(() => {
-  const fetchIpAddress = async () => {
-    try {
-      const response = await fetch('https://api64.ipify.org?format=json');
-      const data = await response.json();
-      const publicIpAddress = data.ip;
+// useEffect(() => {
+//   const fetchIpAddress = async () => {
+//     try {
+//       const response = await fetch('https://api64.ipify.org?format=json');
+//       const data = await response.json();
+//       const publicIpAddress = data.ip;
 
-      // Extract local IP address from the public IP address (assuming it's in the same local network)
-      const localIpRegex = /\b(?:\d{1,3}\.){3}\d{1,3}\b/;
-      const match = publicIpAddress.match(localIpRegex);
+//       // Extract local IP address from the public IP address (assuming it's in the same local network)
+//       const localIpRegex = /\b(?:\d{1,3}\.){3}\d{1,3}\b/;
+//       const match = publicIpAddress.match(localIpRegex);
 
-      if (match) {
-        setLocalIpAddress(match[0]);
-        console.log('sss',match[0])
-      } else {
-        setLocalIpAddress('Unable to determine local IP address');
-      }
-    } catch (error) {
-      console.error('Error fetching IP address:', error);
-      setLocalIpAddress('Error fetching IP address');
-    }
-  };
+//       if (match) {
+//         setLocalIpAddress(match[0]);
+//         console.log('sss',match[0])
+//       } else {
+//         setLocalIpAddress('Unable to determine local IP address');
+//       }
+//     } catch (error) {
+//       console.error('Error fetching IP address:', error);
+//       setLocalIpAddress('Error fetching IP address');
+//     }
+//   };
 
-  fetchIpAddress();
-}, []);
+//   fetchIpAddress();
+// }, []);
 
 
 
