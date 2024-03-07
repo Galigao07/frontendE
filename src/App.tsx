@@ -32,6 +32,8 @@ import XreadZred from './Reference/XreadZread'
 // import { Provider } from 'react-redux';
 // import store from './Redux/store';
 import { createBrowserHistory } from 'history';
+import DebitCardTagging from './Adminitration/Setup'
+import Setup from './Adminitration/Setup'
 const history = createBrowserHistory();
 function App() {
   const navigate = useNavigate();
@@ -166,6 +168,11 @@ const handleTransactionTypeClick = () => {
 const [withHeldTaxVisible, setwithHeldTaxVisible] = useState(false);
 const handlewithHeldTaxClick = () => {
   setwithHeldTaxVisible(!withHeldTaxVisible);
+};
+
+const [CardMachineVisible, setCardMachineVisible] = useState(false);
+const handlCardMachineClick = () => {
+  setCardMachineVisible(!CardMachineVisible);
 };
 
 const [UnpostRepostVisible, setUnpostRepostVisible] = useState(false);
@@ -449,8 +456,8 @@ const logoutClick = async () => {
                            <div className="nested5-dropdown" >
                              <NavLink to="#" id="transtypesetupid" onClick={handleTransactionTypeClick} className="link-with-icon" style={{width: '95%'}}>Tagging of Sales Transaction<i className="fas fa-caret-down"></i></NavLink>
                              <div className="nested5-dropdown-content" id="transtypesetupidcontent" style={{display : TransactionTypeVisible ? 'block' : 'none'}}>
-                                 <NavLink   to="#">Debit Accounts for Sales</NavLink>
-                                 <NavLink   to="#">Credit Accounts for Sales</NavLink>
+                                 <NavLink   to="/Debit-Account-Sales-Transaction">Debit Accounts for Sales Transaction</NavLink>
+                                 <NavLink   to="/Credit-Account-Sales-Transaction">Credit Accounts for Sales Transaction</NavLink>
                                  <NavLink   to="#">Per Category</NavLink>
                                  <NavLink   to="#">Credit Account for Sales Return</NavLink>
                                  <NavLink   to="#">Cost Sales</NavLink>
@@ -464,10 +471,10 @@ const logoutClick = async () => {
    
    
                          <div className="nested6-dropdown" >
-                           <NavLink to="#" id="Withheldtaxid"  onClick={handlewithHeldTaxClick}  className="link-with-icon">Card Machine Acct. Tittle Tagging<i className="fas fa-caret-down"></i></NavLink>
-                           <div className="nested6-dropdown-content" id="Withheldtaxidcontent" style={{display : withHeldTaxVisible ? 'block' : 'none'}}>
-                               <NavLink    to="#">Credit Card</NavLink>
-                               <NavLink   to="#">Debit Card</NavLink>
+                           <NavLink to="#" id="Withheldtaxid"  onClick={handlCardMachineClick}  className="link-with-icon">Card Machine and Acct Tittle Tagging<i className="fas fa-caret-down"></i></NavLink>
+                           <div className="nested6-dropdown-content" id="Withheldtaxidcontent" style={{display : CardMachineVisible ? 'block' : 'none'}}>
+                               <NavLink   to="/Credit-Card">Credit Card</NavLink>
+                               <NavLink   to="/Debit-Card">Debit Card</NavLink>
      
                        
                            </div>
@@ -598,6 +605,12 @@ const Content = () => {
       <Route path="/Customer-Details" element={<CustomerDetails />} />
       <Route path="/Cash-Count" element={<CashCount />} />
       <Route path="/Xread-Zread" element={<XreadZred />} />
+      <Route path="/Credit-Account-Sales-Transaction" element={<Setup Transaction = "Setp-up of Credit account for Sales Transaction"  TransType='' />} />
+      <Route path="/Debit-Account-Sales-Transaction" element={<Setup Transaction = "Setp-up of Debit account for Sales Transaction"  TransType='' />} />
+      <Route path="/Debit-Card" element={<Setup  Transaction = "Event Setup - Debit" TransType='Bank'/>} />
+      <Route path="/Credit-Card" element={<Setup Transaction = "Event Setup - Credit"  TransType='Bank' />} />
+
+      Setp-up of Debit account for Sales Transaction
     </Routes>
   );
 };

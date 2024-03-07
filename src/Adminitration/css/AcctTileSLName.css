@@ -1,0 +1,45 @@
+h2 {
+    margin: 10px;
+    text-align: center;
+}
+
+.SLSub-container{
+    padding: 10px;
+}
+
+.Button-Container{
+    display: flex;
+    flex-direction: row;
+
+}
+
+
+.form-group {
+    width: 100%;
+}
+
+.modal-contentSL input {
+
+    width: 400px;
+}
+
+.modal-contentSL {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 100%;
+    max-height: 95%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-contentSL button {
+
+    cursor: pointer;
+    margin: 2px;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    color: white;
+    border-radius: 5px;
+}
