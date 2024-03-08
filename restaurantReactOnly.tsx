@@ -1919,7 +1919,7 @@ const overlayStyle: React.CSSProperties  = {
   return (
   
 
-<div className='Restaurant-trans' style={{ display: 'grid', gridTemplateColumns: '250px 1fr 1fr', gap: '5px', height: '90vh'}}>
+<div className='Restaurant-trans'>
 
 <div style={overlayStyle} />
 

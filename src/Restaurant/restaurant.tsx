@@ -333,7 +333,7 @@ useEffect(() => {
     if (container !== null) {
       // Calculate the number of products per row based on container width and product width
       const containerWidth = container.clientWidth;
-      const productWidth = 150; // Assuming each product has a width of 140px
+      const productWidth = 140; // Assuming each product has a width of 140px
       const newProductsPerRow = Math.floor(containerWidth / productWidth);
       setProductsPerRow(newProductsPerRow);
     }
@@ -378,9 +378,9 @@ useEffect(() => {
               onKeyDown={(e) => Handlekeydown(e,index)}
              onClick={() => handleproductclick(product,index)}> 
              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <p style={{ color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', marginBottom: '10px', flex: '1 1 100%',height:'40px' }}>{product.long_desc}</p>
+              <p style={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none',  color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', marginBottom: '10px', flex: '1 1 100%',height:'40px' }}>{product.long_desc}</p>
               <img src={image} style={{ maxWidth: '80%', maxHeight: '150px', marginBottom: '10px', flex: '0 0 auto' }} />
-              <p style={{ color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%' }}>Price: {parseFloat(product.reg_price).toFixed(2)}</p>
+              <p style={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none', color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%' }}>Price: {parseFloat(product.reg_price).toFixed(2)}</p>
             </div>
                   {/* <p style={{fontWeight:'bold',textAlign:'center' , marginBottom: '10px'}}>{product.long_desc}</p>
                   <img src={image} alt={product.bar_code} style={{ maxWidth: '80%', maxHeight: '150px', marginBottom: '10px' }} />
@@ -661,7 +661,7 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
     return (
       <div className="Transaction" style={{ overflowY: 'auto', maxHeight: '55%' ,
        border: '1px solid #ccc', borderRadius: '10px',
-        boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
+        boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '2px' }}>
         <Table 
             tabIndex={0} // Make the table focusable
         className="OrderList" sx={{
@@ -674,8 +674,9 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
               <th>Qty</th>
               <th>Description</th>
               <th>Price</th>
-              <th>Total</th>
+              <th>Amount</th>
               <th style={{display:'none'}} >Barcode</th>
+              <th style={{display:'none'}}  >Line</th>
             </tr>
           </thead>
           <tbody>
@@ -698,6 +699,7 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
               {(item.quantity * item.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </td>
             <td style={{display:'none'}} >{item.barcode}</td>
+            <td style={{display:'none'}}  >{item.lineno}</td>
            
     </tr>
   ))
@@ -1115,7 +1117,7 @@ useEffect(() => {
     // display: 'grid',
     // gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
     // gap: '5px',
-    margin: '10px',
+    margin: '5px',
  }}
 >
 <div
@@ -1130,7 +1132,7 @@ useEffect(() => {
         flexDirection: 'column',
         alignItems: 'center',
         height: '60px',
-        borderRadius: '10px',
+        // borderRadius: '10px',
         cursor: 'pointer',
         color: '#ffffff',
         backgroundColor:
@@ -1145,7 +1147,7 @@ useEffect(() => {
    <Typography
       variant="body1"
       sx={{
-        margin: '10px',
+        margin: '5px',
         textAlign: 'center',
         fontSize: {
           xs: '0.8rem', // Default font size for extra-small screens
@@ -1181,7 +1183,7 @@ useEffect(() => {
         flexDirection: 'column',
         alignItems: 'center',
         height: '60px',
-        borderRadius: '10px',
+        // borderRadius: '10px',
         cursor: 'pointer',
         color: '#ffffff',
         backgroundColor:
@@ -1422,29 +1424,29 @@ const Restaurant: React.FC = () => {
   const addtocarts = () => {
     if (selectedProduct !== null) {
 
-    let dataExist:boolean = false
-    let index : number = 0
-      for (let i = 0; i < cartItems.length; i++) {
-        if (cartItems[i].barcode ===  selectedProduct.product.bar_code || cartItems[i].data ===  selectedProduct.product.bar_code) {
-            // Item found, do something with it
-            dataExist =true
-            index = i
-            console.log("Item found:", cartItems[i]);
-            break; // You might want to break out of the loop if you only need to find the first occurrence
-        }
-    }
+    // let dataExist:boolean = false
+    // let index : number = 0
+    //   for (let i = 0; i < cartItems.length; i++) {
+    //     if (cartItems[i].barcode ===  selectedProduct.product.bar_code || cartItems[i].data ===  selectedProduct.product.bar_code) {
+    //         // Item found, do something with it
+    //         dataExist =true
+    //         index = i
+    //         console.log("Item found:", cartItems[i]);
+    //         break; // You might want to break out of the loop if you only need to find the first occurrence
+    //     }
+    // }
 
-    if (dataExist){
+    // if (dataExist){
 
 
-      const updatedItems = [...cartItems];
+    //   const updatedItems = [...cartItems];
 
-      updatedItems[index].quantity = updatedItems[index].quantity + quantity ;
-      updatedItems[index].totalAmount = ((updatedItems[index].quantity) * Price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      setCartItems(updatedItems);
-      AddPosExtended(cartItems[index])
+    //   updatedItems[index].quantity = updatedItems[index].quantity + quantity ;
+    //   updatedItems[index].totalAmount = ((updatedItems[index].quantity) * Price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    //   setCartItems(updatedItems);
+    //   AddPosExtended(cartItems[index])
 
-    }else {
+    // }else {
 
       const productToAdd = {
         quantity: quantity,
@@ -1452,10 +1454,11 @@ const Restaurant: React.FC = () => {
         price: parseFloat(selectedProduct.product.reg_price).toFixed(2),
         totalAmount: calculateTotal(),
         barcode: selectedProduct.product.bar_code,
+        lineno :cartItems.length + 1,
       };
       AddPosExtended(productToAdd)
       addToCart(productToAdd);
-    }
+    // }
 
       setAddOrderModal(false);
 
@@ -1657,8 +1660,8 @@ const Restaurant: React.FC = () => {
   }
 
     const logoutClick = async () => {
-      // localStorage.clear();
-      // window.location.reload();
+      localStorage.clear();
+      window.location.reload();
       swalWithBootstrapButtons.fire({
           title: 'Confirmation',
           text: "Do you want logout?",
@@ -2464,6 +2467,13 @@ const SelectTableOk = (searchItemindex: string) => {
   if (parseInt(searchItemindex) === TableOnprocess){
     return;
   }
+  if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+    const message = {
+      'message': parseInt(searchItemindex),
+      'TableNO':true,
+    };
+    chatSocket.send(JSON.stringify(message));
+  }
     if (parseFloat(searchItemindex) <= TableList.length) {
       const index = TableList.findIndex(item => item.table_count === parseFloat(searchItemindex) && item.Paid === 'N');
         console.log(index)
@@ -2534,7 +2544,7 @@ useEffect(() => {
     socket.send(JSON.stringify(message));
   };
 
-  socket.onmessage = (event) => {
+  socket.onmessage = async (event) => {
     const data = JSON.parse(event.data);
     console.log('Received data:', data);
     const TableRecieve = data.message.message
@@ -2547,8 +2557,8 @@ useEffect(() => {
         setTableOnprocess(0)
       
     }
-    fecthTableList();
-    fecthQueList();
+    await fecthTableList();
+    await fecthQueList();
 
   };
 
@@ -2642,6 +2652,7 @@ useEffect(() => {
         .then(data => {
           setTableList(data.tables);
           setLoading(false) // Assuming the response data has a 'tables' key
+          console.log('TaBLE LIST',data.tables)
         })
         .catch(error => {
           console.error('There was a problem fetching the data:', error);
@@ -2664,6 +2675,7 @@ useEffect(() => {
         .then(data => {
           setQueList(data.que);
           setLoading(false) // Assuming the response data has a 'tables' key
+          console.log('TaBLE LIST',data.que)
         })
         .catch(error => {
           console.error('There was a problem fetching the data:', error);
@@ -2673,7 +2685,7 @@ useEffect(() => {
 
 const addToCart = (item: any) => {
         // Create a new array by spreading the existing cartItems and adding the new item to it
-        const updatedCartItems = [...cartItems, item];
+        const updatedCartItems = [item, ...cartItems];
     
         setCartItems(updatedCartItems);
 };
@@ -4801,12 +4813,11 @@ const ChangeModalClose = () => {
   return (
     <>
     
-    <Grid
-      container
+<Grid container
       className='Restaurant-trans'
       style={{ height: '100vh' }}
-      spacing={1}
-      justifyContent="space-between" // Adjust alignment as needed
+      spacing={0.1}
+      justifyContent="space-between" 
     >
 
 {loadingPrint && (
@@ -4838,10 +4849,10 @@ const ChangeModalClose = () => {
       <div className="Category">
           <Typography      
             sx={{
-            fontSize: { xs: '1.2rem', sm: '0.9rem', md: '0.9rem', lg: '1.1rem', xl: '1.2rem' },
+            fontSize: { xs: '1.2rem', sm: '0.9rem', md: '0.9rem', lg: '1.1rem', xl: '1.6rem' },
             color: '#ffffff',backgroundColor: '#007bff',
-            padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-            borderRadius: '5px',margin: '10px',
+            padding: '10px',textShadow: ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)',
+            borderRadius: '5px',margin: '2px',
             fontWeight: 'bold', textAlign: 'center',
             justifyContent: 'space-between', // Aligns items at the start and end of the flex container
             alignItems: 'center', // Aligns items at the center of the flex container
@@ -4849,7 +4860,7 @@ const ChangeModalClose = () => {
          Category Section
             </Typography>
 
-            <div className='Category-container' style={{ overflowY: 'auto', maxHeight: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
+            <div className='Category-container' style={{ overflowY: 'auto', maxHeight: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '2px' }}>
            {isMobile && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center',height:'20px'}}>
                   
@@ -4876,40 +4887,41 @@ const ChangeModalClose = () => {
 </Grid>
 
 
-    <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
+<Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
       <div className="Product">
           <Typography      
         sx={{
-          fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
+        fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.6rem' },
         color: '#ffffff',backgroundColor: '#007bff',
-        padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-        borderRadius: '5px',margin: '10px',
-        fontWeight: 'bold', textAlign: 'center',}}>
+        padding: '10px',textShadow: ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)',
+        borderRadius: '5px',margin: '2px',
+        fontWeight: 'bold', textAlign: 'center',
+        justifyContent: 'space-between',}}>
          Product Section
           </Typography>
          
 
   
-          <div className='Product-container' style={{ overflowY: 'auto', height: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '10px' }}>
+          <div className='Product-container' style={{ overflowY: 'auto', height: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '2px' }}>
             <ProductGrid products={products} addtocart={addToCart} selectedProductData={selectedProductData} isSelected ={isSelected} IsModalOpenF = {IsModalOpen} />
            
           </div>
         </div>
-    </Grid>
+</Grid>
 
-    <iframe id="myIframe" style={{position:'absolute',display:'none',backgroundColor:'#ffff',height:'90%',marginTop:'10px',width:'25%',
+<iframe id="myIframe" style={{position:'absolute',display:'none',backgroundColor:'#ffff',height:'90%',marginTop:'10px',width:'25%',
 
-      marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.com"></iframe>
+marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.com"></iframe>
 
 
-      <Grid item xs={12} md={3} style={{ height: '100%',width:'60%' }}>
+<Grid item xs={12} md={3} style={{ height: '100%',width:'60%' }}>
       <div className='Transaction-container' style={{ height: '95%'}}>
           <Typography      
               sx={{
-              fontSize: { xs: '1.2rem', sm: '1.2rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
+              fontSize: { xs: '1.2rem', sm: '1.2rem', md: '1rem', lg: '1.1rem', xl: '1.6rem' },
               color: '#ffffff',backgroundColor: '#007bff',
-              padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-              borderRadius: '5px',margin: '10px',
+              padding: '10px',textShadow: ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)',
+              borderRadius: '5px',margin: '2px',
               fontWeight: 'bold', textAlign: 'center',}}>
                 {QueNo !== '' ? 
                 `TAKE OUT QUE NO. ${parseInt(QueNo)}`
@@ -5106,7 +5118,7 @@ const ChangeModalClose = () => {
           </div>
       </div>
 
-      </Grid>  
+</Grid>  
       
        
 {/* </div> */}
@@ -5155,7 +5167,7 @@ const ChangeModalClose = () => {
           Choose Order Type
         </Typography>
 
-              <Button className="button-dine-in"onClick={handleDineIn} 
+              <Button className="button-dine-in" onClick={handleDineIn} 
               ref={DineInRef}
               onKeyDown={(e)=> OrderTypeHandleKeydown(e,TakeOutRef,DineInRef,TakeOutRef,0)}
               >
@@ -5256,7 +5268,8 @@ const ChangeModalClose = () => {
   </div>
   )}
   {showTable ? (
-        (TableList.map(item => (
+  
+        (TableList &&  TableList.map(item => (
             <div key={item.table_count} className={item.Paid} onClick={() => SelectTable(item)}
               style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
                 alignItems: 'center',borderRadius: '10px',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
@@ -5266,7 +5279,7 @@ const ChangeModalClose = () => {
 
                 <Typography key={item.table_count} style={{ textShadow: '0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)', transform: 'translateZ(5px)' , 
                   fontSize: TableOnprocess === item.table_count ? '15px':'20px'
-                 ,fontWeight:'bold' ,color: TableOnprocess === item.table_count ? 'Blue':'white'}}>
+                 ,fontWeight:'bold' ,color: TableOnprocess === item.table_count ? 'blue':item.Paid  === 'N' ? 'white':'blue' }}>
                 {TableOnprocess === item.table_count ? `On going ${item.table_count}` : item.table_count} </Typography>
                 <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
 
@@ -5274,7 +5287,8 @@ const ChangeModalClose = () => {
               )))
 
               ):(
-                (QueList.map(item => (
+               
+                (QueList && QueList.map(item => (
                   <div key={item.q_no} className={item.Paid} onClick={() => SelectQue(item)}
                     style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
                       alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
@@ -5744,8 +5758,10 @@ const ChangeModalClose = () => {
     
 
     <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-    <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={CloseAddOrderModal} className="btn-close"> <FontAwesomeIcon icon={faClose} />Close</button>
-    <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={addtocarts}>  <FontAwesomeIcon icon={faShoppingCart} /> Add to Cart</button>
+    <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} 
+          onClick={CloseAddOrderModal} className="btn-close"> <FontAwesomeIcon icon={faClose} />Close</button>
+    <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'50%',textAlign:'center', 
+          display: 'inline-block'}} onClick={addtocarts}>  <FontAwesomeIcon icon={faShoppingCart} /> Add to Cart</button>
   
   
   </div>
