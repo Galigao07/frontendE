@@ -11,7 +11,7 @@ import './css/keyboard.css'
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { isDesktop} from 'react-device-detect';
-import {  Grid, Typography } from '@mui/material';
+import {  Button, Grid, Table, Typography } from '@mui/material';
 
 
 
@@ -60,23 +60,26 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
     const CustomerRef = useRef<HTMLInputElement>(null)
     const GuestCountRef = useRef<HTMLInputElement>(null)
     const WaiterRef = useRef<HTMLInputElement>(null)
-    const WaiterListRef = useRef<HTMLUListElement>(null)
+    const WaiterListRef = useRef<HTMLTableElement>(null)
     const SaveBtnRef = useRef<HTMLButtonElement>(null)
     const PaymentSaveBtnRef = useRef<HTMLButtonElement>(null)
     const CloseBtnRef = useRef<HTMLButtonElement>(null)
 
-    const CustomerListRef = useRef<HTMLUListElement>(null)
+    const CustomerListRef = useRef<HTMLTableElement>(null)
     const [isTextHighlighted, setIsTextHighlighted] = useState<boolean>(false);
   const [customerFocus, setCustomerFocus] = useState<boolean>(false);
-  const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
-  const [waiterFocus, setWaiterFocus] =useState<boolean>(false);
+const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
+const [waiterFocus, setWaiterFocus] =useState<boolean>(false);
 
-  const [selectionStart , setselectionStart] = useState<any>(0);
-  const [selectionEnd , setselectionEnd] = useState<any>(0);
-    const [selectedOption, setSelectedOption] = useState<string>('option2'); // Initialize the selected option
-    const [cursorPosition, setCursorPosition] = useState<any>(0);
-    const [selectedItemIndex, setSelectedItemIndex] = useState<any>(0);
-
+const [selectionStart , setselectionStart] = useState<any>(0);
+const [selectionEnd , setselectionEnd] = useState<any>(0);
+const [selectedOption, setSelectedOption] = useState<string>('option2'); // Initialize the selected option
+const [cursorPosition, setCursorPosition] = useState<any>(0);
+const [selectedItemIndex, setSelectedItemIndex] = useState<any>(0);
+const [WaiterSearch, setWaiterSearch] = useState<any>('');
+const WaiterSearchRef = useRef<HTMLInputElement>(null)
+const CustomerSearchRef = useRef<HTMLInputElement>(null)
+const [CustomerSearch, setCustomerSearch] = useState<any>('');
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -163,8 +166,14 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
             sendDataToMain();
           } else if (e.key === 'Escape') {
             e.preventDefault(); 
+            if (WaiterListRef.current || CustomerListRef) { 
+              setCustomerListModal(false);
+              setWaiterListModal(false);
+            }
+            else{
             handleclose();
-          }
+          }   
+        }  
         };
       
         window.addEventListener('keydown', handleKeyPress);
@@ -294,12 +303,23 @@ const  sendDataToMain = () => {
       const { updatedValue } = updateDataAtCursorPosition(customer, value);
       setCustomer(updatedValue);
       fetchCustomer(updatedValue);
+      setCustomerSearch('')
+      if (CustomerSearchRef.current){
+        CustomerSearchRef.current.focus()
+      }
 
     } else if (waiterFocus) {
       const { updatedValue } = updateDataAtCursorPosition(waiter, value);
       setWaiter(updatedValue);
+      setWaiterSearch('')
 
       fetchWaiter(updatedValue);
+      setTimeout(() => {
+        if (WaiterSearchRef.current){
+          WaiterSearchRef.current.focus()
+        }
+      }, 200);
+
     }
   };
 
@@ -395,19 +415,7 @@ const  sendDataToMain = () => {
     }
   };
 
-  const handleClear = () => {
-    // Detect the clear action and handle it accordingly
-    if (guestCountFocus) {
-      setGuestCount(0);
-      setCursorPosition(0);
-    } else if (customerFocus) {
-      setCustomer('');
-      setCursorPosition(0);
-    } else if (waiterFocus) {
-      setWaiter('');
-      setCursorPosition(0);
-    }
-  };
+
 
  const handleCustomerTypeRegular = () => {
 
@@ -439,7 +447,19 @@ const handleCustomerTypeWalkIN = () => {
       setCursorPosition(cursorPosition - 1);
     }
   };
-
+  const handleClear = () => {
+    // Detect the clear action and handle it accordingly
+    if (guestCountFocus) {
+      setGuestCount(0);
+      setCursorPosition(0);
+    } else if (customerFocus) {
+      setCustomer('');
+      setCursorPosition(0);
+    } else if (waiterFocus) {
+      setWaiter('');
+      setCursorPosition(0);
+    }
+  };
 
   const alphabetRows = [
     ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'Backspace'],
@@ -615,7 +635,7 @@ const handleCustomerTypeWalkIN = () => {
                               setCustomerList(result.data.customers);
                               setCustomerListModal(true);
                           }}
-                          if (inputIdentifier === 'Waiter') {
+                      if (inputIdentifier === 'Waiter') {
 
                   
                             const result = await axios.get(`${BASE_URL}/api/waiter-list/`,{
@@ -627,6 +647,9 @@ const handleCustomerTypeWalkIN = () => {
                             if (result) {
                                 setWaiterList(result.data.waiter);
                                 setWaiterListModal(true);
+                                if(WaiterListRef.current){
+                                  WaiterListRef.current.focus()
+                                }
                             }}
                           
                         }  catch (error) {
@@ -678,7 +701,7 @@ const handleCustomerTypeWalkIN = () => {
       }
     }
 
-    const ClickCustomerList = (index: number): void => {
+const ClickCustomerList = (index: number): void => {
       setCustomerListModal(false);
       const selectedItem = CustomerList[index];
       setCustomer(selectedItem.trade_name);
@@ -689,7 +712,7 @@ const handleCustomerTypeWalkIN = () => {
           guestCountRef.focus();
         }
       }
-    };
+ };
     
 
  const ClickWaiterList = (index :any) => {
@@ -703,6 +726,65 @@ if (WaiterRef.current) {
 
 
  }
+
+ const handleKeys2 = (event:any, category:any) => {
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault(); // Prevent scrolling on arrow key press
+    const newIndex = selectedItemIndex + (event.key === 'ArrowDown' ? 1 : -1);
+
+    if (category === 'Waiter'){
+      if (newIndex >= 0 && newIndex < WaiterList.length) {
+        if (WaiterListRef.current) {
+          // Get the reference to the row element
+          const rowElement = WaiterListRef.current.querySelector(`tr:nth-child(${newIndex + 1})`) as HTMLTableRowElement;
+          // Set focus on the row element
+          if (rowElement) {
+            
+            // Remove focus from the currently selected row if any
+            const currentSelectedRow = WaiterListRef.current.querySelector('.selected');
+            if (currentSelectedRow) {
+              currentSelectedRow.classList.remove('selected');
+            }
+            // Set focus on the new row
+            rowElement.classList.add('selected');
+            rowElement.focus();
+            // Update the selected item index after focusing on the new row
+            setSelectedItemIndex(newIndex);
+          }
+        }
+      }
+    }else{
+      if (newIndex >= 0 && newIndex < CustomerList.length) {
+        if (CustomerListRef.current) {
+          // Get the reference to the row element
+          const rowElement = CustomerListRef.current.querySelector(`tr:nth-child(${newIndex + 1})`) as HTMLTableRowElement;
+          // Set focus on the row element
+          if (rowElement) {
+            
+            // Remove focus from the currently selected row if any
+            const currentSelectedRow = CustomerListRef.current.querySelector('.selected');
+            if (currentSelectedRow) {
+              currentSelectedRow.classList.remove('selected');
+            }
+            // Set focus on the new row
+            rowElement.classList.add('selected');
+            rowElement.focus();
+            // Update the selected item index after focusing on the new row
+            setSelectedItemIndex(newIndex);
+          }
+        }
+      }
+    }
+
+  }else if (event.key === 'Enter'){
+    if (category==='Waiter') {
+      ClickWaiterList(selectedItemIndex)
+    }else{
+      ClickCustomerList(selectedItemIndex)
+    }
+
+  }
+};
 
 
 //  const [deviceType, setDeviceType] = useState<string>('');
@@ -770,7 +852,35 @@ if (event.key == 'Enter'){
 }
 
 
+const OpenWaiterModal = (category:any) => {
+if (category==='Waiter'){
+  setWaiterListModal(true);
+  handleSearchInputChange('e','Waiter')
+  setTimeout(() => {
+    if (WaiterSearchRef.current){
+      WaiterSearchRef.current.focus()
+      WaiterSearchRef.current.select()
+    }
+  }, 500);
+}else{
 
+  if (customerType === 'Walk-in'){
+    return
+  }
+  setCustomerListModal(true);
+  handleSearchInputChange('e','Customer')
+  setTimeout(() => {
+    if (CustomerSearchRef.current){
+      CustomerSearchRef.current.focus()
+      CustomerSearchRef.current.select()
+    }
+  }, 500);
+}
+
+
+
+
+}
 
 
   return (
@@ -804,7 +914,8 @@ if (event.key == 'Enter'){
                     }
                       disabled={typeandtable.OrderType === 'ADD ORDER'}
                       onChange={(e) => setCustomer(e.target.value)}  autoComplete="off"
-                      onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
+                      onInput={ ()=> OpenWaiterModal('Customer')}
+                      // onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
                       onClick={() => handleClick(CustomerRef)}
                       onFocus={CustomerF} 
 
@@ -812,18 +923,6 @@ if (event.key == 'Enter'){
                       // onKeyUp={() => checkSelection(CustomerRef)}
                       value={customer} required/>
 
-                        {CustomerListModal && (
-                          <div className='Customerlist-Container' onKeyDown={(event) => handleKeys(event, 'customer')} >
-                          <ul id="list" className='ul-list customer'   onKeyDown={(event) => handleKeys(event, 'customer')}  ref={CustomerListRef}>
-                            {CustomerList.map((result,index) => (
-                              <li tabIndex={0} key={index}
-                              onKeyDown={(event) => handleKeys(event, 'Customer')}
-                                onClick={() => ClickCustomerList(index)}
-                              >{result.id_code.padStart(4, '0')} - {result.trade_name}</li>
-                                  ))}
-                                </ul>
-                                </div>
-                              )}
                 </div>
                 
                 <div style={{display:'flex',flexDirection:'column'}}>
@@ -835,7 +934,16 @@ if (event.key == 'Enter'){
                         <><label htmlFor="input2">
                       Que No
                         </label><input type="number" id="input2" placeholder="0"
-                                  onChange={(e) => setQueNo(e.target.value)}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              // Regular expression to check if the input is a number
+                                              const isNumber = /^[0-9]*$/;
+                                              if (isNumber.test(value)) {
+                                                  // If setQueNo input is a number, update the state
+                                                  setGuestCount(value);
+                                              }
+                                          }}
+                                  // onChange={(e) => setQueNo(e.target.value)}
                         /></>
                       )}
 
@@ -844,9 +952,17 @@ if (event.key == 'Enter'){
               <div style={{display:'flex',flexDirection:'column'}}>
                   <label htmlFor="input3">Guest Count:</label>
                   <input ref={GuestCountRef}  onKeyDown={(e) => handleKeyDown(e, GuestCountRef, WaiterRef)}  id="input3" 
-                  type = "number"  pattern="[0-9]*"  placeholder="Guest Count" 
+                  type = "text"  pattern="[0-9]*"  placeholder="Guest Count" 
                     disabled={typeandtable.OrderType === 'ADD ORDER'}
-                    onChange={(e) => setGuestCount(e.target.value)} autoComplete="off"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Regular expression to check if the input is a number
+                      const isNumber = /^[0-9]*$/;
+                      if (isNumber.test(value)) {
+                          // If the input is a number, update the state
+                          setGuestCount(value);
+                      }
+                  }}autoComplete="off"
                     onFocus={GuestCountF}
                 
                     value={guestCount}
@@ -862,21 +978,11 @@ if (event.key == 'Enter'){
                           value={waiter}
                           onFocus={WaiterF}
                           onKeyDown={(e) =>handleKeys(e, 'Waiter')}
-                          onInput={(e: React.ChangeEvent<HTMLInputElement>)=> handleSearchInputChange(e.target.value, 'Waiter')}
+                          onInput={() => OpenWaiterModal('Waiter')}
+                          // onInput={(e: React.ChangeEvent<HTMLInputElement>)=> handleSearchInputChange(e.target.value, 'Waiter')}
                           onClick={() => handleClick(WaiterRef)}
                           required/>
-                          {WaiterListModal && (
-                              <div className='Waiterlist-Container'>
-                              <ul id="list" className='ul-list Waiter' onKeyDown={(event) => handleKeys(event, 'Waiter')}  ref={WaiterListRef}>
-                                {WaiterList.map((result,index) => (
-                                  <li tabIndex={0} key={index} className={selectedItemIndex === index ? 'selected' : ''}
-                                  onKeyDown={(event) => handleKeys(event, 'Waiter')} 
-                                  onClick={() => ClickWaiterList(index)}
-                                  >{result.waiter_id} - {result.waiter_name}</li>
-                                      ))}
-                                    </ul>
-                                    </div>
-                    )}
+                         
               </div>
 
 
@@ -890,12 +996,12 @@ if (event.key == 'Enter'){
                  ref={PaymentSaveBtnRef}  disabled={typeandtable.OrderType === 'ADD ORDER'} 
                  className='button-ok' 
                 onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,PaymentSaveBtnRef,SaveBtnRef,0) } 
-                 style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Order and Pay</button>
+                 style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Order & Pay</button>
           )}
                   
                 <button tabIndex={1} onClick={sendDataToMain} ref={SaveBtnRef} 
                   onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,SaveBtnRef,CloseBtnRef,1) } 
-                className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Save Sales Order</button>
+                className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Save Order</button>
               
               </div>
               <button tabIndex={2} type="button" className ='button-cancel' ref={CloseBtnRef}
@@ -947,10 +1053,140 @@ if (event.key == 'Enter'){
     </div> */}
   
     </div>
+    {WaiterListModal && (
+                       
+                
+    <div className='modal'>
+      <div className='modal-content-waiter'>
+
+        <div className='card'>
+          <h1>Select Waiter</h1>
+        <div className='Waiterlist-Container'>
+        <input
+            ref={WaiterSearchRef}
+            value={WaiterSearch}
+            onChange={(e) => setWaiterSearch(e.target.value)}
+            onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Waiter')}
+            onKeyDown={(e) => handleKeys2(e, 'Waiter')}
+          />
+          <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Waiter')} ref={WaiterListRef}>
+            <thead>
+              <tr>
+                <th>Waiter ID</th>
+                <th>Waiter Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {WaiterList && WaiterList.map((result, index) => (
+                <tr
+                  key={index}
+                  className={selectedItemIndex === index ? 'selected' : ''}
+                  onClick={() => ClickWaiterList(index)}
+                  tabIndex={0}
+
+                  style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                color:selectedItemIndex === index ? 'white':'black', }}
+                >
+                  <td>{result.waiter_id}</td>
+                  <td>{result.waiter_name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+           
+            </div>
+            <div className='Button-Container'>
+              <button onClick={() => setWaiterListModal(false)}>Close</button>
+            </div>
+        </div>
+
+      
+      </div>
+
+   </div>
+        )}
+
+
+
+{CustomerListModal && (
+                       
+                
+                       <div className='modal'>
+                         <div className='modal-content-waiter'>
+                   
+                           <div className='card'>
+                             <h1>Select Customer</h1>
+                           <div className='Waiterlist-Container'>
+                           <input
+                               ref={CustomerSearchRef}
+                               value={CustomerSearch}
+                               onChange={(e) => setCustomerSearch(e.target.value)}
+                               onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
+                               onKeyDown={(e) => handleKeys2(e, 'Customer')}
+                             />
+                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Customer')} ref={CustomerListRef}>
+                               <thead>
+                                 <tr>
+                                   <th>Customer ID</th>
+                                   <th>Customer Name</th>
+                                 </tr>
+                               </thead>
+                               <tbody>
+                                 {CustomerList && CustomerList.map((result, index) => (
+                                   <tr
+                                     key={index}
+                                     className={selectedItemIndex === index ? 'selected' : ''}
+                                     onClick={() => ClickCustomerList(index)}
+                                     tabIndex={0}
+                   
+                                     style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                                   color:selectedItemIndex === index ? 'white':'black', }}
+                                   >
+                                     <td>{result.id_code.padStart(4,'0')}</td>
+                                     <td>{result.trade_name}</td>
+                                   </tr>
+                                 ))}
+                               </tbody>
+                             </Table>
+
+                               </div>
+                           </div>
+                           <div className='Button-Container'>
+                                <button onClick={() => setCustomerListModal(false)}>Close</button>
+                            </div>
+                         </div>
+                   
+                      </div>
+                           )}
+
     </div>
 
 
   );
 };
+
+
+                              {/* <ul id="list" className='ul-list Waiter' onKeyDown={(event) => handleKeys(event, 'Waiter')}  ref={WaiterListRef}>
+                                {WaiterList.map((result,index) => (
+                                  <li tabIndex={0} key={index} className={selectedItemIndex === index ? 'selected' : ''}
+                                  onKeyDown={(event) => handleKeys(event, 'Waiter')} 
+                                  onClick={() => ClickWaiterList(index)}
+                                  >{result.waiter_id} - {result.waiter_name}</li>
+                                      ))}
+                                    </ul> */}
+
+
+                                    // {CustomerListModal && (
+                                    //   <div className='Customerlist-Container' onKeyDown={(event) => handleKeys(event, 'customer')} >
+                                    //   <ul id="list" className='ul-list customer'   onKeyDown={(event) => handleKeys(event, 'customer')}  ref={CustomerListRef}>
+                                    //     {CustomerList.map((result,index) => (
+                                    //       <li tabIndex={0} key={index}
+                                    //       onKeyDown={(event) => handleKeys(event, 'Customer')}
+                                    //         onClick={() => ClickCustomerList(index)}
+                                    //       >{result.id_code.padStart(4, '0')} - {result.trade_name}</li>
+                                    //           ))}
+                                    //         </ul>
+                                    //         </div>
+                                    // )}
 
 export default CustomerDineIn;

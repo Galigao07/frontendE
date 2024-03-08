@@ -32,15 +32,17 @@ function createWindow() {
     // icon: path.join(process.env.VITE_PUBLIC, 'logo.svg'),
     show: false,
     webPreferences : {
+      partition: 'disable_cache',
+      devTools: true,
       nodeIntegration: true,
-      contextIsolation: false,
+      contextIsolation: true,
       webSecurity: false,
       allowRunningInsecureContent: true,
       preload: path.join(__dirname, 'preload.js'),
       // sandbox: true, // Enable sandbox mode for additional security
 
-      enableBlinkFeatures: 'HTML5HistoryAPI',
-      session: session.fromPartition('persist:name'), // create a new session
+      // enableBlinkFeatures: 'HTML5HistoryAPI',
+      // session: session.fromPartition('persist:name'), 
     },
     fullscreen: false, 
     frame:true,

@@ -5,7 +5,8 @@ import './login.css';
 import logo from './logo.png';
 import Swal from 'sweetalert2';
 import BASE_URL from '../config';
-import { isMobile, isTablet } from 'react-device-detect';
+import { isMobile, isTablet, setUserAgent } from 'react-device-detect';
+import { Typography } from '@mui/material';
   const LoginForm: React.FC  = () => {
     const usernameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
@@ -87,7 +88,6 @@ import { isMobile, isTablet } from 'react-device-detect';
   const { username, password } = formData;
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => setFormdata({ ...formData, [e.target.name]: e.target.value});
-
 
 
   const handleLogin = async () => {
@@ -174,6 +174,95 @@ const handleKeyDown = (event :any, BackRef : any, nextRef:any) => {
   }
 };
 
+const [cursorPosition, setCursorPosition] = useState<any>(0);
+const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
+
+const showOnScreenKeybaord = () => {
+
+}
+const handleBackspace = () => {
+  // Detect backspace press and handle it accordingly
+  if (usernameRef && cursorPosition > 0) {
+    const updatedValue =
+     username.slice(0, cursorPosition - 1) + username.slice(cursorPosition);
+
+    setCursorPosition(cursorPosition - 1);
+  } else if (passwordRef && cursorPosition > 0) {
+    const updatedValue =
+    password.slice(0, cursorPosition - 1) + password.slice(cursorPosition);
+    setCursorPosition(cursorPosition - 1);
+  }
+};
+const handleClear = () => {
+  // Detect the clear action and handle it accordingly
+  // if (guestCountFocus) {
+  //   setGuestCount(0);
+  //   setCursorPosition(0);
+  // } else if (customerFocus) {
+  //   setCustomer('');
+  //   setCursorPosition(0);
+  // } else if (waiterFocus) {
+  //   setWaiter('');
+  //   setCursorPosition(0);
+  // }
+};
+
+const alphabetRows = [
+  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'Backspace'],
+  ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'Enter'],
+  ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Shift','Clear'],
+  ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '.','/', '@','Control']
+];
+
+const rows = alphabetRows.map((row, rowIndex) => (
+  <div className="keyboard-row" key={rowIndex}>
+    {row.map((letter, index) => (
+      <button
+        className="keyboard-key"
+        key={index}
+        onClick={() => handleSpecialButtonClick(letter)}
+        aria-label={letter}
+      >
+         <Typography sx={{
+          fontSize: { xs: '0.5rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' }
+            }}>
+        {letter}
+        </Typography>
+      </button>
+    ))}
+  </div>
+));
+
+
+const handleSpecialButtonClick = (value:any) => {
+  switch (value) {
+    case 'Enter':
+      // if (guestCountFocus) {
+      //   handleKeyDown('Enter', GuestCountRef, WaiterRef);
+      // } else if (customerFocus) {
+      //   handleKeyDown('Enter', CustomerRef, GuestCountRef);
+      // } else if (waiterFocus) {
+      //   handleKeyDown('Enter', WaiterRef, CustomerRef);
+      // }
+      break;
+    case 'Backspace':
+      handleBackspace();
+      break;
+    case 'Shift':
+      // Handle Shift key functionality
+      break;
+    case 'Control':
+      // Handle Control key functionality
+      break;
+    case 'Clear':
+          handleClear();
+          break;
+    default:
+      // Handle other keys (letters or numbers)
+      // handleButtonClick(value);
+      break;
+  }
+};
 
   return (
     <form onSubmit={onSubmit}>
@@ -211,6 +300,7 @@ const handleKeyDown = (event :any, BackRef : any, nextRef:any) => {
             type='text'
             name='username'
             ref={usernameRef}
+            onFocus={showOnScreenKeybaord}
             onChange={(e) => onChange(e)}
             value={username}
             placeholder="Username"
@@ -236,7 +326,7 @@ const handleKeyDown = (event :any, BackRef : any, nextRef:any) => {
         </div>
         
         
-        <div className='Button-Container'>
+        <div className='Login-Button-Container'>
           <button className="btn-login" type='submit' ref={loginBtnRef} onClick={handleLogin}  >
             Login
           </button>
