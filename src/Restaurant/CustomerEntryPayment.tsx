@@ -9,7 +9,7 @@ import BASE_URL from '../config';
 import  './css/keyboard.css';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { Grid, Typography } from '@mui/material';
+import { Grid, Table, Typography } from '@mui/material';
 
 interface CustomerPaymentData {
   handlemodaldata:any
@@ -22,6 +22,9 @@ const CustomerPayment:React.FC<CustomerPaymentData> = ({handlemodaldata,handleCl
   interface CustomerData { 
     id_code : string;
     trade_name : string;
+    tax_id_no : string;
+    st_address : string;
+    business_style:string;
   }
 
 
@@ -37,9 +40,10 @@ const CustomerPayment:React.FC<CustomerPaymentData> = ({handlemodaldata,handleCl
     const customerTINRef = useRef<HTMLInputElement>(null)
     const customerBusinessStyleRef = useRef<HTMLInputElement>(null)
     const SaveRef = useRef<HTMLButtonElement>(null)
-
+    const CustomerSearchRef = useRef<HTMLInputElement>(null)
+    const [CustomerSearch, setCustomerSearch] = useState<string>('');
   
-    const CustomerListRef = useRef<HTMLUListElement>(null)
+    const CustomerListRef = useRef<HTMLTableElement>(null)
     const [CustomerListModal, setCustomerListModal] = useState<boolean>(false);
     // const [DisplayLetters, setDisplayLetters] = useState<boolean>(true);
     const [customerFocus, setCustomerFocus] = useState<boolean>(false);
@@ -390,15 +394,54 @@ const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
 }
 
 
-
   const ClickCustomerList = (index: number) => {
-    setCustomerListModal(false)
-    const selectedItem = CustomerList[index];
+  setCustomerListModal(false)
+  const selectedItem = CustomerList[index];
   setCustomer(selectedItem.trade_name)
+  setcustomerTIN(selectedItem.tax_id_no)
+  setcustomerAddress(selectedItem.st_address)
+  setcustomerBusinessStyle(selectedItem.business_style)
+
   if (customerAddressRef.current) {
     customerAddressRef.current.focus();
   }
    }
+
+   const handleKeys2 = (event:any, category:any) => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault(); // Prevent scrolling on arrow key press
+      const newIndex = selectedItemIndex + (event.key === 'ArrowDown' ? 1 : -1);
+
+        if (newIndex >= 0 && newIndex < CustomerList.length) {
+          if (CustomerListRef.current) {
+            // Get the reference to the row element
+            const rowElement = CustomerListRef.current.querySelector(`tr:nth-child(${newIndex + 1})`) as HTMLTableRowElement;
+            // Set focus on the row element
+            if (rowElement) {
+              
+              // Remove focus from the currently selected row if any
+              const currentSelectedRow = CustomerListRef.current.querySelector('.selected');
+              if (currentSelectedRow) {
+                currentSelectedRow.classList.remove('selected');
+              }
+              // Set focus on the new row
+              rowElement.classList.add('selected');
+              rowElement.focus();
+              // Update the selected item index after focusing on the new row
+              setSelectedItemIndex(newIndex);
+            }
+          }
+        }
+      
+  
+    }else if (event.key === 'Enter'){
+
+        ClickCustomerList(selectedItemIndex)
+      
+  
+    }
+  };
+
   return (
     <div className="modal">
       <div className="modal-contentCustomerDine" style={{width:'100%', display:'flex',flexDirection:'row'}}>
@@ -434,7 +477,7 @@ const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
                   onFocus={CustomerF} 
                   value={customer} required/>
 
-                  {CustomerListModal && (
+                  {/* {CustomerListModal && (
                       <div className='CustomerlistPayment-Container' onKeyDown={(event) => handleKeys(event, 'customer')} >
                       <ul id="list" className='ul-list customer'   onKeyDown={(event) => handleKeys(event, 'customer')}  ref ={CustomerListRef}>
                         {CustomerList.map((result,index) => (
@@ -445,7 +488,7 @@ const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
                               ))}
                             </ul>
                             </div>
-            )} 
+            )}  */}
 
 
 
@@ -494,6 +537,65 @@ const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
       </div>
     </Grid>
   </Grid>
+
+
+
+  {CustomerListModal && (
+                       
+                
+                       <div className='modal'>
+                         <div className='modal-content-waiter'>
+                   
+                           <div className='card'>
+                             <h1>Select Customer</h1>
+                           <div className='Waiterlist-Container'>
+                           <input
+                               ref={CustomerSearchRef}
+                               value={CustomerSearch}
+                               onChange={(e) => setCustomerSearch(e.target.value)}
+                               onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
+                               onKeyDown={(e) => handleKeys2(e, 'Customer')}
+                             />
+                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Customer')} ref={CustomerListRef}>
+                               <thead>
+                                 <tr>
+                                   <th>Customer ID</th>
+                                   <th>Customer Name</th>
+                                 </tr>
+                               </thead>
+                               <tbody>
+                                 {CustomerList && CustomerList.map((result, index) => (
+                                   <tr
+                                     key={index}
+                                     className={selectedItemIndex === index ? 'selected' : ''}
+                                     onClick={() => ClickCustomerList(index)}
+                                     tabIndex={0}
+                   
+                                     style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                                   color:selectedItemIndex === index ? 'white':'black', }}
+                                   >
+                                     <td>{result.id_code.padStart(4,'0')}</td>
+                                     <td>{result.trade_name}</td>
+                                   </tr>
+                                 ))}
+                               </tbody>
+                             </Table>
+
+                               </div>
+                           </div>
+                           <div className='Button-Container'>
+                                <button onClick={() => setCustomerListModal(false)}>Close</button>
+                            </div>
+                         </div>
+                   
+                      </div>
+)}
+
+
+
+
+
+
     {/* <div>
       <div className="num-pad" style={{width:'50% !important'}}>
       <div className="num-pad-row">

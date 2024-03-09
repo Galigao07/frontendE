@@ -1171,7 +1171,7 @@ useEffect(() => {
       key={index}
       tabIndex={index}
       ref={(ref) => (categoryRef.current[index] = ref)}
-      onClick={() => fetchData(categoryItem.category,index)}
+      onClick={() => fetchData(categoryItem.category_desc,index)}
       onKeyDown={(e)=> handleKeydownCategory(e,index)}
       
       style={{
@@ -1215,7 +1215,7 @@ useEffect(() => {
         // Add more @media queries for other breakpoints if necessary
       }}
     >
-      {categoryItem.category.toUpperCase()}
+      {categoryItem.category_desc.toUpperCase()}
     </Typography>
     </div>
   ))}

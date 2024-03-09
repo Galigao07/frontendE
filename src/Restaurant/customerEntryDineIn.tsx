@@ -1157,7 +1157,7 @@ if (category==='Waiter'){
                          </div>
                    
                       </div>
-                           )}
+)}
 
     </div>
 
