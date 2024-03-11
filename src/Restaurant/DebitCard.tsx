@@ -377,6 +377,9 @@ const onDelete = () => {
     const Multiple = localStorage.getItem('MULTIPLE')
 
     if (Multiple === 'true'){
+        setviewSave(true)
+
+    } else{
       if (parseFloat(amountdue) === totalAmountDue)  {
         setviewSave(true)
     } else {
