@@ -374,12 +374,16 @@ const onDelete = () => {
   const [isEdit,setisEdit] = useState(false)
 
   useEffect(() =>{
+    const Multiple = localStorage.getItem('MULTIPLE')
 
-    if (parseFloat(amountdue) === totalAmountDue)  {
+    if (Multiple === 'true'){
+      if (parseFloat(amountdue) === totalAmountDue)  {
         setviewSave(true)
     } else {
         setviewSave(false)
     }
+    }
+
  const bal : any = parseFloat(amountdue) - totalAmountDue
         setDebitCardPaymentData({...DebitCardPaymentData,AmountDue: bal})
   },[totalAmountDue])
