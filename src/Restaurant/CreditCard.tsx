@@ -5,7 +5,8 @@ import React, { useEffect, useRef, useState } from "react";
 import './css/CreditCard.css'
 import Swal from "sweetalert2";
 import { Button, Grid, Table, Typography } from "@mui/material";
-
+import axios from "axios";
+import BASE_URL from "../config";
 
 
 interface CreditCardPaymentTrans {
@@ -33,6 +34,20 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
     const AmountDueRef = useRef<HTMLInputElement>(null);
     const [selectedItemIndex, setSelectedItemIndex] = useState<any>(null);
     const [CreditCardPaymentList,setCreditCardPaymentList] = useState<any>([])
+    const [BankModal,setBankModal] = useState<Boolean>(false)
+    const [BankSearch,setBankSearch] = useState<string>('')
+    const [CardModal,setCardModal] = useState<Boolean>(false)
+    const [CardSearch,setCardSearch] = useState<string>('')
+    const [CardList,setCardList] = useState<any>([])
+    const [BankList,setBankList] = useState<any>([])
+
+    const BankSearchRef = useRef<HTMLInputElement>(null)
+    const BankListRef = useRef<HTMLTableElement>(null)
+    const CardListRef = useRef<HTMLTableElement>(null)
+
+    const CardSearchRef = useRef<HTMLInputElement>(null)
+
+
 
     const [CreditCardPaymentData,setCreditCardPaymentData] = useState({
         CardNo:'',
@@ -71,8 +86,8 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
             }).then(async (result) => {
             if (result.isConfirmed) {
                 console.log('Success',CreditCardPaymentList)
-
-                CreditCardPayment(CreditCardPaymentList)
+   
+                CreditCardPayment({CreditCardPaymentList})
                 setCreditCardPaymentData({
                     CardNo:'',
                     AcquireBank:'',
@@ -113,8 +128,38 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
 const HandleCreditCardEntry = (e:any) => {
     const { name, value } = e.target;
 setCreditCardPaymentData({ ...CreditCardPaymentData, [name]: value });
+if (name == 'AcquireBank') {
+    setBankModal(true)
+    handleSearchInputChange(value,'Bank')
+    setBankSearch(value)
+setTimeout(() => {
+  if (BankSearchRef.current){
+    BankSearchRef.current.focus()
+    BankSearchRef.current.select()
+  }
+}, 200);
+  
+
+}else if (name == 'CardIssuer'){
+    setCardModal(true)
+    handleSearchInputChange(value,'Card')
+    setCardSearch(value)
+
+    setTimeout(() => {
+      if (CardSearchRef.current){
+        CardSearchRef.current.focus()
+        CardSearchRef.current.select()
+      }
+    }, 200);
+
+}
 
 if (name == 'CardNo') {
+
+
+  if (value.length >= 16) {
+    e.preventDefault(); // Prevent default input behavior
+  }
     const numericValue = value.replace(/\D/g, '');
 
     // Limit to 16 characters
@@ -122,12 +167,17 @@ if (name == 'CardNo') {
 
     // Format the credit card number with dashes
     const formattedValue = limitedValue.replace(/(\d{4})(\d{4})(\d{4})(\d{4})/, '$1-$2-$3-$4');
+      // const formattedValue = limitedValue.replace(/(\d{4})(\d{4})(\d{4})(\d{4})/, '****-****-****-$4');
+
 
     // Update the state with the formatted value
     setCreditCardPaymentData((prevData) => ({
       ...prevData,
       [name]: formattedValue,
-    }));
+    })); 
+    
+   
+    
 }
 if (name== 'ApprovalNo'){
     const numericValue = value.replace(/\D/g, '');
@@ -562,6 +612,136 @@ const onDelete = () => {
     };
   }, []);   
 
+
+
+
+  const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
+    try {
+        if (inputIdentifier === 'Bank') {
+  
+
+            const result = await axios.get(`${BASE_URL}/api/bank-company/`,{
+              params: {
+                customer:e
+              }
+            }); 
+            
+            if (result) {
+                setBankList(result.data);
+                setBankModal(true);
+            }}else if (inputIdentifier =='Card'){
+              const result = await axios.get(`${BASE_URL}/api/bank-card/`,{
+                params: {
+                  customer:e
+                }
+              }); 
+              
+              if (result) {
+                  setCardList(result.data);
+                  setCardModal(true);
+              }
+            }
+            
+          }  catch (error) {
+              console.error(error);
+              }
+  }
+  
+  
+    const ClickBankList = (index: number) => {
+    setBankModal(false)
+    const selectedItem = BankList[index];
+    setCreditCardPaymentData({...CreditCardPaymentData, AcquireBank: selectedItem.company_description})
+
+  
+    if (acquireBankRef.current) {
+      acquireBankRef.current.focus();
+    }
+     }
+  
+     const handleKeys2 = (event:any, category:any) => {
+      if (category=='Bank'){
+
+   
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault(); // Prevent scrolling on arrow key press
+        const newIndex = selectedItemIndex + (event.key === 'ArrowDown' ? 1 : -1);
+  
+          if (newIndex >= 0 && newIndex < BankList.length) {
+            if (BankListRef.current) {
+              // Get the reference to the row element
+              const rowElement = BankListRef.current.querySelector(`tr:nth-child(${newIndex + 1})`) as HTMLTableRowElement;
+              // Set focus on the row element
+              if (rowElement) {
+                
+                // Remove focus from the currently selected row if any
+                const currentSelectedRow = BankListRef.current.querySelector('.selected');
+                if (currentSelectedRow) {
+                  currentSelectedRow.classList.remove('selected');
+                }
+                // Set focus on the new row
+                rowElement.classList.add('selected');
+                rowElement.focus();
+                // Update the selected item index after focusing on the new row
+                setSelectedItemIndex(newIndex);
+              }
+            }
+          }
+        
+    
+      }else if (event.key === 'Enter'){
+          ClickBankList(selectedItemIndex)
+      }
+
+      }else if (category=='Card'){
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault(); // Prevent scrolling on arrow key press
+          const newIndex = selectedItemIndex + (event.key === 'ArrowDown' ? 1 : -1);
+    
+            if (newIndex >= 0 && newIndex < CardList.length) {
+              if (CardListRef.current) {
+                // Get the reference to the row element
+                const rowElement = CardListRef.current.querySelector(`tr:nth-child(${newIndex + 1})`) as HTMLTableRowElement;
+                // Set focus on the row element
+                if (rowElement) {
+                  
+                  // Remove focus from the currently selected row if any
+                  const currentSelectedRow = CardListRef.current.querySelector('.selected');
+                  if (currentSelectedRow) {
+                    currentSelectedRow.classList.remove('selected');
+                  }
+                  // Set focus on the new row
+                  rowElement.classList.add('selected');
+                  rowElement.focus();
+                  // Update the selected item index after focusing on the new row
+                  setSelectedItemIndex(newIndex);
+                }
+              }
+            }
+          
+      
+        }else if (event.key === 'Enter'){
+            ClickCardList(selectedItemIndex)
+        }
+      }
+
+    };
+
+
+    const ClickCardList = (index: number) => {
+      setCardModal(false)
+      const selectedItem = CardList[index];
+      setCreditCardPaymentData({...CreditCardPaymentData, CardIssuer: selectedItem.card_description})
+  
+    
+      if (cardIssuerRef.current) {
+        cardIssuerRef.current.focus();
+      }
+       }
+    
+
+
+
     return (
 
 
@@ -773,6 +953,107 @@ const onDelete = () => {
                         </Grid>
                     </Grid>
 
+
+
+
+  {BankModal && (
+                       <div className='modal'>
+                         <div className='modal-content-waiter'>
+                   
+                           <div className='card'>
+                             <h1>Select Customer</h1>
+                           <div className='Waiterlist-Container'>
+                           <input
+                               ref={BankSearchRef}
+                               value={BankSearch}
+                               onChange={(e) => setBankSearch(e.target.value)}
+                               onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Bank')}
+                               onKeyDown={(e) => handleKeys2(e, 'Bank')}
+                             />
+                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Bank')} ref={BankListRef}>
+                               <thead>
+                                 <tr>
+                                   <th>Bank Code</th>
+                                   <th>Bank Name</th>
+                                 </tr>
+                               </thead>
+                               <tbody>
+                                 {BankList && BankList.map((result:any, index:any) => (
+                                   <tr
+                                     key={index}
+                                     className={selectedItemIndex === index ? 'selected' : ''}
+                                     onClick={() => ClickBankList(index)}
+                                     tabIndex={0}
+                   
+                                     style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                                   color:selectedItemIndex === index ? 'white':'black', }}
+                                   >
+                                     <td>{result.id_code.padStart(4,'0')}</td>
+                                     <td>{result.company_description}</td>
+                                   </tr>
+                                 ))}
+                               </tbody>
+                             </Table>
+
+                               </div>
+                           </div>
+                           <div className='Button-Container'>
+                                <button onClick={() => setBankModal(false)}>Close</button>
+                            </div>
+                         </div>
+                   
+                      </div>
+)}
+
+
+{CardModal && (
+                       <div className='modal'>
+                         <div className='modal-content-waiter'>
+                   
+                           <div className='card'>
+                             <h1>Select Customer</h1>
+                           <div className='Waiterlist-Container'>
+                           <input
+                               ref={CardSearchRef}
+                               value={CardSearch}
+                               onChange={(e) => setCardSearch(e.target.value)}
+                               onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Card')}
+                               onKeyDown={(e) => handleKeys2(e, 'card')}
+                             />
+                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Card')} ref={CardListRef}>
+                               <thead>
+                                 <tr>
+                                   <th>Card Issuer Code</th>
+                                   <th>Card Name</th>
+                                 </tr>
+                               </thead>
+                               <tbody>
+                                 {CardList && CardList.map((result:any, index:any) => (
+                                   <tr
+                                     key={index}
+                                     className={selectedItemIndex === index ? 'selected' : ''}
+                                     onClick={() => ClickCardList(index)}
+                                     tabIndex={0}
+                   
+                                     style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                                   color:selectedItemIndex === index ? 'white':'black', }}
+                                   >
+                                     <td>{result.id_code.padStart(4,'0')}</td>
+                                     <td>{result.card_description}</td>
+                                   </tr>
+                                 ))}
+                               </tbody>
+                             </Table>
+
+                               </div>
+                           </div>
+                           <div className='Button-Container'>
+                                <button onClick={() => setCardModal(false)}>Close</button>
+                            </div>
+                         </div>
+                   
+                      </div>
+)}
 
         
             </div>

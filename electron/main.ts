@@ -44,7 +44,7 @@ function createWindow() {
       // enableBlinkFeatures: 'HTML5HistoryAPI',
       // session: session.fromPartition('persist:name'), 
     },
-    fullscreen: false, 
+    fullscreen: true, 
     frame:true,
     
   })

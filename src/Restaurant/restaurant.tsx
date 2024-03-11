@@ -37,8 +37,8 @@ import CustomerPayment from './CustomerEntryPayment';
 import ReprintTransaction from './RepirintTransaction';
 import CashBreakDown from './CashBreakDown';
 import ChargeTo from './Charge';
-import CreditCardPayment from './CreditCard';
-import CreditCardPaymentEntry from './CreditCardPayment';
+
+
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt, faArrowAltCircleDown, faArrowDown, faExpand, faExpandArrowsAlt, faChevronDown, faChevronCircleDown, faArrowUp, faAnglesUp, faAnglesDown, faSliders, faAngleUp, faAngleDown, faAngleDoubleDown, faAngleDoubleUp} from '@fortawesome/free-solid-svg-icons';
@@ -49,7 +49,7 @@ import { useMediaQuery } from '@mui/material';
 import Box from '@mui/material/Box';
 import { isDesktop, isMobile,isTablet } from 'react-device-detect';
 import { ClipLoader } from 'react-spinners';
-import DebitCardPayment from './DebitCard';
+
 import { faExpandAlt } from '@fortawesome/free-solid-svg-icons/faExpandAlt';
 import Verification from './Verification';
 ///**************PRODUCT GRID DESIGN*******************//
@@ -62,9 +62,11 @@ import TradeDiscountList from './DiscountTrade'
 import TransactionDiscount from './DiscountTransaction';
 import jsPDF from 'jspdf';
 import eventEmitter from 'events';
-
-
-
+import MultiplePayments from './MultiplePayments';
+import CreditCardPaymentEntry from './CreditCardPayment';
+import DebitCardPaymentEntry from './DebitCardPayment';
+import CreditCardPayment from './CreditCard';
+import DebitCardPayment from './DebitCard';
 const swalWithBootstrapButtons = Swal.mixin({
   customClass: {
     confirmButton: 'btn btn-success',
@@ -1258,8 +1260,11 @@ const Restaurant: React.FC = () => {
 
 
   const [ChangeModal, setChangeModal] = useState<boolean>(false);
-  const [DebitCardPaymentModal, setDebitCardPaymentModal] = useState<boolean>(false);
+  const [MultiplePamentEntryModal, setMultiplePamentEntryModal] = useState<boolean>(false)
+  const [DebitCardPaymentEntryModal, setDebitCardPaymentEntryModal] = useState<boolean>(false);
   const [CreditCardPaymentEntryModal, setCreditCardPaymentEntryModal] = useState<boolean>(false);
+;
+  const [DebitCardPaymentModal, setDebitCardPaymentModal] = useState<boolean>(false);
   const [CreditCardPaymentModal, setCreditCardPaymentModal] = useState<boolean>(false);
   const [ChargeToModal, setChargeToModal] = useState<boolean>(false);
   const [AddOrderModal, setAddOrderModal] = useState<boolean>(false);
@@ -2004,18 +2009,34 @@ setLoadingPrint(true)
   const CashierID = localStorage.getItem('UserID');
   const CashierName = localStorage.getItem('FullName');
   const TerminalNo = localStorage.getItem('TerminalNo');
+  let doc_type:string = ''
+  if (PaymentType === 'CASH') {
+    doc_type = 'POS SI'
+  }else  if (PaymentType === 'CREDIT CARD') {
+    doc_type = 'POS SI'
+  }else  if (PaymentType === 'DEBIT CARD') {
+    doc_type = 'POS SI'
+  }else  if (PaymentType === 'CHARGE') {
+    doc_type = 'POS CI'
+  }else  if (PaymentType === 'MULTIPLE') {
+    doc_type = 'POS SI'
+  }
 
-  
+
+
+
+
+    console.log(cartItems)
     try {
       const response = await axios.post(`${BASE_URL}/api/save-sales-order-payment/`,{data:cartItems,AmountTendered:AmountTendered,TableNo:TableNo,CashierID:CashierID,
-                                                                                      TerminalNo:TerminalNo,DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo});
+                                                                                      TerminalNo:TerminalNo,DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,doctype:doc_type});
       if (response.status === 200) {
 
         if (PaymentType === 'CASH') {
           const response1 = await axios.post(`${BASE_URL}/api/save-cash-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
                                                                                     TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,
                                                                                     AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,
-                                                                                    DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo});
+                                                                                    DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,doctype:doc_type});
           if (response1.status === 200) {
       
             setLoadingPrint(false)
@@ -2031,13 +2052,31 @@ setLoadingPrint(true)
         }
 
         if (PaymentType === 'CREDIT CARD') {
-          const CreditCard:any = localStorage.getItem('CreditCardPayment')
+          let CreditCard:any = ''
+          const creditCardArrayString = localStorage.getItem('CreditCardPayment');
+          if (creditCardArrayString) {
+            try {
+              // Parse the JSON string to convert it back to an array
+              CreditCard = JSON.parse(creditCardArrayString);
+              console.log(CreditCard);
+            } catch (error) {
+              console.error("Error parsing JSON:", error);
+            }
+          } else {
+            console.error("No data found in localStorage for 'CreditCardPayment'");
+          }
+
+
+
+          // const CreditCardJson = JSON.parse(CreditCard);
+          // console.log(CreditCardJson);
           const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
-            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,CreditCard:CreditCard});
+            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,CreditCard:CreditCard,doctype:doc_type});
           if (response1.status === 200) {
             localStorage.removeItem('CreditCardPayment')
             setLoadingPrint(false)
-            PrintCashPaymentReceipt(response1.data);
+            PrintCreditCardPaymentReceipt(response1.data);
+      
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -2050,13 +2089,30 @@ setLoadingPrint(true)
 
         
         if (PaymentType === 'DEBIT CARD') {
-          const CreditCard:any = localStorage.getItem('CreditCardPayment')
-          const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
-            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,CreditCard:CreditCard});
+      
+          let DebitCard:any = ''
+          const DebitCardArrayString = localStorage.getItem('DebitCardPayment');
+          if (DebitCardArrayString) {
+            try {
+              // Parse the JSON string to convert it back to an array
+              DebitCard = JSON.parse(DebitCardArrayString);
+              console.log(DebitCard);
+            } catch (error) {
+              console.error("Error parsing JSON:", error);
+            }
+          } else {
+            console.error("No data found in localStorage for 'DebitCardPayment'");
+          }
+
+
+
+
+          const response1 = await axios.post(`${BASE_URL}/api/save-debit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
+            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,DebitCard:DebitCard,doctype:doc_type});
           if (response1.status === 200) {
-            localStorage.removeItem('CreditCardPayment')
+            localStorage.removeItem('DebitCardPayment')
             setLoadingPrint(false)
-            PrintCashPaymentReceipt(response1.data);
+            PrintCreditCardPaymentReceipt(response1.data);
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -2089,13 +2145,50 @@ setLoadingPrint(true)
 
         
         if (PaymentType === 'MULTIPLE') {
-          const CreditCard:any = localStorage.getItem('CreditCardPayment')
-          const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
-            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,CreditCard:CreditCard});
+
+          let CreditCard:any = ''
+          const creditCardArrayString = localStorage.getItem('CreditCardPayment');
+          if (creditCardArrayString) {
+            try {
+              // Parse the JSON string to convert it back to an array
+              CreditCard = JSON.parse(creditCardArrayString);
+              console.log(CreditCard);
+            } catch (error) {
+              console.error("Error parsing JSON:", error);
+            }
+          } else {
+            console.error("No data found in localStorage for 'CreditCardPayment'");
+          }
+
+          let DebitCard:any = ''
+          const DebitCardArrayString = localStorage.getItem('DebitCardPayment');
+          if (DebitCardArrayString) {
+            try {
+              // Parse the JSON string to convert it back to an array
+              DebitCard = JSON.parse(DebitCardArrayString);
+              console.log(DebitCard);
+            } catch (error) {
+              console.error("Error parsing JSON:", error);
+            }
+          } else {
+            console.error("No data found in localStorage for 'DebitCardPayment'");
+          }
+
+          let CashAmount:any = ''
+
+          CashAmount = localStorage.getItem('CashAmount');
+
+
+
+          const response1 = await axios.post(`${BASE_URL}/api/save-multiple-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
+            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,
+            CreditCard:CreditCard,DebitCard:DebitCard,CashAmount:CashAmount,doctype:doc_type});
           if (response1.status === 200) {
             localStorage.removeItem('CreditCardPayment')
+            localStorage.removeItem('DebitCardPayment')
+            localStorage.removeItem('CashAmount')
             setLoadingPrint(false)
-            PrintCashPaymentReceipt(response1.data);
+            PrintCreditCardPaymentReceipt(response1.data);
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -2333,9 +2426,11 @@ const CloseCreditCardPayment = () => {
 }
 
 const CreditCardPaymentOk = (data:any) => {
-  localStorage.setItem('CreditCardPayment',data)
+
+  localStorage.setItem('CreditCardPayment',JSON.stringify(data))
   setCreditCardPaymentModal(false)
   setCreditCardPaymentEntryModal(true)
+
 }
 
 const CloseCreditCardPaymentEntryModal = () => {
@@ -2371,6 +2466,13 @@ const OpenDebitCardPayment = () => {
   setPaymentType('DEBIT CARD')
 }
 
+const DebitCardPaymentOK =(data:any) => {
+  localStorage.setItem('DebitCardPayment',JSON.stringify(data))
+  setDebitCardPaymentModal(false)
+  setDebitCardPaymentEntryModal(true)
+
+}
+
 const CloseDebitCardPayment = () => {
   setDebitCardPaymentModal(false)
   setPaymentOpenModal(true)
@@ -2385,8 +2487,59 @@ const CloseDebitCardPayment = () => {
   }, 50);
 }
 
+const SaveDebitCardPayment = async (data: { amounttendered: number; change:number; }) => {
+  setDebitCardPaymentEntryModal(false)
+  setAmountTendered(data.amounttendered);
+  setChangeAmount(0);
+  setCustomeryPaymentModal(true)
+};
 
 
+const CloseDebitCardPaymentEntryModal = () => {
+  setDebitCardPaymentEntryModal(false)
+  setPaymentOpenModal(true)
+  setTimeout(() => {
+    if (CashPaymentRef.current){
+      CashPaymentRef.current?.focus();
+      CashPaymentRef.current.style.backgroundColor = 'blue';
+      setisFocus(0)
+
+    }
+
+  }, 50);
+}
+
+//////******************************** END HERE **********************************/////
+
+
+const OpenMultiplePayment = () => {
+  setMultiplePamentEntryModal(true)
+  setPaymentOpenModal(false)
+  setPaymentType('MULTIPLE')
+}
+
+const CloseMultiplePayment = () => {
+
+  setMultiplePamentEntryModal(false)
+  setPaymentOpenModal(true)
+  localStorage.removeItem('CreditCardPayment')
+  localStorage.removeItem('DebitCardPayment')
+  setTimeout(() => {
+    if (CashPaymentRef.current){
+      CashPaymentRef.current?.focus();
+      CashPaymentRef.current.style.backgroundColor = 'blue';
+      setisFocus(0)
+
+    }
+
+  }, 50);
+}
+
+const SaveMultiplePayments = (data:any) => {
+  localStorage.setItem('CashAmount',data.CashAmount)
+  setMultiplePamentEntryModal(false)
+  setCustomeryPaymentModal(true)
+}
 
 
   const AddOrdertable = () => 
@@ -4255,6 +4408,410 @@ if (iframe !== null) {
 };
 
 
+//************ PRINT RECEIPT Credit card and Debit CARD and Multiple PAYMENT*****************//
+const PrintCreditCardPaymentReceipt = async (dataInfo:any) => {
+  const generateReceiptIframe = (receiptContent: string, logoSrc: { logo: string; }) => {
+
+  const iframe = document.getElementById('myIframe') as HTMLIFrameElement | null;
+
+
+if (iframe !== null) {
+
+  setShowIframe(true)
+  if (iframe) {
+    iframe.style.display = 'block';
+  }
+
+  iframe.onload = () => {
+    const currentDate = new Date();   
+    const timeZone = 'Asia/Manila';  
+   const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: timeZone });
+    const iframeWindow = iframe.contentWindow;
+
+    if (iframeWindow !== null) {
+      const doc = iframeWindow.document;
+
+      doc.open();
+    // doc.write('<style>body { font-family: "Courier New", Courier, monospace; }</style>');
+    doc.write('<style>body {  font-family: Consolas, monaco, monospace; }</style>');
+
+    doc.write('<div style="width: 200px; margin:none; font-size:8px">');
+    doc.write('<div>'); // Start a container div for content
+
+    // Embed the logo image using an <img> tag
+    doc.write('<div style="text-align: center;">');
+    doc.write(`<img src="${logo}" alt="Logo Image" style="max-width: 50px; display: inline-block;" />`);
+    doc.write('</div>');
+
+
+
+    doc.write('<div style="text-align: center;">');
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+
+  
+
+    doc.write(`<div> ${dataInfo.data.CustomerCompanyName}</div>`);
+
+
+    doc.write(`<div> ${dataInfo.data.CustomerCompanyAddress}</div>`);
+    doc.write(`<div> ${dataInfo.data.TelNo}</div>`);
+    doc.write(`<div> ${dataInfo.data.CustomerTIN}</div>`);
+    doc.write(`<div> ${dataInfo.data.SerialNO}</div>`);
+    doc.write(`<div> ${dataInfo.data.MachineNo}</div>`);
+
+
+
+    doc.write('<p style="font-size:12px">This Serve as an Official Receipt </p>');
+    doc.write(`<div> SI# ${parseFloat(dataInfo.data.OR)}</div>`);
+    doc.write(`<div> ${formattedDateTime} </div>`);
+    doc.write('</div>')
+    doc.write('<pre>' + receiptContent + '</pre>');
+
+
+      let receiptContent1 = '';
+
+      const AlignmentSpace = (description: string | any[], data: string | any[]) => {
+        const totalLength = 48; // Total desired length for alignment
+        const contentLength = description.length + data.length; // Calculate the length of the combined content
+        const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
+      
+        return ' '.repeat(spacesNeeded); // Return the string with required spaces
+      };
+        
+        //********************************************************* */
+        let description = '';
+        let data = ''
+        // Get the value or initialize an empty string if it's null
+        let spaces = null
+            data = dataInfo.data.ServiceCharge || '';
+            description = 'SERVICE CHARGES:'
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 = `<div style="margin-top:-7px; padding: 0;">${description}${spaces}${data}</div>`;
+            // receiptContent1 += '<div style="margin-top:-3px; padding: 0;"></div>'
+           
+            // doc.write('<pre>' + receiptContent1 + '</pre>');
+
+            if (DiscountType === 'SC'){
+              description = `Less: 20% VAT on ${DiscountData.SVatSales}`;
+              data = DiscountData.SLessVat12 || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+
+              description = `Net of VAT:`;
+              data = DiscountData.SNetOfVat || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+              description = `Less: 20%`;
+              data = DiscountData.SLess20SCDiscount || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+              doc.write('<pre style="margin: 0; line-height: 1;">' + receiptContent1 + '</pre>');
+            }
+
+
+            doc.write('<pre style="margin: 0; line-height: 1;">================================================</pre>');
+            description = 'TOTAL DUE:';
+            data = formattedTotalDue || ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 = `<div style="margin-top:-9px; padding: 0;font-weight: bold;">${description}${spaces}${data}</div>`;
+            receiptContent1 += '<div style="margin:-3px; padding: 0;">-------------------------------------------------</div>'
+            doc.write('<pre>' + receiptContent1 + '</pre>');
+
+
+
+            description = 'VATable:';
+            data = dataInfo.data.VATable || ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 = `<div>${description}${spaces}${data}</div>`;
+
+            description = 'VAT Exempt:';
+            data = dataInfo.data.VatExempt || ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+
+            description = 'Non VAT:';
+            data = dataInfo.data.NonVat|| ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+            
+            description = 'VAT Zero Rated: ';
+            data = dataInfo.data.VatZeroRated|| ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+
+            description = 'VAT:';
+            data = dataInfo.data.VAT || ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+            doc.write('<pre>' + receiptContent1 + '================================================</pre>');
+            //                    doc.write('<div> =====================================================</div>');
+
+            description = 'TOTAL DUE:';
+            data = formattedTotalDue || ''; 
+            setAmountDue(formattedTotalDue)
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 = `<div style="margin-top:-9px; padding: 0;font-weight: bold;">${description}${spaces}${data}</div>`;
+
+            doc.write('<pre>' + receiptContent1 + '</pre>');
+            doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+
+
+            let CashAmount:any = dataInfo.data.CashAmount || undefined
+            if (CashAmount){
+              description = 'CASH:';
+              const amountTenderedFormatted = Number(CashAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          
+              data = String(amountTenderedFormatted) || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 = `<div style="font-weight: bold;">${description}${spaces}${amountTenderedFormatted}</div>`;
+              doc.write('<pre>' + receiptContent1 + '</pre>');
+            }
+         
+           
+            const creditcard:any = dataInfo.data.CreditcardData || undefined
+            const debitcard:any = dataInfo.data.DebitcardData || undefined
+   
+//******************************** Credit Card*********************************************** */
+            if (creditcard){
+              creditcard.map((items:any) => {
+
+                const amountDue = Number(items.AmountDue ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                description ='Credit Card'
+                data =String(amountDue)  ;
+                spaces = AlignmentSpace(description, data);
+                receiptContent1 = `<div style="font-weight: bold;">${description}${spaces}${data}</div>`;
+  
+  
+                const cardNo = items.CardNo || ''; // Ensure items.CardNo is defined, or default to empty string
+                const lastFourDigits = cardNo.slice(-4); // Get the last four digits of the card number
+                const maskedCardNo = '****-****-****-' + lastFourDigits; // Mask all but the last four digits
+                 description = 'Credit Card No.';
+                 data = maskedCardNo;
+                 spaces = AlignmentSpace(description, data);
+                 receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${data}</div>`;
+             
+                description ='Card Issuer'
+                data = items.CardIssuer || '';
+                spaces = AlignmentSpace(description, data);
+                receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${data}</div>`;
+             
+  
+                
+                description ='Bank'
+                data = items.AcquireBank|| '';
+                spaces = AlignmentSpace(description, data);
+                receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${data}</div>`;
+  
+                const expiryDate = new Date(items.ExpiryYear, items.ExpiryMonth - 1);
+                const formattedExpiry = expiryDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+              
+                 
+                description ='Expiry Date'
+                data = formattedExpiry || '';
+                spaces = AlignmentSpace(description, data);
+                receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${data}</div>`;
+  
+                description ='Card Holder'
+                data = items.CardHolder|| '';
+                spaces = AlignmentSpace(description, data);
+                receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${data}</div>`;
+               
+                doc.write('<pre>' + receiptContent1 + '</pre>');
+             
+              });
+            }
+
+//******************************** Debit Card*********************************************** */
+            if (debitcard){
+              debitcard.map((items:any) => {
+
+                const amountDue = Number(items.AmountDue ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                description ='Debit Card'
+                data =String(amountDue)  ;
+                spaces = AlignmentSpace(description, data);
+                receiptContent1 = `<div style="font-weight: bold;">${description}${spaces}${data}</div>`;
+  
+  
+                const cardNo = items.CardNo || ''; // Ensure items.CardNo is defined, or default to empty string
+                const lastFourDigits = cardNo.slice(-4); // Get the last four digits of the card number
+                const maskedCardNo = '****-****-****-' + lastFourDigits; // Mask all but the last four digits
+                 description = 'Debit Card No.';
+                 data = maskedCardNo;
+                 spaces = AlignmentSpace(description, data);
+                 receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${data}</div>`;
+             
+                description ='Bank'
+                data = items.AcquireBank|| '';
+                spaces = AlignmentSpace(description, data);
+                receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${data}</div>`;
+  
+                const expiryDate = new Date(items.ExpiryYear, items.ExpiryMonth - 1);
+                const formattedExpiry = expiryDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+            
+  
+                description ='Card Holder'
+                data = items.CardHolder|| '';
+                spaces = AlignmentSpace(description, data);
+                receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${data}</div>`;
+               
+                doc.write('<pre>' + receiptContent1 + '</pre>');
+             
+              });
+            }
+
+
+
+
+
+
+
+
+
+    // description = 'CHANGE:';
+    // const changeAmountFormatted = Number(ChangeAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // data = String(changeAmountFormatted) || ''; 
+    // spaces = AlignmentSpace(description, data);
+    // receiptContent1 += `<div style="font-weight: bold;">${description}${spaces}${changeAmountFormatted}</div>`;
+
+    // doc.write('<pre>' + receiptContent1 + '</pre>');
+
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+
+    
+    description = 'CASHIER:';
+    data = localStorage.getItem('FullName') || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 = `<div>${description}${spaces}${data}</div>`;
+    
+
+
+    description = 'WAITER:';
+    data = dataInfo.data.WaiterName || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+
+    description = 'TERMINAL# ';
+    data = dataInfo.data.TerminalNo
+    data += '-'
+    data +=  String(parseFloat(dataInfo.data.OR)).padStart(8,'0') || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 += `<div>${spaces}${description}${data}</div>`;
+
+    doc.write('<pre>' + receiptContent1 + '</pre>');
+
+
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+
+
+
+
+    description = 'CUSTOMER NAME:';
+    data = dataInfo.data.CustomerName || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 = `<div>${description}${spaces}${data}</div>`;
+
+    description = 'COMPANY ADDRESS:';
+    data = dataInfo.data.CusAddress || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+    description = 'TIN:';
+    data = dataInfo.data.CusTIN || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+
+    description = 'BUSINESS STYLE:';
+    data = dataInfo.data.CusBusiness || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+    doc.write('<pre>' + receiptContent1 + '</pre>');
+
+    doc.write('<div style="text-align: center;">');
+
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+    doc.write('<pre style="margin: 0; line-height: 1; font-size: 12px;"> THANK YOU COME AGAIN: </pre>');
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+    
+    doc.write('<div> LEAD SOLUTIONS INC. </div>');
+
+    doc.write('<div> DOOR 1 DWTC BLDG RIZAL EXTENSION </div>');
+    doc.write('<div> DAVAO CITY </div>');
+    doc.write('<div> 274-027-986-000</div>');
+    doc.write('<div> ACCRED # 1132740279862015060320</div>');
+    doc.write('<div> DATE ISSUED: 06-04-2015 </div>');
+    doc.write('<div> VALID UNTIL: 07-31-2025 </div>');
+    doc.write('<div> PTU NO. FP112022-110-0358595-000001 </div>');
+    doc.write('<div> DATE ISSUED: 10-03-2022 </div>');
+
+    doc.write('</div>')
+
+
+
+  
+    const qr = QRCode(0, 'H'); // QR code type and error correction level
+    qr.addData('Your data for QR code'); // Replace with the data you want in the QR code
+    qr.make();
+
+    // Get the generated QR code as a data URI
+    const qrDataURI = qr.createDataURL();
+
+    // Insert the QR code image into the document
+    doc.write('<div style="text-align: center;">');
+    doc.write(`<img src="${qrDataURI}" alt="QR Code"  style="max-width: 120px; display: inline-block;" />`);
+    doc.write('</div>'); // Close the container div
+    doc.close();
+  // Remove the iframe after printing
+
+  DeletePosExtendedAll()
+  // triggerPrint()
+  setTimeout(() => {
+    iframeWindow.print();
+    // window.location.reload(); 
+
+    setOrderType('')
+    setOrderTypeModal(true)
+    setChangeModal(true)
+    setTimeout(() => {
+      DineInRef.current?.focus()
+    }, 50);
+    setShowIframe(false)
+    iframe.style.display = 'none';
+    setCartItems([])
+    setTableNo('')
+    setDiscountData('')
+    setDiscountType('')
+  }, 1000); 
+    // Print the receipt
+  
+
+    // Remove the iframe after printing
+    // setTimeout(() => {
+    //   document.body.removeChild(iframe);
+    // // Reload the page after printing
+    // }, 20000); // Adjust timeout as needed for printing to complete
+  } };
+    iframe.src = 'about:blank';
+  return iframe;
+  }};
+
+  // Example data (replace with actual receipt content and logo source)
+  const receiptContent = generateReceipt();
+// Replace with the actual path to your logo image
+
+  const iframe = generateReceiptIframe(receiptContent, {logo});
+};
+
+
 //************ PRINT CASH BREAKDOWN*****************//
 
 const PrintCashBreakDown = (dataDinomination:any,dataInfo:any) => {
@@ -5131,10 +5688,11 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 {CashBreakDownModal && <CashBreakDown CashBreakDownDataList ={CashBreakDownDataList} CloseCashBreakDownModal={CloseCashBreakDownModal}/>}
 {ChargeToModal && <ChargeTo handleClose={CloseChargeModal} amountdue={formattedTotalDue}/>}
 {CreditCardPaymentModal && <CreditCardPayment handleClose={CloseCreditCardPayment} amountdue={formattedTotalDue} CreditCardPayment ={CreditCardPaymentOk}/>}
-{CreditCardPaymentEntryModal && <CreditCardPaymentEntry handleClose={CloseCreditCardPaymentEntryModal} amountdue={formattedTotalDue} amounttendered={SaveCreditCardPayment}/>}
-{DebitCardPaymentModal && <DebitCardPayment handleClose={CloseDebitCardPayment} amountdue={formattedTotalDue}/>}
+{CreditCardPaymentEntryModal && <CreditCardPaymentEntry handleClose={CloseCreditCardPaymentEntryModal} amountdue={formattedTotalDue} amounttendered={SaveCreditCardPayment} />}
+{DebitCardPaymentModal && <DebitCardPayment handleClose={CloseDebitCardPayment} amountdue={formattedTotalDue} debitcardpayment ={DebitCardPaymentOK}/>}
+{DebitCardPaymentEntryModal && <DebitCardPaymentEntry handleClose={CloseDebitCardPaymentEntryModal} amountdue={formattedTotalDue} amounttendered={SaveDebitCardPayment} />}
+{MultiplePamentEntryModal && <MultiplePayments handleclose = {CloseMultiplePayment} totalDue = {formattedTotalDue} MultiplepaymentsList = {SaveMultiplePayments}/>}
 {OpenVireficationModal && <Verification handleClose={CloseVerification} VerificationEntry={OKVerification}/>}
-
 {OpenSeniorCitezenDiscountModal && <SeniorCitezenDiscount handleClose={CloseSeniorCitezenDiscount} SeniorData={SaveSeniorCitezenDiscount} 
                                               amountcover={formattedTotalDue} SeniorOrderData={cartItems}/>}
 {OpenItemDiscountModal && <ItemDiscounts handleClose={CloseItemDiscountsEntry}  SelectedItemDiscount={SelectedItemDiscount} DiscountedData={SaveItemDiscountEntry}/>}
@@ -5440,13 +5998,14 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
               }}
+              onClick={OpenMultiplePayment}
               tabIndex={3}
               onKeyDown={(e)=> PaymentModalHandleKeydown(e,EPSPaymentRef,MultiplePaymentRef,ChargePaymentRef,3)}
               ref={MultiplePaymentRef}
               >
 
               <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' 
-        ,color: isFocus == 3 ? 'White' :'Blue',textAlign:'center'}}>
+               ,color: isFocus == 3 ? 'White' :'Blue',textAlign:'center'}}>
                Multiple Payment</p>
               <img src= {Multiple} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
             </div>
