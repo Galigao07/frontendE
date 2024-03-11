@@ -46,7 +46,10 @@ const MultiplePayments:React.FC<MultiplepaymentsData> = ({handleclose,totalDue,M
 const OpenCreditCardPayment = () => {
   localStorage.removeItem('CreditCardPayment')
     setCreditCardPaymentModal(true)
-    setRemainingAmountDue( parseFloat(totalDue)- parseFloat(amountTendered))
+    const totalDueFloat: number = removeThousandSeparator(totalDue);
+    const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
+    const remainingAmountDue: number = totalDueFloat - amountTenderedFloat;
+    setRemainingAmountDue(remainingAmountDue)
   }
   
   const CloseCreditCardPayment = () => {
@@ -83,10 +86,16 @@ const OpenCreditCardPayment = () => {
   
   //// ************************** DEBIT CARD PAYMENT TYPE TRANSACTION ******************
   
+  const removeThousandSeparator = (s: string): number => {
+    return parseFloat(s.replace(/,/g, ''));
+};
   const OpenDebitCardPayment = () => {
     localStorage.removeItem('DebitCardPayment')
     setDebitCardAmount(0)
-    setRemainingAmountDue(parseFloat(totalDue)- parseFloat(amountTendered))
+    const totalDueFloat: number = removeThousandSeparator(totalDue);
+    const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
+    const remainingAmountDue: number = totalDueFloat - amountTenderedFloat;
+    setRemainingAmountDue(remainingAmountDue)
     setDebitCardPaymentModal(true)
   }
   
@@ -97,6 +106,7 @@ const OpenCreditCardPayment = () => {
     DebitCardPaymentData.map((items:any) => {
       totalD = parseFloat(items.AmountDue) +   parseFloat(totalD)
     });
+
 
     setDebitCardAmount(totalD)
     localStorage.setItem('DebitCardPayment',JSON.stringify(data))
@@ -125,6 +135,7 @@ const OpenCreditCardPayment = () => {
 
   const SaveMultiplepaments = () => {
     MultiplepaymentsList({CashAmount})
+    localStorage.removeItem('MULTIPLE')
   }
 
     const Handlekeydown = (e:any,Backref:any,CurrentRe:any,Nextref:any) => {
@@ -146,6 +157,7 @@ const OpenCreditCardPayment = () => {
         
 
     useEffect(() => {
+    localStorage.setItem('MULTIPLE','true')
         setamountDue(totalDue)
 
         setchange((parseFloat(CashAmount) + parseFloat(CurrentCheckAmount) + 
