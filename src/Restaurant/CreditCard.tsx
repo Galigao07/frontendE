@@ -127,7 +127,17 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
 
 const HandleCreditCardEntry = (e:any) => {
     const { name, value } = e.target;
-setCreditCardPaymentData({ ...CreditCardPaymentData, [name]: value });
+
+    if (name ==='AmountDue'){
+      const isNumber = /^[0-9]*$/;
+      if (isNumber.test(value)) {
+          // If setQueNo input is a number, update the state
+      setCreditCardPaymentData({ ...CreditCardPaymentData, [name]: value });
+      }
+    }else{
+      setCreditCardPaymentData({ ...CreditCardPaymentData, [name]: value });
+    }
+
 if (name == 'AcquireBank') {
     setBankModal(true)
     handleSearchInputChange(value,'Bank')
@@ -853,7 +863,8 @@ const onDelete = () => {
                             name="AmountDue" 
                             ref={AmountDueRef}
                             onChange={HandleCreditCardEntry}
-                            value={parseFloat(CreditCardPaymentData.AmountDue).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+                            value={CreditCardPaymentData.AmountDue}
+                            // value={parseFloat(CreditCardPaymentData.AmountDue).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
                             onKeyDown={AddToList} />
                         </div>
 

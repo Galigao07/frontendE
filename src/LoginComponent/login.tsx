@@ -7,14 +7,17 @@ import Swal from 'sweetalert2';
 import BASE_URL from '../config';
 import { isMobile, isTablet, setUserAgent } from 'react-device-detect';
 import { Typography } from '@mui/material';
+import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
+import OnScreenKeyboard from '../Restaurant/KeyboardGlobal';
   const LoginForm: React.FC  = () => {
     const usernameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const loginBtnRef = useRef<HTMLButtonElement>(null);
+    const [focusedInput, setFocusedInput] = useState<any>('');
     // const ulCodeRef = useRef(null);
     // const loginBtnRef = useRef(null);
 
-    const [formData, setFormdata] = useState({
+    const [formData, setFormdata] = useState<any>({
         username: '',
         password: ''
     });
@@ -95,8 +98,8 @@ import { Typography } from '@mui/material';
     try {
       const response = await axios.get(`${BASE_URL}/api/login/`, {
         params:{
-        username : username,
-        password : password
+        username : formData.username,
+        password : formData.password
         }
       });
   
@@ -176,9 +179,10 @@ const handleKeyDown = (event :any, BackRef : any, nextRef:any) => {
 
 const [cursorPosition, setCursorPosition] = useState<any>(0);
 const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
-
-const showOnScreenKeybaord = () => {
-
+const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+const showOnScreenKeybaord = (ref:any) => {
+  setisShowKeyboard(true)
+  setFocusedInput(ref)
 }
 const handleBackspace = () => {
   // Detect backspace press and handle it accordingly
@@ -233,6 +237,16 @@ const rows = alphabetRows.map((row, rowIndex) => (
   </div>
 ));
 
+const showKeyBoard = async() => {
+  try {
+      // const response = await axios.get(`${BASE_URL}/api/onscreen-keyboard/`)
+      // if (response.status==200){
+      //   console.log('Success')
+      // }
+  }catch{
+    console.log('Error while Onscreeen is called')
+  }
+}
 
 const handleSpecialButtonClick = (value:any) => {
   switch (value) {
@@ -264,8 +278,59 @@ const handleSpecialButtonClick = (value:any) => {
   }
 };
 
+
+
+
+// useEffect(() => {
+//   const handleFocusChange = () => {
+//     const activeElement = document.activeElement as HTMLInputElement;
+//     if (activeElement.tagName === 'INPUT') {
+//       setFocusedInput(activeElement.name);
+
+//       console.log(focusedInput)
+//     } else {
+//       setFocusedInput('');
+//     }
+//   };
+
+//   document.addEventListener('focusin', handleFocusChange);
+//   document.addEventListener('focusout', handleFocusChange);
+
+//   return () => {
+//     document.removeEventListener('focusin', handleFocusChange);
+//     document.removeEventListener('focusout', handleFocusChange);
+//   };
+// }, []);
+// const valueRef = useRef<any>(null);
+
+  const setvalue = (value: any) => {
+    if (focusedInput) {
+      setFormdata((prevData: any) => ({
+        ...prevData,
+        [focusedInput]: value
+      }));
+    }
+    setisShowKeyboard(false)
+  };
+
+  // useEffect(() => {
+  //   // Use valueRef.current to access the latest value
+  //   if (focusedInput && valueRef.current) {
+  //     setFormdata((prevData: any) => ({
+  //       ...prevData,
+  //       [focusedInput]: valueRef.current
+  //     }));
+  //   }
+  // }, [focusedInput,valueRef.current]); // Include focusedInput as a dependency
+
+
+const closekeyBoard = () => {
+  setisShowKeyboard(false)
+}
+
+
   return (
-    <form onSubmit={onSubmit}>
+
       
   <div className="container" style={deviceType === 'Mobile' ? { width: '100%', height: '100vh' } : {}}>
   <div className="login-form" style={deviceType === 'Desktop' ? { width: '450px' } : { width: '320px',height: '100vh' }}>
@@ -298,15 +363,14 @@ const handleSpecialButtonClick = (value:any) => {
           <input
             className='login-input'
             type='text'
+            onClick={()=>showOnScreenKeybaord('username')}
             name='username'
             ref={usernameRef}
-            onFocus={showOnScreenKeybaord}
             onChange={(e) => onChange(e)}
-            value={username}
+            defaultValue={username}
             placeholder="Username"
             autoComplete="off"
             onKeyDown={(e) => handleKeyDown(e, usernameRef, passwordRef)}  
-            required
           />
         </div>
         
@@ -315,13 +379,13 @@ const handleSpecialButtonClick = (value:any) => {
             className='login-input'
             type='password'
             name='password'
+            onClick={()=>showOnScreenKeybaord('password')}
             ref={passwordRef}
             onChange={(e) => onChange(e)}
-            value={password}
+            defaultValue={password}
             placeholder="Password"
             autoComplete="off"
             onKeyDown={(e) => handleKeyDown(e, usernameRef, loginBtnRef)}  
-            required
           />
         </div>
         
@@ -341,12 +405,18 @@ const handleSpecialButtonClick = (value:any) => {
       </div>
     </div>
   </div>
+  {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+
 </div>
 
-    </form>
+
         
   );
 };
 
 
 export default LoginForm;
+function async() {
+  throw new Error('Function not implemented.');
+}
+
