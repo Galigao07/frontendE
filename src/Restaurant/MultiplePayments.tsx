@@ -171,14 +171,15 @@ const OpenCreditCardPayment = () => {
     },[])
 
     useEffect(() => {
-        const cash = parseFloat(CashAmount) || 0;
-        const check = parseFloat(CurrentCheckAmount) || 0;
-        const debitCard = parseFloat(DebitCardAmount) || 0;
-        const creditCard = parseFloat(CreditCardAmount) || 0;
-        const creditSales = parseFloat(CreditSalesAmount) || 0;
+        const cash :number = parseFloat(CashAmount) || 0;
+        const check :number= parseFloat(CurrentCheckAmount) || 0;
+        const debitCard:number = parseFloat(DebitCardAmount) || 0;
+        const creditCard:number = parseFloat(CreditCardAmount) || 0;
+        const creditSales:number = parseFloat(CreditSalesAmount) || 0;
+        const totalDued:number = removeThousandSeparator(totalDue) ;
     
         const totalReceived = cash + check + debitCard + creditCard + creditSales;
-        const change = totalReceived - parseFloat(totalDue);
+        const change = totalReceived - totalDued
     
         setchange(change);
         setamountTendered(totalReceived.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));

@@ -105,7 +105,17 @@ const DebitCardPayment: React.FC<DebitCardPaymentTrans> = ({handleClose,amountdu
 
 const HandleCreditCardEntry = (e:any) => {
     const { name, value } = e.target;
-    setDebitCardPaymentData({ ...DebitCardPaymentData, [name]: value });
+
+    if (name ==='AmountDue'){
+      const isNumber = /^[0-9]*$/;
+      if (isNumber.test(value)) {
+          // If setQueNo input is a number, update the state
+      setDebitCardPaymentData({ ...DebitCardPaymentData, [name]: value });
+      }
+    }else{
+      setDebitCardPaymentData({ ...DebitCardPaymentData, [name]: value });
+    }
+
 
     if (name == 'AcquireBank') {
         setBankModal(true)
@@ -377,7 +387,12 @@ const onDelete = () => {
     const Multiple = localStorage.getItem('MULTIPLE')
 
     if (Multiple === 'true'){
+      if (totalAmountDue === 0){
+        setviewSave(false)
+      }else{
         setviewSave(true)
+      }
+    
 
     } else{
       if (parseFloat(amountdue) === totalAmountDue)  {
@@ -588,7 +603,7 @@ const onDelete = () => {
                             ref={AmountDueRef}
                             onChange={HandleCreditCardEntry}
 
-                            value={parseFloat(DebitCardPaymentData.AmountDue).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+                            value={DebitCardPaymentData.AmountDue}
                             onKeyDown={AddToList} />
                         </div>
 
@@ -669,7 +684,7 @@ const onDelete = () => {
                                    <Typography  sx={{
                                 fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                 overflow: 'auto',width:'40%'}}>AMOUNT DUE</Typography>
-                                 <input type="text" placeholder="0.00" readOnly autoComplete="off" value={amountdue} style={{textAlign:'end'}} />
+                                 <input type="text" placeholder="0.00" readOnly autoComplete="off" value={parseFloat(amountdue).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} style={{textAlign:'end'}} />
                             </div>
                          
 
