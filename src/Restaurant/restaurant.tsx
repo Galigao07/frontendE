@@ -689,7 +689,12 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
             ref={index === 0 ? focusedRowRef : null}
             tabIndex={index === 0 ? 0 : undefined}
             style={{ outline: selectedIndex === index ? '2px solid blue' : 'none',
-            backgroundColor: selectedIndex === index ? 'blue':'white' ,color : selectedIndex === index? 'white':'black'
+            backgroundColor: selectedIndex === index ? 'blue':'white' ,color : selectedIndex === index? 'white':'black',
+            fontSize:'1vw',
+            height:'50px',
+            whiteSpace: 'pre-wrap', /* or 'wrap' if you want to break on word boundaries */
+            wordWrap: 'break-word',
+
           
           }} // Add focus style
 
@@ -1524,6 +1529,7 @@ const Restaurant: React.FC = () => {
     };
     
     const onDelete = () => {
+
       if (selectedItemIndex !== null && selectedItemIndex >= 0 && selectedItemIndex < cartItems.length) {
         const updatedItems = [...cartItems];
         DeletePosExtended(cartItems[selectedItemIndex])
@@ -1764,7 +1770,7 @@ const CashBreakDownDataList = async (data:any) => {
   
 
     const ChangeOrderType = () => {
-
+      setTableOnprocess('')
       if (OrderType == 'DINE IN'){
         setOrderType('TAKE OUT')
         setTableNo('')
@@ -3301,6 +3307,8 @@ const OpenVireficationEntry = (type:any) => {
 
   if (type === 'Senior'){
     setPaymentOpenModal(false)
+  }else if ((type === 'Delete Order')){
+    setEditOrderModal(false)
   }
 
   setVeryficationType(type)
@@ -4376,7 +4384,7 @@ if (iframe !== null) {
 
     setOrderType('')
     setOrderTypeModal(true)
-    setChangeModal(true)
+    // setChangeModal(true)
     setTimeout(() => {
       DineInRef.current?.focus()
     }, 50);
@@ -4780,7 +4788,7 @@ if (iframe !== null) {
 
     setOrderType('')
     setOrderTypeModal(true)
-    setChangeModal(true)
+    // setChangeModal(true)
     setTimeout(() => {
       DineInRef.current?.focus()
     }, 50);
@@ -5895,7 +5903,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
           </Typography>
           </button>
           <button className="num-pad-key" style={{ width: '33%'}}  onClick={() => handleInput('0')}>0</button>
-          <button className="num-pad-key" style={{ width: '33%',height:'100%',padding:'9% 0'}}  onClick={ChangeViewToQue}>
+          <button className="num-pad-key" style={{ width: '33%'}}  onClick={ChangeViewToQue}>
           <Typography      
         sx={{
           fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.3rem' }}}>
@@ -6312,7 +6320,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
         <button className="btn-add" style={{backgroundColor:'white',color:'blue' ,border:'solid',marginTop:'0'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  style={{ verticalAlign: 'middle' }}/></button>
     </div>
 
-    <p className='TotalDue'>Total Due: {calculateTotal()}</p>
+    <p className='TotalDue'>Total: {calculateTotal()}</p>
 
     
 
@@ -6373,13 +6381,13 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                 </button>
                 
             </div>
-            <p className='TotalDue'>Total Due: {calculateTotal()}</p>
+            <p className='TotalDue'>Total: {calculateTotal()}</p>
 
             <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'100%',textAlign:'center', display: 'inline-block'}} onClick={onUpdateToCart}> 
                 <FontAwesomeIcon icon={faShoppingCart} />Update to Cart </button>
             <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
               <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={onClose} className="btn-close"> <FontAwesomeIcon icon={faClose} /> Close</button>
-              <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={onDelete} className="btn-close"> <FontAwesomeIcon icon={faTrashAlt} /> Delete </button>
+              <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={()=> OpenVireficationEntry('Delete Order')} className="btn-close"> <FontAwesomeIcon icon={faTrashAlt} /> Delete </button>
             </div>
             </div>
         </div>
@@ -6394,10 +6402,40 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
               Select Type of Transaction
             </h2> */}
           { userRank =='Cashier' &&(
-            <button className="btn" style={{backgroundColor:'red'}} onClick={EndShiftHandleClick}>End Shift</button>
+            <Button className="btn"  style={{backgroundColor:'red'}}
+                onClick={EndShiftHandleClick}>
+              <Typography      
+                  sx={{
+                  fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                  color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                  borderRadius: '5px',
+                  fontWeight: 'bold', textAlign: 'center',}}>
+                   End Shift
+                </Typography>
+              </Button>
           )}
-            <button className="btn" style={{backgroundColor:'blue'}} onClick={logoutClick}>Logout</button>
-            <button className="btn"  style={{backgroundColor:'red'}} onClick={CloseLogout}>Cancel</button>
+            <Button className="btn" style={{backgroundColor:'#007bff'}}
+            onClick={logoutClick}>
+                  <Typography      
+                  sx={{
+                  fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                  color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                  borderRadius: '5px',
+                  fontWeight: 'bold', textAlign: 'center',}}>
+                   Logout
+                </Typography>
+              </Button>
+            <Button className="btn" style={{backgroundColor:'red'}}
+              onClick={CloseLogout}>
+                    <Typography      
+                    sx={{
+                    fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                    color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                    borderRadius: '5px',
+                    fontWeight: 'bold', textAlign: 'center',}}>
+                    Cancel
+                  </Typography>
+              </Button>
           </div>
         </div>
       )}

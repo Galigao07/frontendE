@@ -129,8 +129,6 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
         }
     };
 
-
-
     return (
         <div className='modal-key'>
             <div  ref= {modalRef} className='modal-content-keyboard'
@@ -139,74 +137,70 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
                             // onMouseUp={handleMouseUp}
                             style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '68%', height: '400px' }} >
         
-            <input defaultValue={inputData} ref={inputRef} />
+            <input defaultValue={inputData} ref={inputRef} style={{textAlign:'center',fontSize:'20px'}}/>
             <div className='container-key'>
         {isLetter ? (
             <>
-            <div className="row">
+            <div className="rowf">
                     {['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '⌫'].map((key, index) => (
                         <button key={index} onMouseDown={() => handleButtonClick(key)} >
                           {capsLock ? key.toLowerCase() : key}
-                            </button>
+                        </button>
                     ))}
-                </div>
+            </div>
 
-                <div className="row">
+            <div className="rows">
                     {['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Clear'].map((key, index) => (
-                        <button key={index} onMouseDown={() => handleButtonClick(key)} style={{ width: key === 'Clear' ? '170px' : '79px' }}>
+                        <button key={index} onMouseDown={() => handleButtonClick(key)} style={{ width: key === 'Clear' ? '20%' : '8%' }}>
                             {capsLock ? key.toLowerCase() : key}
                             </button>
                     ))}
-                </div>
+            </div>
 
-                <div className="row">
+            <div className="rowt">
                     {['Caps Lock', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '/', '.'].map((key, index) => (
-                        <button key={index} onMouseDown={() => handleButtonClick(key)} style={{ width: key === 'Caps Lock' ? '170px' : '79px' }}>
+                        <button key={index} onMouseDown={() => handleButtonClick(key)} style={{ width: key === 'Caps Lock' ? '20%' : '8%' }}>
                               {capsLock ? key.toLowerCase() : key}
                             </button>
                     ))}
-                </div>
-                            <div className="row">
-                                <button style={{ width: "200px" }} onClick={changeInput}>123</button>
-                                <button style={{ width: "443px" }} onClick={() =>handleButtonClick(' ')}> </button>
-                                   <button style={{width:'133px'}} onClick={SendData}>OK</button>
- 
-                            </div>
-                            
-                            </>
+            </div>
+            <div className="row">
+                <button style={{ width: "200px" }} onClick={changeInput}>123</button>
+                <button style={{ width: "443px" }} onClick={() =>handleButtonClick(' ')}> </button>
+                <button style={{width:'133px'}} onClick={SendData}>OK</button>
+            </div>                  
+        </>
         ):(
-                            <>
-                            
-                            <div className="row1">
+            <>
+                <div className="row1">
                             {[1, 2, 3, '⌫'].map((key, index) => (
                                 <button key={index} onClick={() => handleButtonClick(key)}>
                                     {key}
                                 </button>
                             ))}
-                        </div>
+                </div>
 
-                        <div className="row1">
+                <div className="row1">
                             {[4, 5, 6, 'Clear'].map((key, index) => (
                                 <button key={index} onClick={() => handleButtonClick(key)}>
                                     { key}
                                 </button>
                             ))}
-                        </div>
+                </div>
 
-                        <div className="row1">
+                <div className="row1">
                             {[7, 8, 9, '.'].map((key, index) => (
                                 <button key={index} onClick={() => handleButtonClick(key)}>
                                     {key}
                                 </button>
                             ))}
-                        </div>
-                                <div className="row1">
-                                    <button style={{width:'133px'}} onClick={changeInput}>ABC</button>
-                                    <button style={{width:'133px'}} onClick={()=>handleButtonClick('0')}>0</button>
-                                    <button style={{width:'133px'}} onClick={SendData}>OK</button>
-                                </div>
-                                
-                                </>
+                </div>
+                <div className="row1s">
+                                    <button  onClick={changeInput}>ABC</button>
+                                    <button  onClick={()=>handleButtonClick('0')}>0</button>
+                                    <button  onClick={SendData}>OK</button>
+                </div>              
+            </>
         )}
             
             </div>

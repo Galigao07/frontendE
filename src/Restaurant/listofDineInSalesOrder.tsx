@@ -195,6 +195,46 @@ const CloseButtonModal = () => {
     }, [SalesOrderList]);
     
 
+    const ShowAllInListing = async() => {
+      try {
+        if (tableno !=''){
+          const response = await axios.get(`${BASE_URL}/api/sales-order-list/`, {
+            params: {
+                tableno: tableno // or use the dynamic value that you want
+            }
+        });
+        setSalesOrderList(response.data);
+        }else{
+          const response = await axios.get(`${BASE_URL}/api/sales-order-list/`, {
+            params: {
+                queno: queno // or use the dynamic value that you want
+            }
+        });
+        setSalesOrderList(response.data);
+        }
+
+
+
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          const axiosError = error as AxiosError;
+    
+          if (axiosError.response) {
+            // The request was made and the server responded with a status code
+            console.error('Server responded with a non-2xx status:', axiosError.response.data);
+          } else if (axiosError.request) {
+            // The request was made but no response was received
+            console.error('No response received:', axiosError.request);
+          } else {
+            // Something else happened while setting up the request
+            console.error('Error setting up the request:', axiosError.message);
+          }
+        } else {
+          // Handle non-Axios errors here
+          console.error('Non-Axios error:', error);
+        }
+      }
+    }
     
     useEffect(() => {
       let totalQuantity = 0;
@@ -244,10 +284,18 @@ const ShowOrderListing = async (index: number) => {
   const selectedItem = SalesOrderList[index];
   setSelectedRowIndex(index);
 
+  const tableNo = selectedItem.table_no
+  const so_no = selectedItem.SO_no
+
   try {
     // Assuming 'selectedItem' needs to be part of the URL query parameters
     const response = await axios.get(`${BASE_URL}/api/sales-order-listing/`, {
-      params: selectedItem // Use 'params' to include query parameters
+      // params: selectedItem,
+      params: {
+        tableno :tableNo,
+        so_no : so_no
+      }
+     // Use 'params' to include query parameters
     });
 
     setSalesOrderListing(response.data);
@@ -632,13 +680,15 @@ useEffect(() => {
             <Grid container className="CreditCard-Container" spacing={2}>
                 <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
                   <div style={{ border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px',height:'100%'}}>
-
-                    <h2 style={{ color: '#ffffff', backgroundColor: '#007bff',
-                    padding: '4px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                  <div style={{display:'flex',flexDirection:'row'}}>
+                  <h2 style={{ color: '#ffffff', backgroundColor: '#007bff',
+                    padding: '4px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',width:'80%',
                       borderRadius: '5px', fontWeight: 'bold', textAlign: 'center', caretColor:'transparent'
-                      }}>Sales Order List</h2>
+                      }}>Sales Order List </h2>
 
-
+                      <button style={{width:'20%',height:'40px',marginTop:'8px'}} onClick={()=>ShowAllInListing()}>Show All</button>
+                  </div>
+        
 
                   <div className="top-table-so" >
                       <Table sx={{

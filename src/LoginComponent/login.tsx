@@ -13,7 +13,7 @@ import OnScreenKeyboard from '../Restaurant/KeyboardGlobal';
     const usernameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const loginBtnRef = useRef<HTMLButtonElement>(null);
-    const [focusedInput, setFocusedInput] = useState<any>('');
+
     // const ulCodeRef = useRef(null);
     // const loginBtnRef = useRef(null);
 
@@ -176,7 +176,7 @@ const handleKeyDown = (event :any, BackRef : any, nextRef:any) => {
     }
   }
 };
-
+const [focusedInput, setFocusedInput] = useState<any>('');
 const [cursorPosition, setCursorPosition] = useState<any>(0);
 const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
 const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
@@ -184,6 +184,20 @@ const showOnScreenKeybaord = (ref:any) => {
   setisShowKeyboard(true)
   setFocusedInput(ref)
 }
+const setvalue = (value: any) => {
+  if (focusedInput) {
+    setFormdata((prevData: any) => ({
+      ...prevData,
+      [focusedInput]: value
+    }));
+  }
+  setisShowKeyboard(false)
+};
+const closekeyBoard = () => {
+  setisShowKeyboard(false)
+}
+
+
 const handleBackspace = () => {
   // Detect backspace press and handle it accordingly
   if (usernameRef && cursorPosition > 0) {
@@ -237,16 +251,6 @@ const rows = alphabetRows.map((row, rowIndex) => (
   </div>
 ));
 
-const showKeyBoard = async() => {
-  try {
-      // const response = await axios.get(`${BASE_URL}/api/onscreen-keyboard/`)
-      // if (response.status==200){
-      //   console.log('Success')
-      // }
-  }catch{
-    console.log('Error while Onscreeen is called')
-  }
-}
 
 const handleSpecialButtonClick = (value:any) => {
   switch (value) {
@@ -280,53 +284,6 @@ const handleSpecialButtonClick = (value:any) => {
 
 
 
-
-// useEffect(() => {
-//   const handleFocusChange = () => {
-//     const activeElement = document.activeElement as HTMLInputElement;
-//     if (activeElement.tagName === 'INPUT') {
-//       setFocusedInput(activeElement.name);
-
-//       console.log(focusedInput)
-//     } else {
-//       setFocusedInput('');
-//     }
-//   };
-
-//   document.addEventListener('focusin', handleFocusChange);
-//   document.addEventListener('focusout', handleFocusChange);
-
-//   return () => {
-//     document.removeEventListener('focusin', handleFocusChange);
-//     document.removeEventListener('focusout', handleFocusChange);
-//   };
-// }, []);
-// const valueRef = useRef<any>(null);
-
-  const setvalue = (value: any) => {
-    if (focusedInput) {
-      setFormdata((prevData: any) => ({
-        ...prevData,
-        [focusedInput]: value
-      }));
-    }
-    setisShowKeyboard(false)
-  };
-
-  // useEffect(() => {
-  //   // Use valueRef.current to access the latest value
-  //   if (focusedInput && valueRef.current) {
-  //     setFormdata((prevData: any) => ({
-  //       ...prevData,
-  //       [focusedInput]: valueRef.current
-  //     }));
-  //   }
-  // }, [focusedInput,valueRef.current]); // Include focusedInput as a dependency
-
-
-const closekeyBoard = () => {
-  setisShowKeyboard(false)
-}
 
 
   return (

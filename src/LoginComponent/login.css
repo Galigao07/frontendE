@@ -168,14 +168,14 @@ align-items: center;
   }
 
 
-  @keyframes rotate {
+  /* @keyframes rotate {
     from {
       transform: rotate(0deg);
     }
     to {
       transform: rotate(360deg);
     }
-  }
+  } */
   
   .header-img img {
     animation: rotate infinite 10s linear; /* Adjust duration and timing function as needed */

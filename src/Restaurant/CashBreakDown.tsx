@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef, useState } from "react";
 import './css/CashBreakDown.css'
-import { Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 
 
@@ -368,8 +368,8 @@ useEffect(() => {
 
 
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <button style={{backgroundColor:'blue'}} onClick={handleSaveCashBreakDown}>Save</button>
-                    <button style={{backgroundColor:'red'}} onClick={CloseCashBreakDownModal}>Cancel</button>
+                    <Button style={{backgroundColor:'blue',padding:'10px',fontSize:'20px'}} onClick={handleSaveCashBreakDown}>Save</Button>
+                    <Button style={{backgroundColor:'red',padding:'10px',fontSize:'20px'}} onClick={CloseCashBreakDownModal}>Cancel</Button>
                     </div>
                 </div>
             </div>

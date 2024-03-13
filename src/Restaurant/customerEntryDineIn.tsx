@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import BASE_URL from '../config';
 import './css/keyboard.css'
+import OnScreenKeyboard from './KeyboardGlobal';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { isDesktop} from 'react-device-detect';
@@ -413,6 +414,8 @@ const  sendDataToMain = () => {
       const currentPosition = ref.current.selectionStart || '';
       setCursorPosition(currentPosition);
     }
+
+
   };
 
 
@@ -883,7 +886,33 @@ if (category==='Waiter'){
 }
 
 
+const [focusedInput, setFocusedInput] = useState<any>('');
+const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+const showOnScreenKeybaord = (ref:any) => {
+  setisShowKeyboard(true)
+  setFocusedInput(ref)
+}
+const setvalue = (value: any) => {
+  if (focusedInput) {
+   if (focusedInput ==='Customer'){
+       setCustomerSearch(value);
+       handleSearchInputChange(value, 'Customer')
+   } else if (focusedInput ==='Waiter'){
+       setWaiterSearch(value);
+       handleSearchInputChange(value, 'Waiter')
+   }
+   
+
+  }
+  setisShowKeyboard(false)
+};
+const closekeyBoard = () => {
+  setisShowKeyboard(false)
+}
+
   return (
+    <div>
+
     <div className="modal">
       <div className="modal-contentCustomerDine" style={{width:'100%', display:'flex',flexDirection:'row'}}>
 
@@ -1022,40 +1051,9 @@ if (category==='Waiter'){
         </Grid>
 
     </Grid>
-    {/* <div>
-      <div className="num-pad" style={{width:'50% !important'}}>
-      <div className="num-pad-row">
-        <button className="num-pad-key" onClick={() => handleButtonClick('1')}>1</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('2')}>2</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('3')}>3</button>
-      </div>
-      <div className="num-pad-row">
-        <button className="num-pad-key" onClick={() => handleButtonClick('4')}>4</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('5')}>5</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('6')}>6</button>
-      </div>
-      <div className="num-pad-row">
-        <button className="num-pad-key" onClick={() => handleButtonClick('7')}>7</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('8')}>8</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('9')}>9</button>
-      </div>
-      <div className="num-pad-row">
-        <button className="num-pad-key" onClick={handleClear}><FontAwesomeIcon icon={faTimesCircle}/>Clear</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('0')}>0</button>
-        <button className="num-pad-key" onClick={handleBackspace}><FontAwesomeIcon icon={faBackspace}/>Back</button>
-      </div>
-      <div className="num-pad-row">
-      <button className="num-pad-key"  onClick={handleButtonClick}>ABC</button>
-        <button className="num-pad-key"  onClick={handleButtonClick}>Close</button>
-        <button className="num-pad-key" onClick={handleButtonClick}>OK</button>
-      </div>
+
     </div>
-    </div> */}
-  
-    </div>
-    {WaiterListModal && (
-                       
-                
+    {WaiterListModal && (  
     <div className='modal'>
       <div className='modal-content-waiter'>
 
@@ -1068,6 +1066,7 @@ if (category==='Waiter'){
             onChange={(e) => setWaiterSearch(e.target.value)}
             onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Waiter')}
             onKeyDown={(e) => handleKeys2(e, 'Waiter')}
+            onClick={()=> showOnScreenKeybaord('Waiter')}
           />
           <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Waiter')} ref={WaiterListRef}>
             <thead>
@@ -1077,7 +1076,7 @@ if (category==='Waiter'){
               </tr>
             </thead>
             <tbody>
-              {WaiterList && WaiterList.map((result, index) => (
+              {WaiterList && WaiterList.map((result:any, index) => (
                 <tr
                   key={index}
                   className={selectedItemIndex === index ? 'selected' : ''}
@@ -1085,9 +1084,9 @@ if (category==='Waiter'){
                   tabIndex={0}
 
                   style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
-                color:selectedItemIndex === index ? 'white':'black', }}
+                  color:selectedItemIndex === index ? 'white':'black',height:'50px'}}
                 >
-                  <td>{result.waiter_id}</td>
+                  <td style={{textAlign:'center'}}>{String(result.waiter_id).padStart(4,'0')}</td>
                   <td>{result.waiter_name}</td>
                 </tr>
               ))}
@@ -1123,6 +1122,7 @@ if (category==='Waiter'){
                                onChange={(e) => setCustomerSearch(e.target.value)}
                                onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
                                onKeyDown={(e) => handleKeys2(e, 'Customer')}
+                               onClick={()=> showOnScreenKeybaord('Customer')}
                              />
                              <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Customer')} ref={CustomerListRef}>
                                <thead>
@@ -1140,7 +1140,7 @@ if (category==='Waiter'){
                                      tabIndex={0}
                    
                                      style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
-                                   color:selectedItemIndex === index ? 'white':'black', }}
+                                    color:selectedItemIndex === index ? 'white':'black',height:'50px' }}
                                    >
                                      <td>{result.id_code.padStart(4,'0')}</td>
                                      <td>{result.trade_name}</td>
@@ -1160,7 +1160,8 @@ if (category==='Waiter'){
 )}
 
     </div>
-
+    {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+    </div>
 
   );
 };

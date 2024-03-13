@@ -341,10 +341,18 @@ height: 100%;
   border: 1px solid;
 }
 
+.table-list Waiter tbody tr{
+  padding: 20px !important;
+}
+
 .Waiterlist-Container{
   height:350px ;
   padding: 5px;
   overflow: auto;
+}
+
+.Waiterlist-Container tr{
+  padding: 20px !important;
 }
 
 .Button-Container button{

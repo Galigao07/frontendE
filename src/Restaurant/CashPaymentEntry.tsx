@@ -257,21 +257,21 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
 
 
           {/* <div style={{display:'flex',flexDirection:'row'}}> */}
-          <Grid container className="CreditCard-Container" spacing={2}>
+          <Grid container className="CreditCard-Container" spacing={2} >
 
             <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
               
-            <div style={{display:'flex',flexDirection:'row' ,width:'100%' }}>
+            <div style={{display:'flex',flexDirection:'row' ,width:'100%',height:'530px' }}>
                 <div style={{display:'flex',flexDirection:'column' , border:' 2px solid #ccc', borderRadius: '8px',padding:'20px',width:'100%' }}>
-                        <p style={{ fontSize: '20px', fontWeight: 'bold',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'}}>TOTAL AMOUNT DUE:</p>
-                            <p style={{ fontSize: '20px', fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue',  color: 'red', 
+                        <p style={{ fontSize: '30px', fontWeight: 'bold',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'}}>TOTAL AMOUNT DUE:</p>
+                            <p style={{ fontSize: '30px', fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue',  color: 'red', 
                             padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px' ,textAlign:'end' }}>  Php {amountdue}</p>
                         
 
                     
-                        <p style={{ fontSize: '20px', fontWeight: 'bold',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'}}>AMOUNT TENDERED</p>
-                            <input style={{ fontSize: '20px', fontWeight: 'bold', border: '1px solid', margin: '10px',  color: 'Black', 
-                            padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  ,textAlign:'end',width:'93%',  appearance: 'textfield',WebkitAppearance: 'none', }}
+                        <p style={{ fontSize: '30px', fontWeight: 'bold',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'}}>AMOUNT TENDERED</p>
+                            <input style={{ fontSize: '40px', fontWeight: 'bold', border: '1px solid', margin: '10px',  color: 'Black', 
+                            padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  ,textAlign:'end',width:'95%',  appearance: 'textfield',WebkitAppearance: 'none', }}
                             type="text" // Use type="tel" instead of type="number"
                             pattern="[0-9]*[.]?[0-9]*" 
                             onChange={(e) => handleAmountReceivedChange(e.target.value)}
@@ -284,12 +284,17 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
                             required/>
                             
 
-                <p style={{ fontSize: '20px', fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue',  color: 'Black', 
-                padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  }}>TOTAL CHANGE: {changeDue.toLocaleString(undefined, {
+                <p style={{ fontSize: '30px', fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue',  color: 'Black', 
+                    padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  }}>TOTAL CHANGE:</p>
+                <p style={{ fontSize: '30px', fontWeight: 'bold', border: '1px solid', margin: '10px', backgroundColor: 'lightblue',  color: 'Blue', 
+                    padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px' ,textAlign:'end' }}>{changeDue.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                 })}</p>
-                        <img src= {Cash} style={{height:'200px',width:'100%',marginTop:'20px'}}/>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
+                <img src= {Cash} style={{height:'100px',width:'50%',marginTop:'20px'}}/>
+                </div>
+                    
               
                 </div>
             </div>
