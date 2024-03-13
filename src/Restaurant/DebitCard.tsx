@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import { Button, Grid, Table, Typography } from "@mui/material";
 import axios from "axios";
 import BASE_URL from "../config";
+import OnScreenKeyboard from "./KeyboardGlobal";
 
 
 
@@ -509,8 +510,39 @@ const onDelete = () => {
       }
 
     };
+
+    const [focusedInput, setFocusedInput] = useState<any>('');
+    const [cursorPosition, setCursorPosition] = useState<any>(0);
+    const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
+    const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+    const showOnScreenKeybaord = (ref:any) => {
+      setisShowKeyboard(true)
+      setFocusedInput(ref)
+    }
+    const setvalue = (value: any) => {
+      if (focusedInput) {
+       if (focusedInput ==='Bank'){
+           setBankSearch(value);
+       } else{
+         setDebitCardPaymentData((prevData: any) => ({
+           ...prevData,
+           [focusedInput]: value
+         }));
+       }
+
+      }
+      setisShowKeyboard(false)
+    };
+    const closekeyBoard = () => {
+      setisShowKeyboard(false)
+    }
+
+
+
+  
     return (
 
+        <div>
 
         <div className="modal" >
             <div className="modal-content-debit">
@@ -544,6 +576,7 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, cardNoRef, acquireBankRef)} 
                             value={DebitCardPaymentData.CardNo}
                             name="CardNo"
+                            onClick={()=>showOnScreenKeybaord('CardNo')}
                             onChange={HandleCreditCardEntry}
                             />
                         </div>
@@ -558,6 +591,7 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, acquireBankRef, cardHolderRef)}  
                             value={DebitCardPaymentData.AcquireBank} 
                             name="AcquireBank" 
+
                             onChange={HandleCreditCardEntry}/>
                         </div>
 
@@ -580,6 +614,7 @@ const onDelete = () => {
                             <input type="text" placeholder="Card Holder"  autoComplete="off"   ref={cardHolderRef}
                             onKeyDown={(e) => handleKeyDown(e, cardHolderRef, approvalNoRef)} 
                             value={DebitCardPaymentData.CardHolder} name="CardHolder"
+                            onClick={()=>showOnScreenKeybaord('CardHolder')}
                             onChange={HandleCreditCardEntry}/>
               
                         </div>
@@ -590,6 +625,7 @@ const onDelete = () => {
                             <input type="text" placeholder="000000"  autoComplete="off"   ref={approvalNoRef}
                             onKeyDown={(e) => handleKeyDown(e, approvalNoRef, AmountDueRef)} 
                             value={DebitCardPaymentData.ApprovalNo} name="ApprovalNo"
+                            onClick={()=>showOnScreenKeybaord('ApprovalNo')}
                             onChange={HandleCreditCardEntry}/>
                         </div>
 
@@ -601,6 +637,7 @@ const onDelete = () => {
                             <input type="text" placeholder="0.00"  autoComplete="off" style={{textAlign:'end'}}
                             name="AmountDue" 
                             ref={AmountDueRef}
+                            onClick={()=>showOnScreenKeybaord('AmountDue')}
                             onChange={HandleCreditCardEntry}
 
                             value={DebitCardPaymentData.AmountDue}
@@ -732,7 +769,7 @@ const onDelete = () => {
                                      tabIndex={0}
                    
                                      style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
-                                   color:selectedItemIndex === index ? 'white':'black', }}
+                                   color:selectedItemIndex === index ? 'white':'black',height:'50px' }}
                                    >
                                      <td>{result.id_code.padStart(4,'0')}</td>
                                      <td>{result.company_description}</td>
@@ -754,7 +791,8 @@ const onDelete = () => {
         
             </div>
         </div>
-
+        {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+        </div>
   
     )
 }

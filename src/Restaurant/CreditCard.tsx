@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import { Button, Grid, Table, Typography } from "@mui/material";
 import axios from "axios";
 import BASE_URL from "../config";
+import OnScreenKeyboard from "./KeyboardGlobal";
 
 
 interface CreditCardPaymentTrans {
@@ -750,10 +751,39 @@ const onDelete = () => {
        }
     
 
+       const [focusedInput, setFocusedInput] = useState<any>('');
+       const [cursorPosition, setCursorPosition] = useState<any>(0);
+       const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
+       const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+       const showOnScreenKeybaord = (ref:any) => {
+         setisShowKeyboard(true)
+         setFocusedInput(ref)
+       }
+       const setvalue = (value: any) => {
+         if (focusedInput) {
+          if (focusedInput ==='Bank'){
+              setBankSearch(value);
+          } else if (focusedInput ==='card'){
+              setCardSearch(value);
+          }else{
+            setCreditCardPaymentData((prevData: any) => ({
+              ...prevData,
+              [focusedInput]: value
+            }));
+          }
+
+         }
+         setisShowKeyboard(false)
+       };
+       const closekeyBoard = () => {
+         setisShowKeyboard(false)
+       }
 
 
     return (
+      <div>
 
+      
 
         <div className="modal" >
             <div className="modal-content-credit">
@@ -787,6 +817,7 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, cardNoRef, acquireBankRef)} 
                             value={CreditCardPaymentData.CardNo}
                             name="CardNo"
+                            onClick={()=>showOnScreenKeybaord('CardNo')}
                             onChange={HandleCreditCardEntry}
                             />
                         </div>
@@ -801,6 +832,7 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, acquireBankRef, cardIssuerRef)}  
                             value={CreditCardPaymentData.AcquireBank} 
                             name="AcquireBank" 
+
                             onChange={HandleCreditCardEntry}/>
                         </div>
 
@@ -812,6 +844,7 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, cardIssuerRef, cardHolderRef)} 
                             value={CreditCardPaymentData.CardIssuer}
                             name="CardIssuer" 
+             
                             onChange={HandleCreditCardEntry}/>
                         </div>
             
@@ -823,7 +856,9 @@ const onDelete = () => {
                             <input type="text" placeholder="Card Holder"  autoComplete="off"   ref={cardHolderRef}
                             onKeyDown={(e) => handleKeyDown(e, cardHolderRef, approvalNoRef)} 
                             value={CreditCardPaymentData.CardHolder} name="CardHolder"
+                            onClick={()=>showOnScreenKeybaord('CardHolder')}
                             onChange={HandleCreditCardEntry}/>
+                           
               
                         </div>
                         <div style={{display:'flex',flexDirection:'row'}}>
@@ -833,6 +868,7 @@ const onDelete = () => {
                             <input type="text" placeholder="000000"  autoComplete="off"   ref={approvalNoRef}
                             onKeyDown={(e) => handleKeyDown(e, approvalNoRef, expiryMonthRef)} 
                             value={CreditCardPaymentData.ApprovalNo} name="ApprovalNo"
+                            onClick={()=>showOnScreenKeybaord('ApprovalNo')}
                             onChange={HandleCreditCardEntry}/>
                         </div>
 
@@ -844,11 +880,13 @@ const onDelete = () => {
                             <input type="text" placeholder="MM"  autoComplete="off"   ref={expiryMonthRef} style={{width:'45%',marginRight:'5%'}}
                             onKeyDown={(e) => handleKeyDown(e, expiryMonthRef, expiryYearRef)} 
                             value={CreditCardPaymentData.ExpiryMonth} name="ExpiryMonth"
+                            onClick={()=>showOnScreenKeybaord('ExpiryMonth')}
                             onChange={HandleCreditCardEntry}/>
                 
                             <input type="text" placeholder="YYYY"  autoComplete="off"   ref={expiryYearRef} style={{width:'45%'}}
                             onKeyDown={(e) => handleKeyDown(e, expiryYearRef, AmountDueRef)} 
                             value={CreditCardPaymentData.ExpiryYear} name="ExpiryYear"
+                            onClick={()=>showOnScreenKeybaord('ExpiryYear')}
                             onChange={HandleCreditCardEntry}/>
                             
                             
@@ -979,7 +1017,9 @@ const onDelete = () => {
                                value={BankSearch}
                                onChange={(e) => setBankSearch(e.target.value)}
                                onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Bank')}
+                               onClick={()=>showOnScreenKeybaord('Bank')}
                                onKeyDown={(e) => handleKeys2(e, 'Bank')}
+                               
                              />
                              <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Bank')} ref={BankListRef}>
                                <thead>
@@ -997,7 +1037,7 @@ const onDelete = () => {
                                      tabIndex={0}
                    
                                      style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
-                                   color:selectedItemIndex === index ? 'white':'black', }}
+                                   color:selectedItemIndex === index ? 'white':'black',height:'50px'}}
                                    >
                                      <td>{result.id_code.padStart(4,'0')}</td>
                                      <td>{result.company_description}</td>
@@ -1030,6 +1070,7 @@ const onDelete = () => {
                                onChange={(e) => setCardSearch(e.target.value)}
                                onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Card')}
                                onKeyDown={(e) => handleKeys2(e, 'card')}
+                               onClick={()=>showOnScreenKeybaord('card')}
                              />
                              <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Card')} ref={CardListRef}>
                                <thead>
@@ -1047,7 +1088,7 @@ const onDelete = () => {
                                      tabIndex={0}
                    
                                      style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
-                                   color:selectedItemIndex === index ? 'white':'black', }}
+                                   color:selectedItemIndex === index ? 'white':'black',height:'50px' }}
                                    >
                                      <td>{result.id_code.padStart(4,'0')}</td>
                                      <td>{result.card_description}</td>
@@ -1066,11 +1107,13 @@ const onDelete = () => {
                       </div>
 )}
 
-        
+           
             </div>
-        </div>
 
-  
+       
+        </div>
+        {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+  </div>
     )
 }
 
