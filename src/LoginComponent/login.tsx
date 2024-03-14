@@ -180,10 +180,17 @@ const [focusedInput, setFocusedInput] = useState<any>('');
 const [cursorPosition, setCursorPosition] = useState<any>(0);
 const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
 const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+const [isShow, setisShow] = useState<boolean>(false);
 const showOnScreenKeybaord = (ref:any) => {
-  setisShowKeyboard(true)
-  setFocusedInput(ref)
+  if (isShow){
+    setisShowKeyboard(true)
+    setFocusedInput(ref)
+  }
 }
+const ShowKeyorNot = () => {
+  setisShow(!isShow);
+}
+
 const setvalue = (value: any) => {
   if (focusedInput) {
     setFormdata((prevData: any) => ({
@@ -286,6 +293,7 @@ const handleSpecialButtonClick = (value:any) => {
 
 
 
+
   return (
 
       
@@ -354,9 +362,12 @@ const handleSpecialButtonClick = (value:any) => {
           <button className="btn-exit"  type='button'  onClick={closeApp}>
             Exit
           </button>
-          
+          <button className="btn-show"  type='button' 
+            onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
+          </button>
         </div>
       </div>
+      {/* <button className="btn-exit"  type='button'  onClick={ShowKeyorNot}>{isShow ? 'Disable':'Enable'}</button> */}
       <div className="login-footer">
         {/* Footer content */}
       </div>
