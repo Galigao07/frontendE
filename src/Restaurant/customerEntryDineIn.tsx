@@ -888,9 +888,18 @@ if (category==='Waiter'){
 
 const [focusedInput, setFocusedInput] = useState<any>('');
 const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+
+const [isShow, setisShow] = useState<boolean>(false);
 const showOnScreenKeybaord = (ref:any) => {
-  setisShowKeyboard(true)
-  setFocusedInput(ref)
+  if (isDesktop){
+    if (isShow){
+      setisShowKeyboard(true)
+      setFocusedInput(ref)
+    }
+  }
+}
+const ShowKeyorNot = () => {
+  setisShow(!isShow);
 }
 const setvalue = (value: any) => {
   if (focusedInput) {
@@ -1036,6 +1045,10 @@ const closekeyBoard = () => {
               <button tabIndex={2} type="button" className ='button-cancel' ref={CloseBtnRef}
                 onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,CloseBtnRef,PaymentSaveBtnRef,2) } 
               style={{width:'100%'}} onClick={handleclose}>Exit</button>
+
+            <button className="btn-show"  type='button' 
+            onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
+          </button>
           </div>
         </Grid>
 

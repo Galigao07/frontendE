@@ -7,6 +7,7 @@ import { Button, Grid, Table, Typography } from "@mui/material";
 import axios from "axios";
 import BASE_URL from "../config";
 import OnScreenKeyboard from "./KeyboardGlobal";
+import { isDesktop } from "react-device-detect";
 
 
 
@@ -515,9 +516,20 @@ const onDelete = () => {
     const [cursorPosition, setCursorPosition] = useState<any>(0);
     const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
     const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+    const [isShow, setisShow] = useState<boolean>(false);
+
     const showOnScreenKeybaord = (ref:any) => {
-      setisShowKeyboard(true)
-      setFocusedInput(ref)
+      if (isDesktop){
+        if (isShow){
+          setisShowKeyboard(true)
+          setFocusedInput(ref)
+        }
+      }
+
+    }
+
+    const ShowKeyorNot = () => {
+      setisShow(!isShow);
     }
     const setvalue = (value: any) => {
       if (focusedInput) {
@@ -665,6 +677,9 @@ const onDelete = () => {
                             <div style={{ width: '100%', margin:'5px'}}>
                                 <Button style={{backgroundColor:'RED'}} onClick={onDelete}>DELETE</Button>
                                 <Button style={{backgroundColor:'red'}} onClick={handleClose}>EXIT</Button>
+                                <button className="btn-show"  type='button' 
+                                  onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
+                                </button>
                             </div>
                         </div>
                         </Grid>
