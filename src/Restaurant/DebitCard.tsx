@@ -8,6 +8,8 @@ import axios from "axios";
 import BASE_URL from "../config";
 import OnScreenKeyboard from "./KeyboardGlobal";
 import { isDesktop } from "react-device-detect";
+import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";
+import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 
 
 
@@ -56,7 +58,8 @@ const DebitCardPayment: React.FC<DebitCardPaymentTrans> = ({handleClose,amountdu
                 cardNoRef.current.select()
             }
         }, 100);
-        setDebitCardPaymentData({...DebitCardPaymentData,AmountDue:amountdue})
+        let amount = amountdue.replace(',','')
+        setDebitCardPaymentData({...DebitCardPaymentData,AmountDue:amount})
     },[]);
     
     const SaveCreditPayment = async () => {
@@ -92,6 +95,13 @@ const DebitCardPayment: React.FC<DebitCardPaymentTrans> = ({handleClose,amountdu
     const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
         if (event.key === 'Enter') {
           event.preventDefault();
+
+          if (currentRef.current.name ==='CardNo'){
+            if (DebitCardPaymentData.CardNo.length !== 16){
+              showErrorAlert('Please Provide Correct Card No..!')
+              return;
+            }
+          }
           if (nextRef.current) {
             nextRef.current.focus();
           }
@@ -226,9 +236,9 @@ const validateDataAndAddToList = () => {
   
 
   const AddToList = (event: any) => {
-     
+    let amount: string = amountdue.toString().replace(',', '');
     if (event.key === 'Enter') {
-        if (parseFloat(amountdue) === totalAmountDue){
+        if (parseFloat(amount) === totalAmountDue){
             seterrorView(true)  
             seterrorData('Total Amount Tendered Already Meet..')
             setTimeout(() => {
@@ -239,7 +249,7 @@ const validateDataAndAddToList = () => {
             return;
             }   
             
-        if (parseFloat(amountdue) < (totalAmountDue + parseFloat(DebitCardPaymentData.AmountDue))){
+        if (parseFloat(amount) < (totalAmountDue + parseFloat(DebitCardPaymentData.AmountDue))){
                 seterrorView(true)  
                 seterrorData('Total Amount Tendered more than Amount Due..')
                 setTimeout(() => {
@@ -266,7 +276,12 @@ const validateDataAndAddToList = () => {
   };
 
   const handleClickAddToList = () => {
-    if (parseFloat(amountdue) === totalAmountDue){
+    if (DebitCardPaymentData.CardNo.length < 16){
+      showErrorAlert('Please Provide Correct Card No..!')
+      return;
+    }
+    let amount: string = amountdue.toString().replace(',', '');
+    if (parseFloat(amount) === totalAmountDue){
         seterrorView(true)  
         seterrorData('Total Amount Tendered Already Meet..')
         setTimeout(() => {
@@ -277,7 +292,7 @@ const validateDataAndAddToList = () => {
         return;
         }   
         
-    if (parseFloat(amountdue) < (totalAmountDue + parseFloat(DebitCardPaymentData.AmountDue))){
+    if (parseFloat(amount) < (totalAmountDue + parseFloat(DebitCardPaymentData.AmountDue))){
             seterrorView(true)  
             seterrorData('Total Amount Tendered more than Amount Due..')
             setTimeout(() => {
@@ -387,7 +402,7 @@ const onDelete = () => {
 
   useEffect(() =>{
     const Multiple = localStorage.getItem('MULTIPLE')
-
+    let amount: string = amountdue.toString().replace(',', '');
     if (Multiple === 'true'){
       if (totalAmountDue === 0){
         setviewSave(false)
@@ -397,14 +412,15 @@ const onDelete = () => {
     
 
     } else{
-      if (parseFloat(amountdue) === totalAmountDue)  {
+
+      if (parseFloat(amount) === totalAmountDue)  {
         setviewSave(true)
     } else {
         setviewSave(false)
     }
     }
 
- const bal : any = parseFloat(amountdue) - totalAmountDue
+ const bal : any = parseFloat(amount) - totalAmountDue
         setDebitCardPaymentData({...DebitCardPaymentData,AmountDue: bal})
   },[totalAmountDue])
 
@@ -468,10 +484,12 @@ const onDelete = () => {
     const selectedItem = BankList[index];
     setDebitCardPaymentData({...DebitCardPaymentData, AcquireBank: selectedItem.company_description})
 
-  
-    if (acquireBankRef.current) {
-      acquireBankRef.current.focus();
-    }
+      setTimeout(() => {
+        if (cardHolderRef.current) {
+          cardHolderRef.current.focus();
+        }
+      }, 100);
+
      }
   
      const handleKeys2 = (event:any, category:any) => {
@@ -512,16 +530,23 @@ const onDelete = () => {
 
     };
 
+    ///// ********************KEYBOARD*************************///////////////
     const [focusedInput, setFocusedInput] = useState<any>('');
     const [cursorPosition, setCursorPosition] = useState<any>(0);
     const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
     const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+    const [isShowKeyboardNumeric, setisShowKeyboardNumeric] = useState<boolean>(false);
     const [isShow, setisShow] = useState<boolean>(false);
 
     const showOnScreenKeybaord = (ref:any) => {
       if (isDesktop){
         if (isShow){
-          setisShowKeyboard(true)
+          if (ref === 'CardHolder') {
+            setisShowKeyboard(true)
+          }else{
+            setisShowKeyboardNumeric(true)
+          }
+       
           setFocusedInput(ref)
         }
       }
@@ -535,21 +560,90 @@ const onDelete = () => {
       if (focusedInput) {
        if (focusedInput ==='Bank'){
            setBankSearch(value);
-       } else{
-         setDebitCardPaymentData((prevData: any) => ({
-           ...prevData,
-           [focusedInput]: value
-         }));
+       }else if (focusedInput ==='CardNo'){
+        setDebitCardPaymentData((prevData: any) => ({
+          ...prevData,
+          [focusedInput]: value.slice(0,16)
+        }));
+       }
+       
+       else{
+        if (focusedInput === 'AmountDue'){
+
+          let amount: string = amountdue.toString().replace(',', '');
+          if (parseFloat(value) > parseFloat(amount)){
+              showErrorAlert('Payment Amount exceeds total Amount Due..!')
+          }else{
+            setDebitCardPaymentData((prevData: any) => ({
+              ...prevData,
+              [focusedInput]: value
+            }));
+          }
+      }else{
+        setDebitCardPaymentData((prevData: any) => ({
+          ...prevData,
+          [focusedInput]: value
+        }));
+      }
+
        }
 
       }
       setisShowKeyboard(false)
+      setisShowKeyboardNumeric(false)
     };
     const closekeyBoard = () => {
       setisShowKeyboard(false)
+      setisShowKeyboardNumeric(false)
     }
 
+  //   useEffect(() => {
+  //     if (DebitCardPaymentData.ApprovalNo !== '') {
+  //         setviewSave(false);
+  //     } else {
+  //         setviewSave(true);
+  //     }
+  // }, [DebitCardPaymentData.ApprovalNo]);
 
+
+
+  useEffect(() => {
+    if (localStorage.getItem('MULTIPLE') === 'true'){
+      if (DebitCardPaymentData.ApprovalNo !=='') {
+        setviewSave(false);
+    } else {
+      if (DebitCardPaymentList.length !== 0){
+        setviewSave(true);
+      }else{
+        setviewSave(false);
+      }
+    }
+    }else{
+      let amount: string = amountdue.toString().replace(',', '');
+      if (totalAmountDue === parseFloat(amount) && DebitCardPaymentList.length !== 0){
+        setviewSave(true);
+      }else{
+        setviewSave(false);
+      }
+     
+    }
+
+}, [DebitCardPaymentList,DebitCardPaymentData]);
+
+
+  useEffect(() => {
+    if (DebitCardPaymentData.CardNo.length === 16) {
+      const formattedValue = DebitCardPaymentData.CardNo.replace(/(\d{4})(\d{4})(\d{4})(\d{4})/, '$1-$2-$3-$4');
+
+      setDebitCardPaymentData((prevData: any) => ({
+        ...prevData,
+        ['CardNo']: formattedValue
+      }));
+
+
+    }
+}, [DebitCardPaymentData.CardNo]);
+  
 
   
     return (
@@ -603,7 +697,7 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, acquireBankRef, cardHolderRef)}  
                             value={DebitCardPaymentData.AcquireBank} 
                             name="AcquireBank" 
-
+                            onFocus={HandleCreditCardEntry}
                             onChange={HandleCreditCardEntry}/>
                         </div>
 
@@ -736,7 +830,7 @@ const onDelete = () => {
                                    <Typography  sx={{
                                 fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                 overflow: 'auto',width:'40%'}}>AMOUNT DUE</Typography>
-                                 <input type="text" placeholder="0.00" readOnly autoComplete="off" value={parseFloat(amountdue).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} style={{textAlign:'end'}} />
+                                 <input type="text" placeholder="0.00" readOnly autoComplete="off" value={amountdue} style={{textAlign:'end'}} />
                             </div>
                          
 
@@ -759,7 +853,7 @@ const onDelete = () => {
                          <div className='modal-content-waiter'>
                    
                            <div className='card'>
-                             <h1>Select Customer</h1>
+                             <h1>Select Bank</h1>
                            <div className='Waiterlist-Container'>
                            <input
                                ref={BankSearchRef}
@@ -807,6 +901,7 @@ const onDelete = () => {
             </div>
         </div>
         {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+        {isShowKeyboardNumeric && <OnScreenKeyboardNumeric  handleclose = {closekeyBoard} setvalue={setvalue}/>}
         </div>
   
     )

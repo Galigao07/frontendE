@@ -307,24 +307,32 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
 
             <div className="num-pad" style={{width:'100%'}}>
               <div className="num-pad-row">
+              <button className="num-pad-key" onClick={() => handleInput('100')}>100</button>
                 <button className="num-pad-key" onClick={() => handleInput('1')}>1</button>
                 <button className="num-pad-key" onClick={() => handleInput('2')}>2</button>
                 <button className="num-pad-key" onClick={() => handleInput('3')}>3</button>
+      
               </div>
               <div className="num-pad-row">
+              <button className="num-pad-key" onClick={() => handleInput('200')}>200</button>
                 <button className="num-pad-key" onClick={() => handleInput('4')}>4</button>
                 <button className="num-pad-key" onClick={() => handleInput('5')}>5</button>
                 <button className="num-pad-key" onClick={() => handleInput('6')}>6</button>
+             
               </div>
               <div className="num-pad-row">
+              <button className="num-pad-key" onClick={() => handleInput('500')}>500</button>
                 <button className="num-pad-key" onClick={() => handleInput('7')}>7</button>
                 <button className="num-pad-key" onClick={() => handleInput('8')}>8</button>
                 <button className="num-pad-key" onClick={() => handleInput('9')}>9</button>
+                
               </div>
               <div className="num-pad-row">
-                <button className="num-pad-key"style={{ width: '33%' }}  onClick={() => handleInput('.')}>.</button>
-                <button className="num-pad-key" style={{ width: '33%' }} onClick={() => handleInput('0')}>0</button>
-                <button className="num-pad-key"style={{ width: '33%'}} onClick={() => handleBackspace()}>Back</button>
+              <button className="num-pad-key"style={{ width: '25%' }} onClick={() => handleInput('1000')}>1000</button>
+                <button className="num-pad-key"style={{ width: '25%' }}  onClick={() => handleInput('.')}>.</button>
+                <button className="num-pad-key" style={{ width: '25%' }} onClick={() => handleInput('0')}>0</button>
+                <button className="num-pad-key"style={{ width: '25%'}} onClick={() => handleBackspace()}>Back</button>
+            
               </div>
               <div className="num-pad-row">
                 <button className="num-pad-key" style={{ width: '33%'}} onClick={handleClose}> Close</button> 

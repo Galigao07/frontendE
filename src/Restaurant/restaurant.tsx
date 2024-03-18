@@ -22,6 +22,7 @@ import ChargeRoom from '../assets/RoomCharge.png'
 import Swal from "sweetalert2";
 import Selectpayment from '../assets/Selectpayment.jpg';
 import SaveOrder from '../assets/SaveOrder.png';
+import HomeImage from '../assets/Home.png';
 import SalesOrderImage from '../assets/SalesOrder.png';
 import OtherCommandImage from '../assets/OtherCommand.png';
 import ReprintImage from '../assets/ReprintImage.jpeg';
@@ -357,7 +358,7 @@ useEffect(() => {
 
   return (
 
-      <div id = "product-id" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '5px' ,margin:'10px'}}>
+      <div id = "product-id" style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fit, minmax(15%, 1fr))' :'repeat(auto-fit, minmax(140px, 1fr))', gap: '5px' ,margin:'10px'}}>
           {products.map((product:any,index) => (
               <div key={index}
               tabIndex={index}
@@ -376,13 +377,22 @@ useEffect(() => {
                 borderWidth: '2px',
                 borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
                 backgroundColor: isSelectedIndex == index ? 'blue':'white',
+                height:'100%',
               }}
               onKeyDown={(e) => Handlekeydown(e,index)}
              onClick={() => handleproductclick(product,index)}> 
              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <p style={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none',  color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', marginBottom: '10px', flex: '1 1 100%',height:'40px' }}>{product.long_desc}</p>
-              <img src={image} style={{ maxWidth: '80%', maxHeight: '150px', marginBottom: '10px', flex: '0 0 auto' }} />
-              <p style={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none', color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%' }}>Price: {parseFloat(product.reg_price).toFixed(2)}</p>
+              <Typography sx={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none',  color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', marginBottom: '10px', flex: '1 1 100%',height:'40px',
+                 fontSize: { xs: '1.2rem', sm: '0.4rem', md: '.6rem', lg: '.8rem', xl: '0.9rem',
+                },  fontFamily:'Times New Roman'}}>
+                {product.long_desc}
+              </Typography>
+              
+              <img src={image} style={{ maxWidth: '80%', maxHeight: '80%', marginBottom: '10px', flex: '0 0 auto' }} />
+              <Typography sx={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none', color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%',
+                 fontSize: { xs: '1.2rem', sm: '0.4rem', md: '.6rem', lg: '.8rem', xl: '0.9rem' } , fontFamily:'Times New Roman'}}
+                >Price: {parseFloat(product.reg_price).toFixed(2)}
+              </Typography>
             </div>
                   {/* <p style={{fontWeight:'bold',textAlign:'center' , marginBottom: '10px'}}>{product.long_desc}</p>
                   <img src={image} alt={product.bar_code} style={{ maxWidth: '80%', maxHeight: '150px', marginBottom: '10px' }} />
@@ -452,9 +462,10 @@ interface TransactionData {
   totaldue:any;
   EditOrderList:any;
   DiscountData:any;
+  DiscountType:any;
 }
 
-const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totaldue,EditOrderList,DiscountData  }) => {
+const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totaldue,EditOrderList,DiscountData,DiscountType  }) => {
     const [IsOpenTransModal, setIsOpenTransModal] = useState<boolean>(false);
     const [selectedItemIndex, setSelectedItemIndex] = useState<any>(null);
     const [quantity, setQuantity] = useState<number>(1);
@@ -719,17 +730,21 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
 
         {DiscountData.length !== 0 && (
                         <>
+                        {DiscountType ==='SC' && (
+                        <>
                           <tr style={{ border: 'none', borderCollapse: 'collapse' }}>
                             <td colSpan={5}></td>
                           </tr>
                           <tr style={{ border: 'none',color:'red',fontWeight:'bold' }}>
-                            <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}> SC VAT Exemption on {totaldue}</td>
-                            <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}>{DiscountData.SLessVat12}</td>
+                            <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}> SC VAT Exemption on {(parseFloat(totaldue) + parseFloat(DiscountData.SLess20SCDiscount.replace(',' , '')) + parseFloat(DiscountData.SLessVat12.replace(',' , ''))).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+                            <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}>-{DiscountData.SLessVat12}</td>
                           </tr>
                           <tr style={{ border: 'none',color:'red',fontWeight:'bold'   }}>
                             <td colSpan={3} style={{ textAlign: 'center', border: 'none'}}> SC Discount: 20% of  {DiscountData.SNetOfVat}</td>
-                            <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}>{DiscountData.SLess20SCDiscount}</td>
+                            <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}> -{DiscountData.SLess20SCDiscount}</td>
                           </tr>
+                          </>
+                          )}
                         </>
                       )}
           </tbody>
@@ -1245,6 +1260,7 @@ const Restaurant: React.FC = () => {
   const [GuestCount, setGuestCount] = useState<number>(0);
   const [PaymentType, setPaymentType] = useState<string>('');
   const [DiscountData, setDiscountData] = useState<any>('');
+  const [DiscountDataList, setDiscountDataLits] = useState<any>('');
   const [DiscountType, setDiscountType] = useState<any>('');
   const [TotalDue, setTotalDue] = useState<any>(0);
   const [chatSocket, setChatSocket] = useState<WebSocket | null>(null);
@@ -1707,8 +1723,13 @@ const Restaurant: React.FC = () => {
 
 
     const CloseTerminal = () => {
-      setCloseTerminalModal(true)
-      setOtherCommandOpenModal(false)
+      if (cartItems.length === 0){
+        setCloseTerminalModal(true)
+        setOtherCommandOpenModal(false)
+      }else{
+        showErrorAlert('Please Complete the transaction First')
+      }
+
     }
 
     /// ************************* CASH BREAK DOWN *************************************** //
@@ -1800,9 +1821,10 @@ const CashBreakDownDataList = async (data:any) => {
 
         
     const RefreshModule = () => {
-      window.location.reload();
       DeletePosExtendedAll()
       setTableOnprocess(null)
+      window.location.reload();
+
     }
 
 
@@ -1812,6 +1834,22 @@ setTimeout(() => {
   TableNoRef.current?.focus();
   TableNoRef.current?.select();
 }, 50);
+}
+
+const BacktoHome = () => {
+
+  if (cartItems.length === 0){
+    setOrderTypeModal(true)
+    setTimeout(() => {
+      DineInRef.current?.focus()
+    }, 50);
+    setDiscountData('')
+    setCartItems('')
+    setTableNo('')
+    DeletePosExtendedAll()
+    setTableOnprocess('')
+  }
+
 }
 
     const handleDineIn = () => {
@@ -1835,13 +1873,21 @@ setTimeout(() => {
     };
 
     const CloseTableNo = () => {
-      setOrderTypeModal(true)
-      setOrderType('')
-      setTableNoModal(false);
 
-      setTimeout(() => {
-        DineInRef.current?.focus()
-      }, 50);
+      if (cartItems.length > 0){
+
+        setOrderType('TAKE OUT')
+        setTableNoModal(false);
+      }else{
+        setOrderTypeModal(true)
+        setOrderType('')
+        setTableNoModal(false);
+  
+        setTimeout(() => {
+          DineInRef.current?.focus()
+        }, 50);
+      }
+
     }
 
     const OtherCommand = () => {
@@ -2042,7 +2088,7 @@ setLoadingPrint(true)
           const response1 = await axios.post(`${BASE_URL}/api/save-cash-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
                                                                                     TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,
                                                                                     AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,
-                                                                                    DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,doctype:doc_type});
+                                                                                    DiscountData:DiscountData,DiscountType:DiscountType,DiscountDataList:DiscountDataList,QueNo:QueNo,doctype:doc_type});
           if (response1.status === 200) {
       
             setLoadingPrint(false)
@@ -2077,7 +2123,8 @@ setLoadingPrint(true)
           // const CreditCardJson = JSON.parse(CreditCard);
           // console.log(CreditCardJson);
           const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
-            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,CreditCard:CreditCard,doctype:doc_type});
+                                                                                        TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
+                                                                                        ,DiscountDataList:DiscountDataList,OrderType:OrderType,CreditCard:CreditCard,doctype:doc_type});
           if (response1.status === 200) {
             localStorage.removeItem('CreditCardPayment')
             setLoadingPrint(false)
@@ -2114,7 +2161,8 @@ setLoadingPrint(true)
 
 
           const response1 = await axios.post(`${BASE_URL}/api/save-debit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
-            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,DebitCard:DebitCard,doctype:doc_type});
+                                                                                        TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
+                                                                                        ,DiscountDataList:DiscountDataList,OrderType:OrderType,DebitCard:DebitCard,doctype:doc_type});
           if (response1.status === 200) {
             localStorage.removeItem('DebitCardPayment')
             setLoadingPrint(false)
@@ -2133,7 +2181,8 @@ setLoadingPrint(true)
         if (PaymentType === 'CHARGE') {
           const CreditCard:any = localStorage.getItem('CreditCardPayment')
           const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
-            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,CreditCard:CreditCard});
+                                                                                        TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
+                                                                                        ,DiscountDataList:DiscountDataList,OrderType:OrderType,CreditCard:CreditCard});
           if (response1.status === 200) {
             localStorage.removeItem('CreditCardPayment')
             setLoadingPrint(false)
@@ -2187,8 +2236,8 @@ setLoadingPrint(true)
 
 
           const response1 = await axios.post(`${BASE_URL}/api/save-multiple-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
-            TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,
-            CreditCard:CreditCard,DebitCard:DebitCard,CashAmount:CashAmount,doctype:doc_type});
+                                                                                    TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,
+                                                                                    DiscountDataList:DiscountDataList,CreditCard:CreditCard,DebitCard:DebitCard,CashAmount:CashAmount,doctype:doc_type});
           if (response1.status === 200) {
             localStorage.removeItem('CreditCardPayment')
             localStorage.removeItem('DebitCardPayment')
@@ -2260,15 +2309,28 @@ const CloseCustomerPaymentModal = async () => {
     reverseButtons: true
   }).then((result) => {
     if (result.isConfirmed) {
-      setCustomeryPaymentModal(false)
-      setOrderTypeModal(true)
-      setTimeout(() => {
-        DineInRef.current?.focus()
-      }, 50);
-      setDiscountData('')
-      setCartItems('')
-      setTableNo('')
-      DeletePosExtendedAll()
+      if (OrderType ==='TAKE OUT'){
+        setCustomeryPaymentModal(false)
+      }else{
+        setCustomeryPaymentModal(false)
+        setDiscountData('')
+        setCartItems('')
+        setTableNo('')
+        setOrderTypeModal(true)
+        DeletePosExtendedAll()
+        setTimeout(() => {
+          DineInRef.current?.focus()
+        }, 50);
+      }
+      // setCustomeryPaymentModal(false)
+      // setOrderTypeModal(true)
+      // setTimeout(() => {
+      //   DineInRef.current?.focus()
+      // }, 50);
+      // setDiscountData('')
+      // setCartItems('')
+      // setTableNo('')
+      // DeletePosExtendedAll()
     }})
 
 
@@ -2290,15 +2352,20 @@ const CloseModal = async () => {
       reverseButtons: true
     }).then((result) => {
       if (result.isConfirmed) {
-        setPaymentOpenModal(false);
-        setDiscountData('')
-        setCartItems('')
-        setTableNo('')
-      setOrderTypeModal(true)
-      DeletePosExtendedAll()
-      setTimeout(() => {
-        DineInRef.current?.focus()
-      }, 50);
+        if (OrderType ==='TAKE OUT'){
+          setPaymentOpenModal(false);
+        }else{
+          setPaymentOpenModal(false);
+          setDiscountData('')
+          setCartItems('')
+          setTableNo('')
+          setOrderTypeModal(true)
+          DeletePosExtendedAll()
+          setTimeout(() => {
+            DineInRef.current?.focus()
+          }, 50);
+        }
+
       }})
   
 
@@ -2348,8 +2415,15 @@ const settlebillData = async (data:any) => {
   setDineIn(false)
   setTableNo(data.tableno)
   setPaymentOpenModal(true)
-  setDiscountData(data.DiscountData)
+  const DiscountType:string = data.DiscountType
+
+  if (DiscountType === 'SC'){
+    
+  setDiscountData(data.DiscountData.SeniorDiscountData)
   setDiscountType(data.DiscountType)
+  setDiscountDataLits(data.DiscountData.SeniorNameList)
+  }
+
 
   setTimeout(() => {
     if (CashPaymentRef.current){
@@ -2388,7 +2462,7 @@ const OpenChargeModal = () => {
 
 setPaymentOpenModal(false)
 setChargeToModal(true)
-
+localStorage.removeItem('MULTIPLE') 
 setPaymentType('CHARGE')
 }
 
@@ -2415,6 +2489,7 @@ const OpenCreditCardPayment = () => {
   setCreditCardPaymentModal(true)
   setPaymentOpenModal(false)
   setPaymentType('CREDIT CARD')
+  localStorage.removeItem('MULTIPLE') 
 }
 
 const CloseCreditCardPayment = () => {
@@ -2470,6 +2545,7 @@ const OpenDebitCardPayment = () => {
   setDebitCardPaymentModal(true)
   setPaymentOpenModal(false)
   setPaymentType('DEBIT CARD')
+  localStorage.removeItem('MULTIPLE') 
 }
 
 const DebitCardPaymentOK =(data:any) => {
@@ -2603,21 +2679,26 @@ const SelectTable = (index:any) => {
 };
 
 const SelectQue = (index:any) => {
-  // setisSelected(0)
-  setQueNo(index.q_no);
-  setTableNo('')
-  if (index.Paid === 'N') {
-    setSelectTypeOfTransaction(true)
-    setTimeout(() => {
-      AddOrderRef.current?.focus();
-      
-    }, 50);
-  } else {
-    setisSelected(0)
-    // Handle other cases when index.Paid is not 'N'
-    setTableNoModal(false);
-    // Additional logic or function calls related to paid table
+
+  if (cartItems.length === 0 ) {
+    setQueNo(index.q_no);
+    setTableNo('')
+    if (index.Paid === 'N') {
+      setSelectTypeOfTransaction(true)
+      setTimeout(() => {
+        AddOrderRef.current?.focus();
+        
+      }, 50);
+    } else {
+      setisSelected(0)
+      // Handle other cases when index.Paid is not 'N'
+      setTableNoModal(false);
+      // Additional logic or function calls related to paid table
+    }
+  }else{
+    showErrorAlert('Please complete the transaction first...!')
   }
+ 
 };
 
 const SelectTableOk = (searchItemindex: string) => {
@@ -2868,8 +2949,11 @@ const calculateTotalDue = () => {
         }
 
         if (DiscountData.length !== 0) {
-          totalDue = totalDue - (parseFloat(DiscountData.SLess20SCDiscount) + parseFloat(DiscountData.SLessVat12))
-        }
+          if (DiscountType === 'SC'){
+            totalDue = totalDue - (parseFloat(DiscountData.SLess20SCDiscount.replace(',' , '')) + parseFloat(DiscountData.SLessVat12.replace(',' , '')))
+
+          }
+                 }
         return totalDue.toFixed(2);
 };
       
@@ -3043,10 +3127,16 @@ useEffect(() => {
           }
         } else if (e.key === 'Escape') {
           e.preventDefault(); 
+          let modal = localStorage.getItem('Modal')
+
+          if (modal ==='false'){
+        
+       
         setPaymentOpenModal(false)
         if (tableNoModal){
           if(SelectTypeOfTransaction){
             setSelectTypeOfTransaction(false)
+            setTableOnprocess('')
           }else{
             setTableNoModal(false)
             setOrderTypeModal(true)
@@ -3059,7 +3149,7 @@ useEffect(() => {
           setOtherCommandOpenModal(false)
         }
     
-        }
+        }   }
       };
     
       window.addEventListener('keydown', handleKeyPress);
@@ -3340,6 +3430,10 @@ const OKVerification = (data:any) => {
   }
   if (VeryficationType == 'Transaction'){
     OpenTransactionDiscountEntry();
+  }
+
+  if (VeryficationType == 'Refresh'){
+    RefreshModule();
   }
 
 
@@ -4288,6 +4382,32 @@ if (iframe !== null) {
 
     doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
 
+
+    let seniorD:any = dataInfo.data.SeniorDiscountDataList
+
+    if (seniorD){
+      seniorD.map((item:any) => {
+        description = 'Senior Citizen ID:';
+        data = item.SID || ''; 
+        spaces = AlignmentSpace(description, data);
+        receiptContent1 = `<div>${description}${spaces}${data}</div>`;
+
+
+        description = 'Senior Fullname:';
+        data = item.SName || ''; 
+        spaces = AlignmentSpace(description, data);
+        receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+        description = 'Senior TIN:';
+        data = item.STIN || ''; 
+        spaces = AlignmentSpace(description, data);
+        receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+        doc.write('<pre>' + receiptContent1 + '</pre>');
+    
+      } )
+    }
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
     
     description = 'CASHIER:';
     data = localStorage.getItem('FullName') || ''; 
@@ -4673,6 +4793,32 @@ if (iframe !== null) {
               });
             }
 
+//******************************** Senior Citizen *********************************************** */
+    let seniorD:any = dataInfo.data.SeniorDiscountDataList
+
+    if (seniorD){
+      doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+      seniorD.map((item:any) => {
+        description = 'Senior Citizen ID:';
+        data = item.SID || ''; 
+        spaces = AlignmentSpace(description, data);
+        receiptContent1 = `<div>${description}${spaces}${data}</div>`;
+
+
+        description = 'Senior Fullname:';
+        data = item.SName || ''; 
+        spaces = AlignmentSpace(description, data);
+        receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+        description = 'Senior TIN:';
+        data = item.STIN || ''; 
+        spaces = AlignmentSpace(description, data);
+        receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+        doc.write('<pre>' + receiptContent1 + '</pre>');
+    
+      } )
+    }
 
 
 
@@ -5163,15 +5309,28 @@ const closeCashPayment = async () => {
     reverseButtons: true
   }).then((result) => {
     if (result.isConfirmed) {
+
+  
       setCashPaymentEntryModal(false)
-      setOrderTypeModal(true)
+      // setOrderTypeModal(true)
+      setPaymentOpenModal(true)
       setTimeout(() => {
-        DineInRef.current?.focus()
+        if (CashPaymentRef.current){
+          CashPaymentRef.current?.focus();
+          CashPaymentRef.current.style.backgroundColor = 'blue';
+          setisFocus(0)
+    
+        }
+    
       }, 50);
-      setCartItems('')
-      setTableNo('')
-      setDiscountData('')
-      DeletePosExtendedAll()
+      // setTimeout(() => {
+      //   DineInRef.current?.focus()
+      // }, 50);
+      // setCartItems('')
+      // setTableNo('')
+      // setDiscountData('')
+       DeletePosExtendedAll()
+
     }})
 
 }
@@ -5495,7 +5654,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                 }
           </Typography>
          
-          <Transaction cartitems={cartItems} setcartitems={setCartItems} totaldue={calculateTotalDue()} EditOrderList={EditOrderList} DiscountData ={DiscountData}/>
+          <Transaction cartitems={cartItems} setcartitems={setCartItems} totaldue={calculateTotalDue()} EditOrderList={EditOrderList} DiscountData ={DiscountData} DiscountType ={DiscountType}/>
 
           <Typography sx={{
            fontSize: { xs: '0.8rem', sm: '0.8rem', md: '.8rem', lg: '.9rem', xl: '1.2rem' },
@@ -5578,15 +5737,15 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                             display: 'flex',flexDirection: 'column',alignItems: 'center',
                             borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
                             borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
-                          onClick={OpenTableNoModal}
+                          onClick={BacktoHome}
                           fullWidth >
                           <Typography
                             variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
                             fontSize: { xs: '1rem', sm: '1rem', md: '.6rem', lg: '.7rem', xl: '.8rem' },
                            fontWeight: 'bold', color: 'blue',textAlign: 'center',
-                            }}> Sales Order
+                            }}> Home
                           </Typography>
-                          <img src={SalesOrderImage} alt="Sales Order"
+                          <img src={HomeImage} alt="Sales Order"
                             style={{
                               maxWidth: '80%', maxHeight: '50%',marginBottom: '10px', flex: '0 0 auto',
                             }}
@@ -5664,7 +5823,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                         display: 'flex',flexDirection: 'column',alignItems: 'center',
                         borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
                         borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
-                      onClick={RefreshModule}
+                        onClick={(e) => OpenVireficationEntry('Refresh')}
                       fullWidth >
                       <Typography
                         variant="h6" sx={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)',
@@ -5718,7 +5877,6 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
               </h2> */}
 
         <Typography
-            variant="h2" // Adjust variant as needed (h1, h2, h3, etc.)
             align="center"
             sx={{
               fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
@@ -5726,7 +5884,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
               border: '2px solid #4a90e2',
               borderRadius: '10px',
               padding: '10px',
-              color: 'red !important',
+              color: 'blue !important',
               fontWeight:'bold'
             }}
           >
@@ -5738,11 +5896,9 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
               onKeyDown={(e)=> OrderTypeHandleKeydown(e,TakeOutRef,DineInRef,TakeOutRef,0)}
               >
                 <Typography      
-                  sx={{
-                  fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                  sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
                   color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                  borderRadius: '5px',
-                  fontWeight: 'bold', textAlign: 'center',}}>
+                  borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
                    Dine In
                 </Typography>
                 
@@ -5780,13 +5936,20 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                   {showTable ? `SELECT TABLE ${TableNo}` : 'SELECT QUE NO.'}
                 </h2>
                 <input
-                type="number"
+                type="text"
                 ref={showTable ? TableNoRef : QueNoRef}
                 inputMode="numeric"
                 placeholder={showTable ? 'Table No' : 'QUE NO.'}
                 style={{ width: '100%', margin: '5px', textAlign: 'center' }}
                 value={showTable ? TableNo : QueNo}
-                onChange={(e) => (showTable ? setTableNo(e.target.value) : setQueNo(e.target.value))}
+                onChange={(e) => {
+                  const value = e.target.value;
+                   const isNumber = /^[0-9]*$/;
+                    if (isNumber.test(value)) {
+                      (showTable ? setTableNo(e.target.value) : setQueNo(e.target.value)) } 
+                    }}
+              
+                // onChange={(e) => (showTable ? setTableNo(e.target.value) : setQueNo(e.target.value))}
                 onKeyDown={(e) => TableNoHandleKeydown(e)}
               />
 
@@ -5799,7 +5962,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
                     <div style={{margin:'5px',display:'flex',flexDirection:'row'}}>
 
-                    <input type="number" ref={TableNoRef} inputMode="numeric" placeholder="Table No" style={{width:'100%' ,margin:'5px'}} defaultValue={TableNo}  onChange={(e) => setTableNo(e.target.value)}/>
+                    <input type="text" ref={TableNoRef} inputMode="numeric" placeholder="Table No" style={{width:'100%' ,margin:'5px'}} defaultValue={TableNo}  onChange={(e) => setTableNo(e.target.value)}/>
                     <button className="btn" style={{width:'100%',height:'40px',margin:'5px'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
                     </div></>
                    
@@ -6250,33 +6413,64 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
         <div className="modal" >
              
           <div className="modal-content" style={{width:'100%' ,display:'flex',flexDirection:'column' }}>
-          <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'red'}}>
+          <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'blue'}}>
               Select Type of Transaction
             </h2>
-            <button className="button-dine-in" 
-            onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,AddOrderRef,SettleOrderRef,0)}
-            ref={AddOrderRef}
-            onClick={AddOrdertable}>Add Order</button>
+            <Button className="button-dine-in" 
+              onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,AddOrderRef,SettleOrderRef,0)}
+              ref={AddOrderRef}
+              onClick={AddOrdertable}>
+                <Typography      
+                  sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                  color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                  borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                  Add Order
+                </Typography>
+            </Button>
 
 
             { userRank == 'Cashier' &&(
-            <button className="button-take-out" 
-            onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,SettleOrderRef,TransferTableRef,1)}
-            ref={SettleOrderRef}
-            onClick={SettleOrdertable}>Settle Order</button>
+            <Button className="button-take-out" 
+              onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,SettleOrderRef,TransferTableRef,1)}
+              ref={SettleOrderRef}
+              onClick={SettleOrdertable}>
+                <Typography      
+                  sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                  color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                  borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                  Settle Order
+                </Typography>
+                
+            </Button>
 
           )}
 
 
-            <button className="button-dine-in" 
-                onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,SettleOrderRef,TransferTableRef,CloseSelectTransTypeRef,2)}
+            <Button className="button-dine-in" 
+              onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,SettleOrderRef,TransferTableRef,CloseSelectTransTypeRef,2)}
               ref={TransferTableRef}
-            onClick={TransferOrdertable}>Transfer table</button>
+              onClick={TransferOrdertable}>
+                <Typography      
+                  sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                  color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                  borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                 Transfer table
+                </Typography>
+                
+            </Button>
 
-            <button className="button-dine-in-close" 
+            <Button className="button-dine-in-close" 
               onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,TransferTableRef,CloseSelectTransTypeRef,AddOrderRef,3)}
               ref={CloseSelectTransTypeRef}
-             style={{backgroundColor:'red'}} onClick={CloseModal}>Close</button>
+              style={{backgroundColor:'red'}} onClick={CloseModal}>
+                <Typography      
+                  sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                  color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                  borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                 Close
+                </Typography>
+               
+             </Button>
           </div>
         </div>
       )}

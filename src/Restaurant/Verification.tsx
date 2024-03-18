@@ -6,6 +6,9 @@ import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
 import BASE_URL from '../config';
 import axios from 'axios';
+import { isDesktop } from 'react-device-detect';
+import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
+import OnScreenKeyboard from './KeyboardGlobal';
 
 interface VerificationData {
     handleClose:() => void;
@@ -130,7 +133,45 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
     }, []);  
 
   
+
+    const [focusedInput, setFocusedInput] = useState<any>('');
+    const [cursorPosition, setCursorPosition] = useState<any>(0);
+    const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
+    const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+    const [isShow, setisShow] = useState<boolean>(false);
+
+    const showOnScreenKeybaord = (ref:any) => {
+      if (isDesktop){
+        if (isShow){
+          setisShowKeyboard(true)
+          setFocusedInput(ref)
+        }
+      }
+
+    }
+
+    const ShowKeyorNot = () => {
+      setisShow(!isShow);
+    }
+    const setvalue = (value: any) => {
+      if (focusedInput) {
+       if (focusedInput ==='username'){
+          setUsername(value)
+       } else{
+        setPassword(value)
+       }
+
+      }
+      setisShowKeyboard(false)
+    };
+    const closekeyBoard = () => {
+      setisShowKeyboard(false)
+    }
+
     return (
+      <div>
+
+    
       <div className="modal">
         <div className="modal-content">
           <div className="Verification-Container" style={{display:'flex',flexDirection:'column'}}>
@@ -160,8 +201,11 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
                         type="text"
                         autoComplete="off"
                         style={{ width: '100%' }}
+                        value={username}
                         onChange={handleUsernameChange}
                         onKeyDown={(e)=> HandleKeydown(e,UserRef,PasswordRef)}
+                        onFocus={()=> showOnScreenKeybaord('username')}
+                        onClick={()=> showOnScreenKeybaord('username')}
                       />
 
                       <div>
@@ -172,32 +216,47 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
                           type="password"
                           autoComplete="off"
                           style={{ width: '100%' }}
+                          value={password}
+                          onFocus={()=> showOnScreenKeybaord('password')}
+                          onClick={()=> showOnScreenKeybaord('password')}
                           onChange={handlePasswordChange}
                           onKeyDown={(e)=> HandleKeydown(e,PasswordRef,OkRef)}
                         />
                       </div>
                     </div>
             </div>
-            <div style={{width:'100%' ,display:'flex',flexDirection:'row',justifyContent:'space-around'}}>
-              <Button tabIndex={0} ref={OkRef} 
-                      onKeyDown={(e)=> HandleButtonKeydown(e,ExitRef,OkRef,ExitRef,0)}
-              variant="contained"  onClick={handleVefication} 
-              style={{width:'49%',backgroundColor:'blue'}}>
-                OK
-              </Button>
+            <div style={{width:'100%' ,display:'flex',flexDirection:'column',justifyContent:'space-around'}}>
+              <div style={{width:'100%' ,display:'flex',flexDirection:'row',justifyContent:'space-around'}}>
+                <Button tabIndex={0} ref={OkRef} 
+                        onKeyDown={(e)=> HandleButtonKeydown(e,ExitRef,OkRef,ExitRef,0)}
+                        variant="contained"  onClick={handleVefication} 
+                        style={{width:'49%',backgroundColor:'blue'}}>
+                          OK
+                </Button>
 
 
-              <Button  tabIndex={1} ref ={ExitRef} 
-              onKeyDown={(e)=> HandleButtonKeydown(e,OkRef,ExitRef,OkRef,1)}
-              variant="contained"  onClick={handleClose} 
-              style={{width:'49%',backgroundColor:'red'}}>
-                Exit
-              </Button>
+                <Button  tabIndex={1} ref ={ExitRef} 
+                      onKeyDown={(e)=> HandleButtonKeydown(e,OkRef,ExitRef,OkRef,1)}
+                      variant="contained"  onClick={handleClose} 
+                      style={{width:'49%',backgroundColor:'red'}}>
+                        Exit
+                </Button>
+              </div>
 
+
+              <div className='key-button'>
+                <Button className="btn-show"  type='button'  style={{height:'20px',fontSize:'10px',width:'100%',
+                backgroundColor:'blue'}}
+                  onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
+                </Button>
+              </div>
+   
 
             </div>
           </div>
         </div>
+        </div>
+        {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
       </div>
     );
 }

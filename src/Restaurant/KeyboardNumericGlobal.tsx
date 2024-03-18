@@ -6,7 +6,7 @@ interface value{
     setvalue:any;
 }
 
-const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
+const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,setvalue}) => {
     const [inputData,setinputData] = useState<any>('')
 
     const [isLetter,setisLetter] = useState<boolean>(true)
@@ -132,49 +132,13 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
     return (
         <div className='modal-key'>
             <div  ref= {modalRef} className='modal-content-keyboard'
-                            // onMouseDown={handleMouseDown}
-                            // onMouseMove={handleMouseMove}
-                            // onMouseUp={handleMouseUp}
-                            style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '95%', height: '400px' }} >
-        
+            style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '40%', height: '480px' }} >
             <input defaultValue={inputData} ref={inputRef} style={{textAlign:'center',fontSize:'20px'}}/>
             <div className='container-key'>
-        {/* {isLetter ? ( */}
-            <div className='container-key1'>
-            <div className="rowf">
-                    {['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '⌫'].map((key, index) => (
-                        <button key={index} onMouseDown={() => handleButtonClick(key)} >
-                          {capsLock ? key.toLowerCase() : key}
-                        </button>
-                    ))}
-            </div>
-
-            <div className="rows">
-                    {['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Clear'].map((key, index) => (
-                        <button key={index} onMouseDown={() => handleButtonClick(key)} style={{ width: key === 'Clear' ? '20%' : '8%' }}>
-                            {capsLock ? key.toLowerCase() : key}
-                            </button>
-                    ))}
-            </div>
-
-            <div className="rowt">
-                    {['Caps Lock', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '/', '.'].map((key, index) => (
-                        <button key={index} onMouseDown={() => handleButtonClick(key)} style={{ width: key === 'Caps Lock' ? '20%' : '8%' }}>
-                              {capsLock ? key.toLowerCase() : key}
-                            </button>
-                    ))}
-            </div>
-            <div className="row">
-                <button style={{ width: "15%" }} onClick={changeInput}>123</button>
-                <button style={{ width: "50%" }} onClick={() =>handleButtonClick(' ')}> </button>
-                <button style={{width:'15%'}} onClick={SendData}>OK</button>
-            </div>                  
-        </div>
-        {/* ):( */}
-            <div className='container-key2'>
-                <div className="row1">
+            <div className='container-key2' style={{width:'100%'}}>
+                <div className="row1" >
                             {[1, 2, 3, '⌫'].map((key, index) => (
-                                <button key={index} onClick={() => handleButtonClick(key)}>
+                                <button key={index} onClick={() => handleButtonClick(key)} style={{width:'23.5%',fontSize:'30px',height:'100px'}}>
                                     {key}
                                 </button>
                             ))}
@@ -182,7 +146,7 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
 
                 <div className="row1">
                             {[4, 5, 6, 'Clear'].map((key, index) => (
-                                <button key={index} onClick={() => handleButtonClick(key)}>
+                                <button key={index} onClick={() => handleButtonClick(key)} style={{width:'23.5%',fontSize:'30px',height:'100px'}}>
                                     { key}
                                 </button>
                             ))}
@@ -190,21 +154,18 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
 
                 <div className="row1">
                             {[7, 8, 9, '.'].map((key, index) => (
-                                <button key={index} onClick={() => handleButtonClick(key)}>
+                                <button key={index} onClick={() => handleButtonClick(key)} style={{width:'23.5%',fontSize:'30px',height:'100px'}}>
                                     {key}
                                 </button>
                             ))}
                 </div>
                 <div className="row1s">
-                                    <button  onClick={changeInput}>ABC</button>
-                                    <button  onClick={()=>handleButtonClick('0')}>0</button>
-                                    <button  onClick={SendData}>OK</button>
+                      
+                                    <button style={{width:'48%'}}  onClick={()=>handleButtonClick('0')}>0</button>
+                                    <button style={{width:'48%'}}  onClick={SendData}>OK</button>
                 </div>              
             </div>
-        {/* )} */}
-            
             </div>
-                
             </div>
         </div>
       
@@ -212,4 +173,4 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
     );
 }
 
-export default OnScreenKeyboard;
+export default OnScreenKeyboardNumeric;
