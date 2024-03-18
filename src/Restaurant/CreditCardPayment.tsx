@@ -34,7 +34,7 @@ const CreditCardPayment: React.FC<CreditCardPaymentData> = ({handleClose,amountd
   
       const due = amountdue.replace(/,/g, '')
   
-      if (parseFloat(due) > (amountdue !== '' ? parseFloat(amountdue) : 0)) {
+      if (parseFloat(due) > (due !== '' ? parseFloat(due) : 0)) {
         Swal.fire({
           title: 'Error',
           text: 'Amount due is greater than Amount Tendered received. Please enter a valid amount.',

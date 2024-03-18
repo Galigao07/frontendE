@@ -267,7 +267,28 @@ const CloseButtonModal = () => {
           }
           if (e.keyCode === 27) {
             e.preventDefault(); 
-            ButtonModalOpen ? setButtonModalOpen(false) : handleclose();
+            if (OpenVireficationModal) {
+              setOpenVireficationModal(false)
+            }
+            else if (OpenSeniorCitezenDiscountModal){
+              setOpenSeniorCitezenDiscountModal(false)
+            }
+            else if (OpenItemDiscountModal){
+              setOpenItemDiscountModal(false)
+            }         
+            else if (OpenTradeDiscountModal){
+              setOpenTradeDiscountModal(false)
+            }
+            else if (OpenTransactionDiscountModal){
+              setOpenTransactionDiscountModal(false)
+            }
+            else if (OpenSeniorCitezenDiscountModal){
+              setOpenSeniorCitezenDiscountModal(false)
+            }
+            else{
+              ButtonModalOpen ? setButtonModalOpen(false) : handleclose();
+            }
+          
           }
           
         };
@@ -395,8 +416,8 @@ const OpenVireficationEntry = (type:any) => {
 const CloseVerification = () => {
   setisFocusIndex(true)
   setOpenVireficationModal(false)
-
   setDiscountType('')
+
 }
 
 const OKVerification = (data:any) => {
@@ -787,17 +808,22 @@ useEffect(() => {
 
                         { Dis && (
                           <>
-                            <tr style={{ border: 'none', borderCollapse: 'collapse' }}>
-                              <td colSpan={5}></td>
-                            </tr>
-                            <tr style={{ border: 'none',color:'red',fontWeight:'bold' }}>
-                              <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}> SC VAT Exemption on {TotalAmountD}</td>
-                              <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}>{DisEntry.SLessVat12}</td>
-                            </tr>
-                            <tr style={{ border: 'none',color:'red',fontWeight:'bold'   }}>
-                              <td colSpan={3} style={{ textAlign: 'center', border: 'none'}}> SC Discount: 20% of  {DisEntry.SNetOfVat}</td>
-                              <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}>{DisEntry.SLess20SCDiscount}</td>
-                            </tr>
+                           { DiscountType === 'SC' && (
+                            <>
+                              <tr style={{ border: 'none', borderCollapse: 'collapse' }}>
+                                <td colSpan={5}></td>
+                              </tr>
+                              <tr style={{ border: 'none',color:'red',fontWeight:'bold' }}>
+                                <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}> SC VAT Exemption on {TotalAmountD}</td>
+                                <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}>-{DisEntry.SeniorDiscountData.SLessVat12}</td>
+                              </tr>
+                              <tr style={{ border: 'none',color:'red',fontWeight:'bold'   }}>
+                                <td colSpan={3} style={{ textAlign: 'center', border: 'none'}}> SC Discount: 20% of  {DisEntry.SeniorDiscountData.SNetOfVat}</td>
+                                <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}>-{DisEntry.SeniorDiscountData.SLess20SCDiscount}</td>
+                              </tr>
+                            </>
+
+                          )}
                           </>
                         )}
                       </tbody>

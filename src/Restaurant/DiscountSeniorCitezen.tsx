@@ -5,6 +5,7 @@ import { Button, Table, Typography } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import './css/DiscountSeniorCitezen.css'
 import Swal from "sweetalert2";
+import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 
 
 interface SeniorCitezenDiscountData{
@@ -62,6 +63,8 @@ const SeniorCitezenDiscount: React.FC<SeniorCitezenDiscountData> = ({handleClose
     const [SeniorNameList ,setSeniorNameList] = useState<any>([])   
     const [OpenlistModal,setOpenListModal] = useState<boolean>(false) 
 
+
+
 useEffect(() => {
 
     const NetSale  =  parseFloat(amountcover) / (0.12 + 1)
@@ -77,7 +80,7 @@ useEffect(() => {
      SAmountCovered: amountcover ,
      SVatSales:amountcover,
      SeniorFulnname:SeniorOrderData[0].customer_name,
-     SeniorCount: String(gCount),
+     SeniorCount: String(0),
      SGuestCount: String(gCount),
      SLessVat12 : NetSale12.toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3}),
      SNetOfVat: NetSale.toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3}),
@@ -104,36 +107,39 @@ useEffect(() => {
 
 
 
-const ComputeDisCount = () => {
+const ComputeDisCount = (e:any) => {
 
-    const tmp : any = parseInt(SeniorDiscountData.SeniorCount) / parseInt(SeniorDiscountData.SGuestCount) 
+    if (e){
+        const tmp : any =   parseInt(e)  / parseInt(SeniorDiscountData.SGuestCount)
     
-    const SAmountCoveredTotal  =  parseFloat(amountcover.replace(',','')) * tmp 
-    const NetSale  =  SAmountCoveredTotal / (0.12 + 1 )
-    const NetSale12 =  SAmountCoveredTotal - NetSale
-    const DisCount  = (SAmountCoveredTotal - NetSale12 ) * 0.2
+        const SAmountCoveredTotal  =  parseFloat(amountcover.replace(',','')) * tmp 
+        const NetSale  =  SAmountCoveredTotal / (0.12 + 1 )
+        const NetSale12 =  SAmountCoveredTotal - NetSale
+        const DisCount  = (SAmountCoveredTotal - NetSale12 ) * 0.2
+    
+        const DiscountedPrice :any = NetSale - DisCount
+    
+    
+        setSeniorDiscountData({ ...SeniorDiscountData,
+            SAmountCovered: SAmountCoveredTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
+            SVatSales: SAmountCoveredTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
+            SeniorCount: e,
+            SLessVat12 : NetSale12.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
+            SNetOfVat: NetSale.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
+            SDiscountedPrice:DiscountedPrice.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
+            SLess20SCDiscount:DisCount.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
+       
+    
+    })
+    }
 
-    const DiscountedPrice :any = NetSale - DisCount
 
+// if (SaveButtonRef.current){
+//     setTimeout(() => {
+//         SaveButtonRef.current?.focus();
+//     }, 500);
 
-    setSeniorDiscountData({ ...SeniorDiscountData,
-        SAmountCovered: SAmountCoveredTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
-        SVatSales: SAmountCoveredTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
-        SeniorCount: SeniorDiscountData.SGuestCount,
-        SLessVat12 : NetSale12.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
-        SNetOfVat: NetSale.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
-        SDiscountedPrice:DiscountedPrice.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
-        SLess20SCDiscount:DisCount.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
-   
-
-})
-
-if (SaveButtonRef.current){
-    setTimeout(() => {
-        SaveButtonRef.current?.focus();
-    }, 500);
-
-}
+// }
 
 }
 
@@ -158,7 +164,14 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
 
     const handleChange = (field:any, value:any) => {
         setSeniorDiscountData({ ...SeniorDiscountData, [field]: value });
+
+        if (field === 'SGuestCount'){
+            ComputeDisCount(value)
+        }
+
     };
+
+
 
     const ViewList = () => {
       setOpenListModal(true)
@@ -168,13 +181,94 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
         setOpenListModal(false)
     }
 
-    const showYesNoAlert = (message: string): boolean => {
+    const showYesNoAlert1 = (message: string): boolean => {
         return window.confirm(message);
     };
+
+
+    const showYesNoAlert = (message: string) => {
+        return (
+            <div className="modal">
+                <div className="modal-content">
+                    <p>{message}</p>
+                    <button>Yes</button>
+                    <button>No</button>
+                </div>
+            </div>
+        );
+    };
+
+    useEffect(() => {
+        ComputeDisCount(SeniorDiscountData.SeniorCount)
+    },[SeniorDiscountData.SeniorCount])
 
     const AddNewSenior = async (event: any) => {
         if (event.key === 'Enter') {
 
+            const totals :any = parseInt(SeniorDiscountData.SeniorCount) + 1
+            if (totals <= SeniorDiscountData.SGuestCount) {
+                setSeniorNameList((SeniorNameList:any) => [
+                    ...SeniorNameList,
+                    {
+                        SID: SeniorDiscountData.SeniorID,
+                        SName: SeniorDiscountData.SeniorFulnname,
+                        STIN: SeniorDiscountData.SeniorTIN,
+                    }
+                ]);
+    
+                setmessage("Do you want to AddNew Senior?")
+                setInfoModal(true)
+            }else{
+                showErrorAlert('Total Señior Count Exceeds Guest Count')
+            }
+
+         }
+    };
+    const [InfoModal,setInfoModal] = useState<boolean>(false)
+    
+    const [message,setmessage] = useState<any>('')
+
+    const SaveNewSenior = (result:string) => {
+        if (result === 'YES') {
+
+
+            const totals :any = parseInt(SeniorDiscountData.SeniorCount) + 1
+            setSeniorDiscountData({ ...SeniorDiscountData,
+                SeniorCount: totals
+               
+               });
+
+               setSeniorDiscountData({...SeniorDiscountData,
+                SeniorID:'',
+                SeniorCount:totals,
+                SeniorFulnname:'',
+                SeniorTIN:''});
+
+            SeniorIDRef.current?.focus()
+
+            } else {
+                const totals :any = parseInt(SeniorDiscountData.SeniorCount) + 1
+                setSeniorDiscountData({ ...SeniorDiscountData,
+                    SeniorCount: totals
+                    // SGuestCount:SeniorDiscountData.SGuestCount +1,
+          
+                   
+                   });
+
+                   ComputeDisCount(parseInt(totals))
+
+                   setTimeout(() => {
+                    SaveButtonRef.current?.focus()
+                   }, 100);
+            }
+
+            setInfoModal(false)
+         
+    }
+
+    const AddNewSeniorOnclick =  () => {
+        const totals :any = parseInt(SeniorDiscountData.SeniorCount) + 1
+        if (totals <= SeniorDiscountData.SGuestCount) {
             setSeniorNameList((SeniorNameList:any) => [
                 ...SeniorNameList,
                 {
@@ -184,34 +278,24 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                 }
             ]);
 
-
-        const result = showYesNoAlert("Do you want to AddNew Senior?");
-        if (result) {
-            setSeniorDiscountData({...SeniorDiscountData,
-            SeniorID:'',
-            SeniorFulnname:'',
-            SeniorTIN:''})
-
-            setSeniorDiscountData({ ...SeniorDiscountData,
-                SeniorCount:SeniorDiscountData.SeniorCount +1,
-                SGuestCount:SeniorDiscountData.SGuestCount +1,
-      
-               
-               });
-
-            SeniorIDRef.current?.focus()
-
-            } else {
-                SGuestCountRef.current?.focus()
-            }
-         }
+            setmessage("Do you want to AddNew Senior?")
+            setInfoModal(true)
+        }  else{
+            showErrorAlert('Total Señior Count Exceeds Guest Count')
+        }
     };
     
-    
     const HandleSave = () => {
-        SeniorData(SeniorDiscountData)
+        SeniorData({SeniorDiscountData,SeniorNameList})
     }
 
+    // useEffect(() => {
+        
+    //     if (parseInt(SeniorDiscountData.SeniorCount) === parseInt(SeniorDiscountData.SGuestCount)) {
+
+    //     }
+
+    // },[SeniorDiscountData.SeniorCount])
 
 
     useEffect(() => {
@@ -283,10 +367,15 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
       
       }
 
+      const modalSeniorRef = useRef<HTMLDivElement>(null)
+      //************* PREVENT KEYPRESS***************** */
+
+
+
     return (
         <>
-             <div className="modal">
-            <div className="modal-content-senior">
+             <div className="modal" id = 'Seniormodal' ref={modalSeniorRef}>
+            <div className="modal-content-senior" >
             <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2',
                 margin:'5px', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
                 SEÑIOR CITEZEN DISCOUNT</h2>
@@ -326,24 +415,31 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                             value={SeniorDiscountData.SeniorTIN} name="SeniorTIN"
                             onKeyDown={(e) => AddNewSenior(e)}
                             // onKeyDown={(e) => handleKeyDown(e, SeniorTINRef, SGuestCountRef)} 
-                            onChange={(e) => handleChange('SeniorTIN', e.target.value)} />
+                            onChange={(e) => handleChange('SeniorTIN', e.target.value)} style={{width:'65%'}} />
+                            <button 
+                                onClick={()=> AddNewSeniorOnclick()}
+                                style={{backgroundColor:'blue',position:'relative',bottom:'5px'}}
+                                >Add Señior
+                            </button>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '5px',justifyContent:'space-evenly' }}>
                         <Typography
                             sx={{
                                 fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
-                                overflow: 'auto', width: '50%',}}> Senior And Guest Count</Typography>
+                                overflow: 'auto', width: '50%',}}>Senior Count and Guest Count</Typography>
                         <input
-                            type="text" placeholder="Senior Count" autoComplete="off" readOnly
+                            type="text" placeholder="Guest Count" autoComplete="off" readOnly
                             value={SeniorDiscountData.SeniorCount} name="SeniorCount"
                             onChange={(e) => handleChange('SeniorCount', e.target.value)} style={{width:'45%',marginRight:'5%'}} />
 
                             <input
-                            type="text" placeholder="Senior Count" autoComplete="off" ref={SGuestCountRef}
+                            type="text" placeholder="Total Senior Count" autoComplete="off" ref={SGuestCountRef}
                             value={SeniorDiscountData.SGuestCount} name="SGuestCount"
                             onChange={(e) => handleChange('SGuestCount', e.target.value)} style={{width:'48%'}}  
-                            onKeyDown={ComputeDisCount}/>      
+                            readOnly
+                            // onKeyDown={(e)=> ComputeDisCount(e.target.value)}
+                            />      
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '5px' }}>
                         <Typography
@@ -471,6 +567,13 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
          </div>
          </div>
         }
+         {InfoModal && <div className="modal">
+                <div className="modal-content">
+                    <p>{message}</p>
+                    <button onClick={()=>SaveNewSenior('YES')}>Yes</button>
+                    <button onClick={()=>SaveNewSenior('NO')}>No</button>
+                </div>
+            </div>}
         </>
    
     )

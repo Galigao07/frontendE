@@ -1,11 +1,5 @@
-/* html {
-    height: 100%;
-    background: url(https://subtlepatterns.com/patterns/purty_wood.png);
-    } */
+
     .modal-key {
-        /* position: fixed; */
-        /* left: 50%;
-        top: 50%; */
         width: 100%;
         height: 100%;
         display: flex;
@@ -20,19 +14,32 @@
         background-color: #fefefe;
         padding: 20px;
         border-radius: 10px;
-        width: 68%;
+        width: 100%;
         height: 400px;
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
     }
     
 
       .container-key{
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+      
+      }
+      
+      .container-key1,.container-key2{
+        width: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
-      
       }
-    
+
+    .container-key2{
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
     .modal-content-keyboard .entry-drag{
     display: flex;
     flex-direction: row;
@@ -51,7 +58,7 @@
    .modal-content-keyboard button{
     cursor: pointer;
     list-style: none;
-    margin-left: 10px;
+    /* margin-left: 10px; */
     height: 74px;
     /* width: 8%; */
     margin: 2px;
@@ -68,7 +75,7 @@
   }
 
   .rows button{
-      width: 6%;
+      width: 8%;
   }
 
 
@@ -82,7 +89,7 @@
 
   
   .row1s button{
-    width: 30%;
+    width: 20%;
   }
 
     

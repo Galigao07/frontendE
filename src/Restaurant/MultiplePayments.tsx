@@ -7,6 +7,9 @@ import CreditCardPaymentEntry from './CreditCardPayment';
 import DebitCardPaymentEntry from './DebitCardPayment';
 import CreditCardPayment from './CreditCard';
 import DebitCardPayment from './DebitCard';
+import { isDesktop } from "react-device-detect";
+import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";
+import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 interface MultiplepaymentsData {
     handleclose:()=> void;
     totalDue:any;
@@ -49,7 +52,7 @@ const OpenCreditCardPayment = () => {
     const totalDueFloat: number = removeThousandSeparator(totalDue);
     const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
     const remainingAmountDue: number = totalDueFloat - amountTenderedFloat;
-    setRemainingAmountDue(remainingAmountDue)
+    setRemainingAmountDue(remainingAmountDue.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
   }
   
   const CloseCreditCardPayment = () => {
@@ -95,7 +98,7 @@ const OpenCreditCardPayment = () => {
     const totalDueFloat: number = removeThousandSeparator(totalDue);
     const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
     const remainingAmountDue: number = totalDueFloat - amountTenderedFloat;
-    setRemainingAmountDue(remainingAmountDue)
+    setRemainingAmountDue(remainingAmountDue.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
     setDebitCardPaymentModal(true)
   }
   
@@ -134,8 +137,15 @@ const OpenCreditCardPayment = () => {
 
 
   const SaveMultiplepaments = () => {
-    MultiplepaymentsList({CashAmount})
-    localStorage.removeItem('MULTIPLE')
+    const totalDueFloat: number = removeThousandSeparator(totalDue);
+    const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
+    if (amountTenderedFloat >= totalDueFloat){
+      MultiplepaymentsList({CashAmount})
+      localStorage.removeItem('MULTIPLE')
+    }else {
+      showErrorAlert('Please check Amount Tendered...!')
+    }
+
   }
 
     const Handlekeydown = (e:any,Backref:any,CurrentRe:any,Nextref:any) => {
@@ -219,7 +229,41 @@ const OpenCreditCardPayment = () => {
       }, []);   
 
 
+
+      const [focusedInput, setFocusedInput] = useState<any>('');
+      const [cursorPosition, setCursorPosition] = useState<any>(0);
+      const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
+      const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+      const [isShow, setisShow] = useState<boolean>(false);
+  
+      const showOnScreenKeybaord = (ref:any) => {
+        if (isDesktop){
+          if (isShow){
+            setisShowKeyboard(true)
+            setFocusedInput(ref)
+          }
+        }
+      }
+  
+      const ShowKeyorNot = () => {
+        setisShow(!isShow);
+      }
+      const setvalue = (value: any) => {
+        if (focusedInput) {
+          setCashAmount(value)
+         }
+  
+        
+        setisShowKeyboard(false)
+      };
+      const closekeyBoard = () => {
+        setisShowKeyboard(false)
+      }
+  
+  
     return(
+      <>
+    
         <div className="modal">
 
             <div className="modal-content-multiple">
@@ -230,6 +274,7 @@ const OpenCreditCardPayment = () => {
                     <div className="form-group">
                         <label>Cash</label>
                         <input ref={CashAmountRef} value={CashAmount}  placeholder="0.00"
+                        onFocus={()=> showOnScreenKeybaord('Cash')}
                         onKeyDown={(e) => Handlekeydown(e,CashAmountRef,CashAmountRef,CurrentCheckAmountRef)}
                         onChange={(e) => {
                         const value = e.target.value;
@@ -310,7 +355,12 @@ const OpenCreditCardPayment = () => {
                          onKeyDown={(e) => Handlekeydown(e,SaveButtonRef,CloseButtonRef,SaveButtonRef)}
 
                          onClick={handleclose}
-                    >Close</button>
+                        >Close
+                    </button>
+
+                    <button className="btn-show"  type='button' 
+                      onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
+                    </button>
 
                 </div>
             </div>
@@ -318,7 +368,10 @@ const OpenCreditCardPayment = () => {
             {CreditCardPaymentEntryModal && <CreditCardPaymentEntry handleClose={CloseCreditCardPaymentEntryModal} amountdue={totalDue} amounttendered={SaveCreditCardPayment} />}
             {DebitCardPaymentModal && <DebitCardPayment handleClose={CloseDebitCardPayment} amountdue={RemainingAmountDue} debitcardpayment ={DebitCardPaymentOK}/>}
             {DebitCardPaymentEntryModal && <DebitCardPaymentEntry handleClose={CloseDebitCardPaymentEntryModal} amountdue={totalDue} amounttendered={SaveDebitCardPayment} />}
+           
         </div>
+        {isShowKeyboard && <OnScreenKeyboardNumeric  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+        </>
     )
 
 }

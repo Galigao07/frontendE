@@ -5,10 +5,12 @@ import React, { useEffect, useRef, useState } from "react";
 import './css/CreditCard.css'
 import Swal from "sweetalert2";
 import { Button, Grid, Table, Typography } from "@mui/material";
-import axios from "axios";
+import axios, { toFormData } from "axios";
 import BASE_URL from "../config";
 import OnScreenKeyboard from "./KeyboardGlobal";
+import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";
 import { isDesktop } from "react-device-detect";
+import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 
 
 interface CreditCardPaymentTrans {
@@ -46,9 +48,52 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
     const BankSearchRef = useRef<HTMLInputElement>(null)
     const BankListRef = useRef<HTMLTableElement>(null)
     const CardListRef = useRef<HTMLTableElement>(null)
-
     const CardSearchRef = useRef<HTMLInputElement>(null)
+    const MonthsRef = useRef<HTMLTableElement>(null)
+    const YearsRef = useRef<HTMLTableElement>(null)
+    const [MonthsView,setMonthsView] = useState<boolean>(false)
+    const [YearView,setYearView] = useState<boolean>(false)
+    const [months, setMonths] = useState<any[]>([
+      { monthNumber: "01", monthName: "January" },
+      { monthNumber: "02", monthName: "February" },
+      { monthNumber: "03", monthName: "March" },
+      { monthNumber: "04", monthName: "April" },
+      { monthNumber: "05", monthName: "May" },
+      { monthNumber: "06", monthName: "June" },
+      { monthNumber: "07", monthName: "July" },
+      { monthNumber: "08", monthName: "August" },
+      { monthNumber: "09", monthName: "September" },
+      { monthNumber: "10", monthName: "October" },
+      { monthNumber: "11", monthName: "November" },
+      { monthNumber: "12", monthName: "December" }
+  ]);
+  //   const Months = {
+  //     "01": "January",
+  //     "02": "February",
+  //     "03": "March",
+  //     "04": "April",
+  //     "05": "May",
+  //     "06": "June",
+  //     "07": "July",
+  //     "08": "August",
+  //     "09": "September",
+  //     "10": "October",
+  //     "11": "November",
+  //     "12": "December"
+  // };
 
+    const [years, setYears] = useState<any[]>([]);
+
+    useEffect(() => {
+        const currentYear = new Date().getFullYear();
+        const futureYears = [];
+
+        for (let i = 0; i <= 10; i++) {
+            futureYears.push(currentYear + i);
+        }
+
+        setYears(futureYears);
+    }, []);
 
 
     const [CreditCardPaymentData,setCreditCardPaymentData] = useState({
@@ -63,8 +108,9 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
     })
 
     useEffect(() => {
+      let amount: string = amountdue.toString().replace(',', '');
 
-        setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:amountdue})
+        setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:amount})
 
         setTimeout(() => {
             if (cardNoRef.current){
@@ -112,6 +158,13 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
     const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
         if (event.key === 'Enter') {
           event.preventDefault();
+
+          if (currentRef.current.name ==='CardNo'){
+            if (CreditCardPaymentData.CardNo.length !== 16){
+              showErrorAlert('Please Provide Correct Card No..!')
+              return;
+            }
+          }
           if (nextRef.current) {
             nextRef.current.focus();
             nextRef.current.select();
@@ -138,6 +191,7 @@ const HandleCreditCardEntry = (e:any) => {
       }
     }else{
       setCreditCardPaymentData({ ...CreditCardPaymentData, [name]: value });
+      
     }
 
 if (name == 'AcquireBank') {
@@ -312,9 +366,9 @@ const validateDataAndAddToList = () => {
 
 
   const AddToList = (event: any) => {
-     
+    let amount: string = amountdue.toString().replace(',', '');
     if (event.key === 'Enter') {
-        if (parseFloat(amountdue) === totalAmountDue){
+        if (parseFloat(amount) === totalAmountDue){
             seterrorView(true)  
             seterrorData('Total Amount Tendered Already Meet..')
             setTimeout(() => {
@@ -325,7 +379,7 @@ const validateDataAndAddToList = () => {
             return;
             }   
             
-        if (parseFloat(amountdue) < (totalAmountDue + parseFloat(CreditCardPaymentData.AmountDue))){
+        if (parseFloat(amount) < (totalAmountDue + parseFloat(CreditCardPaymentData.AmountDue))){
                 seterrorView(true)  
                 seterrorData('Total Amount Tendered more than Amount Due..')
                 setTimeout(() => {
@@ -373,7 +427,12 @@ const validateDataAndAddToList = () => {
   };
 
   const handleClickAddToList = () => {
-    if (parseFloat(amountdue) === totalAmountDue){
+    if (CreditCardPaymentData.CardNo.length < 16){
+      showErrorAlert('Please Provide Correct Card No..!')
+      return;
+    }
+    let amount: string = amountdue.toString().replace(',', '');
+    if (parseFloat(amount) === totalAmountDue){
         seterrorView(true)  
         seterrorData('Total Amount Tendered Already Meet..')
         setTimeout(() => {
@@ -384,7 +443,7 @@ const validateDataAndAddToList = () => {
         return;
         }   
         
-    if (parseFloat(amountdue) < (totalAmountDue + parseFloat(CreditCardPaymentData.AmountDue))){
+    if (parseFloat(amount) < (totalAmountDue + parseFloat(CreditCardPaymentData.AmountDue))){
             seterrorView(true)  
             seterrorData('Total Amount Tendered more than Amount Due..')
             setTimeout(() => {
@@ -432,63 +491,6 @@ if (validateDataAndAddToList()) {
   CreditCardPaymentList.forEach((payment: { AmountDue: any; }) => totalAmountDue += parseFloat(payment.AmountDue));
 
 
-// const AddToList = (event:any) => {
-
-//     if (event.key === 'Enter') {
-//         if (CreditCardPaymentData.AmountDue == '') {
-//             showErrorAlert('Please Provide Amount')
-
-//             return;
-//         }
-//         if (CreditCardPaymentData.AmountDue == '0') {
-//             showErrorAlert('Please Provide Amount More than Zero')
-//             return;
-//         }
-
-//         if (CreditCardPaymentData.AcquireBank == '') {
-//             showErrorAlert('Please Select Bank')
-//             return;
-//         }
-
-//         if (CreditCardPaymentData.CardNo == '') {
-//             showErrorAlert('Please Provide Card No.')
-//             return;
-//         }
-
-//         if (CreditCardPaymentData.CardIssuer == '') {
-//             showErrorAlert('Please Provide Card Issuer')
-//             return;
-//         }
-
-//         if (CreditCardPaymentData.ApprovalNo == '') {
-//             showErrorAlert('Please Provide Approval No.')
-//             return;
-//         }
-
-   
-//         if (CreditCardPaymentData.ExpiryMonth == '') {
-//             showErrorAlert('Please Provide Month')
-//             return;
-//         }
-
-//         if (CreditCardPaymentData.ExpiryYear == '') {
-//             showErrorAlert('Please Provide Year')
-//             return;
-//         }
-
-//             setCreditCardPaymentList([...CreditCardPaymentList, CreditCardPaymentData]);
-//             setCreditCardPaymentData({
-//                 CardNo:'',
-//                 AcquireBank:'',
-//                 CardIssuer:'',
-//                 CardHolder:'',
-//                 ApprovalNo:'',
-//                 ExpiryMonth:'',
-//                 ExpiryYear:'',
-//                 AmountDue:'',
-//             })
-// }
-// }
 
 const SelectData = (index:any) =>{
     setisEdit(true)
@@ -583,14 +585,14 @@ const onDelete = () => {
   const [isEdit,setisEdit] = useState(false)
 
   useEffect(() =>{
-
-    if (parseFloat(amountdue) === totalAmountDue)  {
+    let amount: string = amountdue.toString().replace(',', '');
+    if (parseFloat(amount) === totalAmountDue)  {
         setviewSave(true)
     } else {
         setviewSave(false)
     }
 
-    const bal :any = parseFloat(amountdue)- totalAmountDue
+    const bal :any = parseFloat(amount)- totalAmountDue
     setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:bal})
   },[totalAmountDue])
 
@@ -665,10 +667,12 @@ const onDelete = () => {
     const selectedItem = BankList[index];
     setCreditCardPaymentData({...CreditCardPaymentData, AcquireBank: selectedItem.company_description})
 
-  
-    if (acquireBankRef.current) {
-      acquireBankRef.current.focus();
-    }
+      setTimeout(() => {
+        if (cardIssuerRef.current) {
+          cardIssuerRef.current.focus();
+        }
+      }, 100);
+
      }
   
      const handleKeys2 = (event:any, category:any) => {
@@ -705,7 +709,7 @@ const onDelete = () => {
           ClickBankList(selectedItemIndex)
       }
 
-      }else if (category=='Card'){
+      }else if (category=='card'){
         if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
           event.preventDefault(); // Prevent scrolling on arrow key press
           const newIndex = selectedItemIndex + (event.key === 'ArrowDown' ? 1 : -1);
@@ -745,10 +749,11 @@ const onDelete = () => {
       const selectedItem = CardList[index];
       setCreditCardPaymentData({...CreditCardPaymentData, CardIssuer: selectedItem.card_description})
   
-    
-      if (cardIssuerRef.current) {
-        cardIssuerRef.current.focus();
+    setTimeout(() => {
+      if (cardHolderRef.current) {
+        cardHolderRef.current.focus();
       }
+    }, 100);
        }
     
 
@@ -756,11 +761,17 @@ const onDelete = () => {
        const [cursorPosition, setCursorPosition] = useState<any>(0);
        const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
        const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+       const [isShowKeyboardNumeric, setisShowKeyboardNumeric] = useState<boolean>(false);
        const [isShow, setisShow] = useState<boolean>(false);
        const showOnScreenKeybaord = (ref:any) => {
         if (isDesktop){
           if (isShow){
-            setisShowKeyboard(true)
+            if (ref === 'ApprovalNo' || ref === 'ExpiryMonth' || ref === 'ExpiryYear' || ref === 'AmountDue' || ref === 'CardNo') {
+              setisShowKeyboardNumeric(true)
+            }else{
+              setisShowKeyboard(true)
+            }
+     
             setFocusedInput(ref)
           }
         }
@@ -768,26 +779,85 @@ const onDelete = () => {
        const ShowKeyorNot = () => {
          setisShow(!isShow);
        }
+
        const setvalue = (value: any) => {
          if (focusedInput) {
           if (focusedInput ==='Bank'){
               setBankSearch(value);
           } else if (focusedInput ==='card'){
               setCardSearch(value);
-          }else{
+          } else if (focusedInput ==='CardNo'){
             setCreditCardPaymentData((prevData: any) => ({
               ...prevData,
-              [focusedInput]: value
+              [focusedInput]: value.slice(0,16)
             }));
+        }else{
+            if (focusedInput === 'AmountDue'){
+              let amount: string = amountdue.toString().replace(',', '');
+                if (parseFloat(value) > parseFloat(amount)){
+                    showErrorAlert('Payment Amount exceeds total Amount Due..!')
+                }else{
+          
+                  setCreditCardPaymentData((prevData: any) => ({
+                    ...prevData,
+                    [focusedInput]: value
+                  }));
+                }
+            }else{
+              setCreditCardPaymentData((prevData: any) => ({
+                ...prevData,
+                [focusedInput]: value
+              }));
+            }
+
           }
 
          }
          setisShowKeyboard(false)
+         setisShowKeyboardNumeric(false)
        };
        const closekeyBoard = () => {
          setisShowKeyboard(false)
+         setisShowKeyboardNumeric(false)
        }
 
+
+       useEffect(() => {
+        if (localStorage.getItem('MULTIPLE') === 'true'){
+          if (CreditCardPaymentData.ApprovalNo !=='') {
+            setviewSave(false);
+        } else {
+          if (CreditCardPaymentList.length !== 0){
+            setviewSave(true);
+          }else{
+            setviewSave(false);
+          }
+        }
+        }else{
+          let amount: string = amountdue.toString().replace(',', '');
+          if (totalAmountDue === parseFloat(amount) && CreditCardPaymentList.length !== 0){
+            setviewSave(true);
+          }else{
+            setviewSave(false);
+          }
+         
+        }
+
+    }, [CreditCardPaymentData]);
+    
+
+    useEffect(() => {
+      if (CreditCardPaymentData.CardNo.length === 16) {
+        const formattedValue = CreditCardPaymentData.CardNo.replace(/(\d{4})(\d{4})(\d{4})(\d{4})/, '$1-$2-$3-$4');
+  
+        setCreditCardPaymentData((prevData: any) => ({
+          ...prevData,
+          ['CardNo']: formattedValue
+        }));
+  
+  
+      }
+  }, [CreditCardPaymentData.CardNo]);
 
     return (
       <div>
@@ -826,6 +896,7 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, cardNoRef, acquireBankRef)} 
                             value={CreditCardPaymentData.CardNo}
                             name="CardNo"
+                            onFocus={()=>showOnScreenKeybaord('CardNo')}
                             onClick={()=>showOnScreenKeybaord('CardNo')}
                             onChange={HandleCreditCardEntry}
                             />
@@ -841,7 +912,7 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, acquireBankRef, cardIssuerRef)}  
                             value={CreditCardPaymentData.AcquireBank} 
                             name="AcquireBank" 
-
+                            onFocus={HandleCreditCardEntry}
                             onChange={HandleCreditCardEntry}/>
                         </div>
 
@@ -853,7 +924,7 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, cardIssuerRef, cardHolderRef)} 
                             value={CreditCardPaymentData.CardIssuer}
                             name="CardIssuer" 
-             
+                            onFocus={HandleCreditCardEntry}
                             onChange={HandleCreditCardEntry}/>
                         </div>
             
@@ -865,11 +936,13 @@ const onDelete = () => {
                             <input type="text" placeholder="Card Holder"  autoComplete="off"   ref={cardHolderRef}
                             onKeyDown={(e) => handleKeyDown(e, cardHolderRef, approvalNoRef)} 
                             value={CreditCardPaymentData.CardHolder} name="CardHolder"
+                            // onFocus={()=>showOnScreenKeybaord('CardHolder')}
                             onClick={()=>showOnScreenKeybaord('CardHolder')}
                             onChange={HandleCreditCardEntry}/>
                            
               
                         </div>
+
                         <div style={{display:'flex',flexDirection:'row'}}>
                             <Typography                             sx={{
                                 fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
@@ -878,7 +951,9 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, approvalNoRef, expiryMonthRef)} 
                             value={CreditCardPaymentData.ApprovalNo} name="ApprovalNo"
                             onClick={()=>showOnScreenKeybaord('ApprovalNo')}
-                            onChange={HandleCreditCardEntry}/>
+                            // onFocus={()=>showOnScreenKeybaord('ApprovalNo')}
+                            onChange={HandleCreditCardEntry}
+                            />
                         </div>
 
                         <div style={{display:'flex',flexDirection:'row',justifyContent:'space-evenly'}}>
@@ -889,14 +964,22 @@ const onDelete = () => {
                             <input type="text" placeholder="MM"  autoComplete="off"   ref={expiryMonthRef} style={{width:'45%',marginRight:'5%'}}
                             onKeyDown={(e) => handleKeyDown(e, expiryMonthRef, expiryYearRef)} 
                             value={CreditCardPaymentData.ExpiryMonth} name="ExpiryMonth"
-                            onClick={()=>showOnScreenKeybaord('ExpiryMonth')}
+                            // onFocus={()=>showOnScreenKeybaord('ExpiryMonth')}
+                            onFocus={()=>{setMonthsView(true);
+                              if (MonthsRef.current){
+                                  MonthsRef.current.focus()
+                              }}}
+                              readOnly
                             onChange={HandleCreditCardEntry}/>
-                
+
                             <input type="text" placeholder="YYYY"  autoComplete="off"   ref={expiryYearRef} style={{width:'45%'}}
                             onKeyDown={(e) => handleKeyDown(e, expiryYearRef, AmountDueRef)} 
                             value={CreditCardPaymentData.ExpiryYear} name="ExpiryYear"
-                            onClick={()=>showOnScreenKeybaord('ExpiryYear')}
-                            onChange={HandleCreditCardEntry}/>
+                            // onClick={()=>showOnScreenKeybaord('ExpiryYear')}
+                            onFocus={()=>setYearView(true)}
+                            readOnly
+                            // onChange={HandleCreditCardEntry}
+                            />
                             
 
                         </div>
@@ -904,11 +987,14 @@ const onDelete = () => {
                         <div style={{display:'flex',flexDirection:'row'}}>
                             <Typography                             sx={{
                                 fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
-                                overflow: 'auto',width:'40%'}}>Amout Due</Typography>
+                                overflow: 'auto',width:'40%'}}>
+                                Amout Due
+                            </Typography>
                             <input type="text" placeholder="0.00"  autoComplete="off" style={{textAlign:'end'}}
                             name="AmountDue" 
+                            onClick={()=>showOnScreenKeybaord('AmountDue')}
                             ref={AmountDueRef}
-                            onChange={HandleCreditCardEntry}
+                            onInput={HandleCreditCardEntry}
                             value={CreditCardPaymentData.AmountDue}
                             // value={parseFloat(CreditCardPaymentData.AmountDue).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
                             onKeyDown={AddToList} />
@@ -1023,7 +1109,7 @@ const onDelete = () => {
                          <div className='modal-content-waiter'>
                    
                            <div className='card'>
-                             <h1>Select Customer</h1>
+                             <h1>Select Bank</h1>
                            <div className='Waiterlist-Container'>
                            <input
                                ref={BankSearchRef}
@@ -1075,17 +1161,17 @@ const onDelete = () => {
                          <div className='modal-content-waiter'>
                    
                            <div className='card'>
-                             <h1>Select Customer</h1>
+                             <h1>Select Card</h1>
                            <div className='Waiterlist-Container'>
                            <input
                                ref={CardSearchRef}
                                value={CardSearch}
                                onChange={(e) => setCardSearch(e.target.value)}
-                               onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Card')}
+                               onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'card')}
                                onKeyDown={(e) => handleKeys2(e, 'card')}
                                onClick={()=>showOnScreenKeybaord('card')}
                              />
-                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Card')} ref={CardListRef}>
+                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'card')} ref={CardListRef}>
                                <thead>
                                  <tr>
                                    <th>Card Issuer Code</th>
@@ -1120,12 +1206,99 @@ const onDelete = () => {
                       </div>
 )}
 
+
+{MonthsView && (
+                       <div className='modal'>
+                         <div className='modal-content-waiter' style={{width:'20%'}}>
+                   
+                           <div className='card'>
+                             <h1>Select Months</h1>
+                           <div className='Waiterlist-Container'>
+                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Month')} ref={MonthsRef}>
+                               <thead>
+                                 <tr>
+                                   <th>Code</th>
+                                   <th>Months</th>
+                                 </tr>
+                               </thead>
+                               <tbody>
+                               {months.map((item:any,index:any) => (
+                                   <tr
+                                     key={index}
+                                     className={selectedItemIndex === index ? 'selected' : ''}
+                                     onClick={() => {setCreditCardPaymentData({... CreditCardPaymentData, ExpiryMonth: item.monthNumber});setMonthsView(false)}}
+                                     tabIndex={0}
+                   
+                                     style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                                   color:selectedItemIndex === index ? 'white':'black',height:'50px' }}
+                                   >
+                                     <td>{item.monthNumber.padStart(2,'0')}</td>
+                                     <td>{item.monthName}</td>
+                                   </tr>
+                                 ))}
+                               </tbody>
+                             </Table>
+
+                               </div>
+                           </div>
+                           <div className='Button-Container'>
+                                <button onClick={() => setMonthsView(false)}>Close</button>
+                            </div>
+                         </div>
+                   
+                      </div>
+)}
+
+
+{YearView && (
+                       <div className='modal'>
+                         <div className='modal-content-waiter' style={{width:'20%'}}>
+                   
+                           <div className='card'>
+                             <h1>Select Year</h1>
+                           <div className='Waiterlist-Container'>
+
+                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Year')} ref={YearsRef}>
+                               <thead>
+                                 <tr>
+                                   <th>Year</th>
+                                 </tr>
+                               </thead>
+                               <tbody>
+                               {years.map((year:any,index:any) => (
+                                   <tr
+                                     key={index}
+                                     className={selectedItemIndex === index ? 'selected' : ''}
+                                     onClick={() => {setCreditCardPaymentData({... CreditCardPaymentData, ExpiryYear: year});setYearView(false)}}
+                                     tabIndex={0}
+                   
+                                     style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                                      color:selectedItemIndex === index ? 'white':'black',height:'50px' ,fontSize:'2vw',}}
+                                   >
+                                     <td style={{textAlign:'center'}}>{year}</td>
+                                   </tr>
+                                 ))}
+                               </tbody>
+                             </Table>
+
+                               </div>
+                           </div>
+                           <div className='Button-Container'>
+                                <button onClick={() => setYearView(false)}>Close</button>
+                            </div>
+                         </div>
+                   
+                      </div>
+)}
+
+
            
             </div>
 
        
         </div>
-        {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+        {isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard} setvalue={setvalue}/>}
+        {isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard} setvalue={setvalue}/>}
   </div>
     )
 }

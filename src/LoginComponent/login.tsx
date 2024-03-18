@@ -6,7 +6,7 @@ import logo from './logo.png';
 import Swal from 'sweetalert2';
 import BASE_URL from '../config';
 import { isMobile, isTablet, setUserAgent } from 'react-device-detect';
-import { Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
 import OnScreenKeyboard from '../Restaurant/KeyboardGlobal';
   const LoginForm: React.FC  = () => {
@@ -356,12 +356,14 @@ const handleSpecialButtonClick = (value:any) => {
         
         
         <div className='Login-Button-Container'>
-          <button className="btn-login" type='submit' ref={loginBtnRef} onClick={handleLogin}  >
+          <Button className="btn-login" type='button' ref={loginBtnRef} onClick={handleLogin}  
+          style={{backgroundColor:'blue',color:'white' ,margin:'5px',fontWeight:'bold',fontSize:'1.2vw'}}>
             Login
-          </button>
-          <button className="btn-exit"  type='button'  onClick={closeApp}>
+          </Button>
+          <Button className="btn-exit"  type='button'  onClick={closeApp}
+          style={{backgroundColor:'red',color:'white',margin:'5px',fontWeight:'bold',fontSize:'1.2vw'}}>
             Exit
-          </button>
+          </Button>
           <button className="btn-show"  type='button' 
             onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
           </button>

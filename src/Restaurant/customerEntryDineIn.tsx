@@ -57,7 +57,8 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
     const [WaiterList, setWaiterList] = useState<Waiter[]>([]);
     
     const [CustomerList, setCustomerList] = useState<Customer[]>([]);
-    
+
+    const QueNoRef = useRef<HTMLInputElement>(null)
     const CustomerRef = useRef<HTMLInputElement>(null)
     const GuestCountRef = useRef<HTMLInputElement>(null)
     const WaiterRef = useRef<HTMLInputElement>(null)
@@ -101,7 +102,7 @@ const [CustomerSearch, setCustomerSearch] = useState<any>('');
     const fetchData = async () => {
       const tableNo = typeandtable.tableNo; // Accessing TableNo
   
-      if (tableNo !== null) {
+      if (tableNo) {
         try {
           const orderViewResponse = await axios.get(`${BASE_URL}/api/order/view/`, {
             params: {
@@ -127,11 +128,7 @@ const [CustomerSearch, setCustomerSearch] = useState<any>('');
             };
           }
         } 
-    
-
-
-      
-        // Cleanup function to clear the timeout
+  
 
         } catch (error: any) {
             if (error.response) {
@@ -282,7 +279,6 @@ const  sendDataToMain = () => {
 
   const WaiterF = () => {
     setWaiterFocus(true)
-
     setGuestCountFocus(false)
     setCustomerFocus(false)
   }
@@ -424,6 +420,8 @@ const  sendDataToMain = () => {
 
   setSelectedOption('option1')
   setcustomerType('Regular')
+
+  CustomerRef.current?.focus()
  }
 
 const handleCustomerTypeWalkIN = () => {
@@ -723,8 +721,8 @@ setWaiterListModal(false)
 const selectedItem = WaiterList[index];
 setWaiter(selectedItem.waiter_name)
 setWaiterID(selectedItem.waiter_id)
-if (WaiterRef.current) {
-  WaiterRef.current.focus();
+if (SaveBtnRef.current) {
+  SaveBtnRef.current.focus();
 }
 
 
@@ -790,31 +788,6 @@ if (WaiterRef.current) {
 };
 
 
-//  const [deviceType, setDeviceType] = useState<string>('');
-
-//  useEffect(() => {
-//    const checkDeviceType = () => {
-//      if (isMobile) {
-//        setDeviceType('Mobile');
-//      } else if (isTablet) {
-//        setDeviceType('Tablet');
-//      } else {
-//        setDeviceType('Desktop');
-//      }
-//    };
- 
-//    checkDeviceType();
- 
-//    const handleResize = () => {
-//      checkDeviceType();
-//    };
- 
-//    window.addEventListener('resize', handleResize);
- 
-//    return () => {
-//      window.removeEventListener('resize', handleResize);
-//    };
-//  }, []);
 const [,setisFocus] = useState<any>(1)
 const SelectButtonHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) => {
   event.preventDefault();
@@ -921,259 +894,265 @@ const closekeyBoard = () => {
 
   return (
     <div>
+        <div className="modal">
+          <div className="modal-contentCustomerDine" style={{width:'100%', display:'flex',flexDirection:'row'}}>
 
-    <div className="modal">
-      <div className="modal-contentCustomerDine" style={{width:'100%', display:'flex',flexDirection:'row'}}>
+          <Grid container className="CreditCard-Container" spacing={2}>
 
-      <Grid container className="CreditCard-Container" spacing={2}>
-
-        <Grid item xs={12} md={3} >
-          <div style={{width:'100%',height:'100%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
-            <h2 style={{ color: '#007bff', padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
-            borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid' }}
-            >Sales Order  {typeandtable.OrderType} </h2>
-            <div className="customer-type">
-              <span className="customer-type-label">Customer Type:</span>
-              <div className="button-group">
-                <button className={selectedOption === 'option1' ? 'radio-button checked blinking' : 'radio-button'}id="option1"onClick={() => handleCustomerTypeRegular()}>Regular</button>
-                <button className={selectedOption === 'option2' ? 'radio-button checked blinking' : 'radio-button'}id="option2"onClick={() => handleCustomerTypeWalkIN()}>Walk-In </button>
-              </div>
-            </div>
-
-              {/* Input fields */}
-              <div style={{ display: 'flex', flexDirection: 'column'}}>
-              <div style={{display:'flex',flexDirection:'column'}}>
-                    <label htmlFor="input1">Customer Name:</label>
-                    <input ref={CustomerRef} 
-                    onKeyDown={(e) =>
-                      customerType === 'Walk-in'
-                        ? handleKeyDown(e, CustomerRef, GuestCountRef)
-                        : handleKeys(e, 'Customer')
-                    }
-                      disabled={typeandtable.OrderType === 'ADD ORDER'}
-                      onChange={(e) => setCustomer(e.target.value)}  autoComplete="off"
-                      onInput={ ()=> OpenWaiterModal('Customer')}
-                      // onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
-                      onClick={() => handleClick(CustomerRef)}
-                      onFocus={CustomerF} 
-
-                      onMouseUp={() => checkSelection(CustomerRef)}
-                      // onKeyUp={() => checkSelection(CustomerRef)}
-                      value={customer} required/>
-
+            <Grid item xs={12} md={3} >
+              <div style={{width:'100%',height:'100%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
+                <h2 style={{ color: '#007bff', padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
+                borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid' }}
+                >Sales Order  {typeandtable.OrderType} </h2>
+                <div className="customer-type">
+                  <span className="customer-type-label">Customer Type:</span>
+                  <div className="button-group">
+                    <button className={selectedOption === 'option1' ? 'radio-button checked blinking' : 'radio-button'}id="option1"onClick={() => handleCustomerTypeRegular()}>Regular</button>
+                    <button className={selectedOption === 'option2' ? 'radio-button checked blinking' : 'radio-button'}id="option2"onClick={() => handleCustomerTypeWalkIN()}>Walk-In </button>
+                  </div>
                 </div>
-                
-                <div style={{display:'flex',flexDirection:'column'}}>
-                  {isDineIn ? (
-                    <><label htmlFor="input2">
-                        Table Number
-                      </label><input type="text" id="input2" placeholder="0" readOnly value={typeandtable.tableNo} /></>
-                      ):(
-                        <><label htmlFor="input2">
-                      Que No
-                        </label><input type="number" id="input2" placeholder="0"
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              // Regular expression to check if the input is a number
-                                              const isNumber = /^[0-9]*$/;
-                                              if (isNumber.test(value)) {
-                                                  // If setQueNo input is a number, update the state
-                                                  setGuestCount(value);
-                                              }
-                                          }}
-                                  // onChange={(e) => setQueNo(e.target.value)}
-                        /></>
-                      )}
 
-              </div>
+                  {/* Input fields */}
+                  <div style={{ display: 'flex', flexDirection: 'column'}}>
+                  <div style={{display:'flex',flexDirection:'column'}}>
+                        <label htmlFor="input1">Customer Name:</label>
+                        <input ref={CustomerRef} 
+                        onKeyDown={(e) =>
+                          customerType === 'Walk-in'
+                          ? handleKeyDown(e, CustomerRef, (isDineIn ? GuestCountRef : QueNoRef))
+                            : handleKeys(e, 'Customer')
+                        }
+                          disabled={typeandtable.OrderType === 'ADD ORDER'}
+                          onChange={(e) => setCustomer(e.target.value)}  autoComplete="off"
+                          onInput={ ()=> OpenWaiterModal('Customer')}
+                          // onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
+                          onClick={() => handleClick(CustomerRef)}
+                          // onFocus={CustomerF} 
+                          onFocus={(event) => {
+                            CustomerF();
+                            customerType !== 'Walk-in' ? OpenWaiterModal('Customer'):'';
+                          }}
+                          onMouseUp={() => checkSelection(CustomerRef)}
+                          // onKeyUp={() => checkSelection(CustomerRef)}
+                          value={customer} required/>
 
-              <div style={{display:'flex',flexDirection:'column'}}>
-                  <label htmlFor="input3">Guest Count:</label>
-                  <input ref={GuestCountRef}  onKeyDown={(e) => handleKeyDown(e, GuestCountRef, WaiterRef)}  id="input3" 
-                  type = "text"  pattern="[0-9]*"  placeholder="Guest Count" 
-                    disabled={typeandtable.OrderType === 'ADD ORDER'}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      // Regular expression to check if the input is a number
-                      const isNumber = /^[0-9]*$/;
-                      if (isNumber.test(value)) {
-                          // If the input is a number, update the state
-                          setGuestCount(value);
-                      }
-                  }}autoComplete="off"
-                    onFocus={GuestCountF}
-                
-                    value={guestCount}
-                    onClick={() => handleClick(GuestCountRef)}
-                    // onClick={handleClick}
-                    required />
-              </div>
-              
-              <div style={{display:'flex',flexDirection:'column'}}>
-              <label htmlFor="input4">Waiter:</label>
-                        <input  ref={WaiterRef} type="text" id="input4" placeholder="Select Waiter"  
-                          onChange={(e) => setWaiter(e.target.value)} autoComplete="off" 
-                          value={waiter}
-                          onFocus={WaiterF}
-                          onKeyDown={(e) =>handleKeys(e, 'Waiter')}
-                          onInput={() => OpenWaiterModal('Waiter')}
-                          // onInput={(e: React.ChangeEvent<HTMLInputElement>)=> handleSearchInputChange(e.target.value, 'Waiter')}
-                          onClick={() => handleClick(WaiterRef)}
-                          required/>
-                         
-              </div>
+                    </div>
+                    
+                    <div style={{display:'flex',flexDirection:'column'}}>
+                      {isDineIn ? (
+                        <><label>
+                            Table Number
+                          </label>
+                            <input type="text" placeholder="0" 
+                            readOnly value={typeandtable.tableNo} />
+                          </>
+                          ):(
+                            <><label> Que No </label>
+                            <input type="text" placeholder="0" pattern="[0-9]*" 
+                                  value={QueNo}
+                                  ref={QueNoRef}
+                                    onChange={(e) => {
+                                    const value = e.target.value;
+                                    const isNumber = /^[0-9]*$/;
+                                    if (isNumber.test(value)) {
+                                      setQueNo(value);
+                                      }
+                                    }}
+                            /></>
+                          )}
 
+                  </div>
 
-              </div>
-
-
-              {/* Command buttons */}
-              <div style={{display:'flex',flexDirection:'row'}} >
-                {userRank == 'Cashier' && (   
-                <button tabIndex={0} onClick={sendDataToMainOrderAndPay} 
-                 ref={PaymentSaveBtnRef}  disabled={typeandtable.OrderType === 'ADD ORDER'} 
-                 className='button-ok' 
-                onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,PaymentSaveBtnRef,SaveBtnRef,0) } 
-                 style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Order & Pay</button>
-          )}
+                  <div style={{display:'flex',flexDirection:'column'}}>
+                      <label htmlFor="input3">Guest Count:</label>
+                      <input ref={GuestCountRef}  onKeyDown={(e) => handleKeyDown(e, GuestCountRef, WaiterRef)}  id="input3" 
+                      type = "text"  pattern="[0-9]*"  placeholder="Guest Count" 
+                        disabled={typeandtable.OrderType === 'ADD ORDER'}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Regular expression to check if the input is a number
+                          const isNumber = /^[0-9]*$/;
+                          if (isNumber.test(value)) {
+                              // If the input is a number, update the state
+                              setGuestCount(value);
+                          }
+                      }}autoComplete="off"
+                        onFocus={GuestCountF}
+                    
+                        value={guestCount}
+                        onClick={() => handleClick(GuestCountRef)}
+                        // onClick={handleClick}
+                        required />
+                  </div>
                   
-                <button tabIndex={1} onClick={sendDataToMain} ref={SaveBtnRef} 
-                  onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,SaveBtnRef,CloseBtnRef,1) } 
-                className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Save Order</button>
-              
+                  <div style={{display:'flex',flexDirection:'column'}}>
+                  <label htmlFor="input4">Waiter:</label>
+                            <input  ref={WaiterRef} type="text" id="input4" placeholder="Select Waiter"  
+                              onChange={(e) => setWaiter(e.target.value)} autoComplete="off" 
+                              value={waiter}
+                              onFocus={(event) => {
+                                WaiterF();
+                                OpenWaiterModal('Waiter');
+                              }}
+                              onKeyDown={(e) =>handleKeys(e, 'Waiter')}
+                              onInput={() => OpenWaiterModal('Waiter')}
+                              // onInput={(e: React.ChangeEvent<HTMLInputElement>)=> handleSearchInputChange(e.target.value, 'Waiter')}
+                              onClick={() => handleClick(WaiterRef)}
+                              required/>
+                            
+                  </div>
+
+
+                  </div>
+
+
+                  {/* Command buttons */}
+                  <div style={{display:'flex',flexDirection:'row'}} >
+                    {userRank == 'Cashier' && (   
+                    <button tabIndex={0} onClick={sendDataToMainOrderAndPay} 
+                    ref={PaymentSaveBtnRef}  disabled={typeandtable.OrderType === 'ADD ORDER'} 
+                    className='button-ok' 
+                    onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,PaymentSaveBtnRef,SaveBtnRef,0) } 
+                    style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Order & Pay</button>
+              )}
+                      
+                    <button tabIndex={1} onClick={sendDataToMain} ref={SaveBtnRef} 
+                      onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,SaveBtnRef,CloseBtnRef,1) } 
+                    className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Save Order</button>
+                  
+                  </div>
+                  <button tabIndex={2} type="button" className ='button-cancel' ref={CloseBtnRef}
+                    onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,CloseBtnRef,PaymentSaveBtnRef,2) } 
+                  style={{width:'100%'}} onClick={handleclose}>Exit</button>
+
+                <button className="btn-show"  type='button' 
+                onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
+              </button>
               </div>
-              <button tabIndex={2} type="button" className ='button-cancel' ref={CloseBtnRef}
-                onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,CloseBtnRef,PaymentSaveBtnRef,2) } 
-              style={{width:'100%'}} onClick={handleclose}>Exit</button>
+            </Grid>
 
-            <button className="btn-show"  type='button' 
-            onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
-          </button>
+          <Grid item xs={12} md={9} style={{ height: '100%',width:'100%'}}>
+
+            {isDesktop && (
+              <div className='keyboardScreen'>
+              {rows}
+              <button className="num-pad-key" style={{width:'95%',margin:'8px 10px'}} onClick={() => handleButtonClick(' ')}>SPACE</button>
+            </div>
+            )}
+
+            </Grid>
+
+        </Grid>
+
+        </div>
+        {WaiterListModal && (  
+        <div className='modal'>
+          <div className='modal-content-waiter'>
+
+            <div className='card'>
+              <h1>Select Waiter</h1>
+            <div className='Waiterlist-Container'>
+            <input
+                ref={WaiterSearchRef}
+                value={WaiterSearch}
+                onChange={(e) => setWaiterSearch(e.target.value)}
+                onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Waiter')}
+                onKeyDown={(e) => handleKeys2(e, 'Waiter')}
+                onClick={()=> showOnScreenKeybaord('Waiter')}
+              />
+              <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Waiter')} ref={WaiterListRef}>
+                <thead>
+                  <tr>
+                    <th>Waiter ID</th>
+                    <th>Waiter Name</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {WaiterList && WaiterList.map((result:any, index) => (
+                    <tr
+                      key={index}
+                      className={selectedItemIndex === index ? 'selected' : ''}
+                      onClick={() => ClickWaiterList(index)}
+                      tabIndex={0}
+
+                      style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                      color:selectedItemIndex === index ? 'white':'black',height:'50px'}}
+                    >
+                      <td style={{textAlign:'center'}}>{String(result.waiter_id).padStart(4,'0')}</td>
+                      <td>{result.waiter_name}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+              
+                </div>
+                <div className='Button-Container'>
+                  <button onClick={() => setWaiterListModal(false)}>Close</button>
+                </div>
+            </div>
+
+          
           </div>
-        </Grid>
 
-      <Grid item xs={12} md={9} style={{ height: '100%',width:'100%'}}>
-
-        {isDesktop && (
-          <div className='keyboardScreen'>
-          {rows}
-          <button className="num-pad-key" style={{width:'95%',margin:'8px 10px'}} onClick={() => handleButtonClick(' ')}>SPACE</button>
-        </div>
-        )}
-
-        </Grid>
-
-    </Grid>
-
-    </div>
-    {WaiterListModal && (  
-    <div className='modal'>
-      <div className='modal-content-waiter'>
-
-        <div className='card'>
-          <h1>Select Waiter</h1>
-        <div className='Waiterlist-Container'>
-        <input
-            ref={WaiterSearchRef}
-            value={WaiterSearch}
-            onChange={(e) => setWaiterSearch(e.target.value)}
-            onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Waiter')}
-            onKeyDown={(e) => handleKeys2(e, 'Waiter')}
-            onClick={()=> showOnScreenKeybaord('Waiter')}
-          />
-          <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Waiter')} ref={WaiterListRef}>
-            <thead>
-              <tr>
-                <th>Waiter ID</th>
-                <th>Waiter Name</th>
-              </tr>
-            </thead>
-            <tbody>
-              {WaiterList && WaiterList.map((result:any, index) => (
-                <tr
-                  key={index}
-                  className={selectedItemIndex === index ? 'selected' : ''}
-                  onClick={() => ClickWaiterList(index)}
-                  tabIndex={0}
-
-                  style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
-                  color:selectedItemIndex === index ? 'white':'black',height:'50px'}}
-                >
-                  <td style={{textAlign:'center'}}>{String(result.waiter_id).padStart(4,'0')}</td>
-                  <td>{result.waiter_name}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-           
-            </div>
-            <div className='Button-Container'>
-              <button onClick={() => setWaiterListModal(false)}>Close</button>
-            </div>
-        </div>
-
-      
       </div>
-
-   </div>
-        )}
+            )}
 
 
 
-{CustomerListModal && (
-                       
-                
-                       <div className='modal'>
-                         <div className='modal-content-waiter'>
-                   
-                           <div className='card'>
-                             <h1>Select Customer</h1>
-                           <div className='Waiterlist-Container'>
-                           <input
-                               ref={CustomerSearchRef}
-                               value={CustomerSearch}
-                               onChange={(e) => setCustomerSearch(e.target.value)}
-                               onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
-                               onKeyDown={(e) => handleKeys2(e, 'Customer')}
-                               onClick={()=> showOnScreenKeybaord('Customer')}
-                             />
-                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Customer')} ref={CustomerListRef}>
-                               <thead>
-                                 <tr>
-                                   <th>Customer ID</th>
-                                   <th>Customer Name</th>
-                                 </tr>
-                               </thead>
-                               <tbody>
-                                 {CustomerList && CustomerList.map((result, index) => (
-                                   <tr
-                                     key={index}
-                                     className={selectedItemIndex === index ? 'selected' : ''}
-                                     onClick={() => ClickCustomerList(index)}
-                                     tabIndex={0}
-                   
-                                     style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
-                                    color:selectedItemIndex === index ? 'white':'black',height:'50px' }}
-                                   >
-                                     <td>{result.id_code.padStart(4,'0')}</td>
-                                     <td>{result.trade_name}</td>
-                                   </tr>
-                                 ))}
-                               </tbody>
-                             </Table>
+    {CustomerListModal && (
+                          
+                    
+                          <div className='modal'>
+                            <div className='modal-content-waiter'>
+                      
+                              <div className='card'>
+                                <h1>Select Customer</h1>
+                              <div className='Waiterlist-Container'>
+                              <input
+                                  ref={CustomerSearchRef}
+                                  value={CustomerSearch}
+                                  onChange={(e) => setCustomerSearch(e.target.value)}
+                                  onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
+                                  onKeyDown={(e) => handleKeys2(e, 'Customer')}
+                                  onClick={()=> showOnScreenKeybaord('Customer')}
+                                />
+                                <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Customer')} ref={CustomerListRef}>
+                                  <thead>
+                                    <tr>
+                                      <th>Customer ID</th>
+                                      <th>Customer Name</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {CustomerList && CustomerList.map((result, index) => (
+                                      <tr
+                                        key={index}
+                                        className={selectedItemIndex === index ? 'selected' : ''}
+                                        onClick={() => ClickCustomerList(index)}
+                                        tabIndex={0}
+                      
+                                        style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                                        color:selectedItemIndex === index ? 'white':'black',height:'50px' }}
+                                      >
+                                        <td>{result.id_code.padStart(4,'0')}</td>
+                                        <td>{result.trade_name}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </Table>
 
-                               </div>
-                           </div>
-                           <div className='Button-Container'>
-                                <button onClick={() => setCustomerListModal(false)}>Close</button>
+                                  </div>
+                              </div>
+                              <div className='Button-Container'>
+                                    <button onClick={() => setCustomerListModal(false)}>Close</button>
+                                </div>
                             </div>
-                         </div>
-                   
-                      </div>
-)}
+                      
+                          </div>
+    )}
 
-    </div>
-    {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+        </div>
+        {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
     </div>
 
   );
