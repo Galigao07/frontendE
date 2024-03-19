@@ -569,9 +569,12 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
         }
          {InfoModal && <div className="modal">
                 <div className="modal-content">
-                    <p>{message}</p>
-                    <button onClick={()=>SaveNewSenior('YES')}>Yes</button>
-                    <button onClick={()=>SaveNewSenior('NO')}>No</button>
+                    <p style={{fontSize:'20px',fontWeight:'bold'}}>{message}</p>
+                    <div className="Button-Container" style={{marginTop:'20px'}}>
+                        <button  style={{backgroundColor:'blue'}} className="btn-ok" onClick={()=>SaveNewSenior('YES')}>Yes</button>
+                        <button  className="btn-No" onClick={()=>SaveNewSenior('NO')}>No</button>
+                    </div>
+                   
                 </div>
             </div>}
         </>

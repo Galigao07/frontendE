@@ -721,9 +721,13 @@ setWaiterListModal(false)
 const selectedItem = WaiterList[index];
 setWaiter(selectedItem.waiter_name)
 setWaiterID(selectedItem.waiter_id)
-if (SaveBtnRef.current) {
-  SaveBtnRef.current.focus();
-}
+setTimeout(() => {
+  if (SaveBtnRef.current) {
+    SaveBtnRef.current.focus();
+    SaveBtnRef.current.style.backgroundColor = 'darkblue'
+  }
+}, 100);
+
 
 
  }
@@ -788,13 +792,13 @@ if (SaveBtnRef.current) {
 };
 
 
-const [,setisFocus] = useState<any>(1)
+const [isFocus,setisFocus] = useState<any>(0)
 const SelectButtonHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) => {
   event.preventDefault();
   if (event.key == 'ArrowRight' || event.key == 'ArrowDown') {
       NextRef.current.focus();
-      NextRef.current.style.backgroundColor = 'blue';
-  
+      NextRef.current.style.backgroundColor = 'darkblue';
+      CurrentRef.current.style.backgroundColor = 'blue';
       if (index == 1) {
         setisFocus(0)
       }else {
@@ -806,8 +810,8 @@ const SelectButtonHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:
 
   if (event.key == 'ArrowLeft' || event.key == 'ArrowUp'){
     BackRef.current.focus();
-    BackRef.current.style.backgroundColor = 'blue';
-
+    BackRef.current.style.backgroundColor = 'darkblue';
+    CurrentRef.current.style.backgroundColor = 'blue';
     setisFocus(index - 1)
 
 }
@@ -1013,12 +1017,14 @@ const closekeyBoard = () => {
                     ref={PaymentSaveBtnRef}  disabled={typeandtable.OrderType === 'ADD ORDER'} 
                     className='button-ok' 
                     onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,PaymentSaveBtnRef,SaveBtnRef,0) } 
-                    style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Order & Pay</button>
+                    style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}
+                    >Order & Pay</button>
               )}
                       
                     <button tabIndex={1} onClick={sendDataToMain} ref={SaveBtnRef} 
                       onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,SaveBtnRef,CloseBtnRef,1) } 
-                    className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}>Save Order</button>
+                    className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}
+                    >Save Order</button>
                   
                   </div>
                   <button tabIndex={2} type="button" className ='button-cancel' ref={CloseBtnRef}
