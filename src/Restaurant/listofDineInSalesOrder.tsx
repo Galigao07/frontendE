@@ -353,6 +353,7 @@ const ClickShowOrderListing = async (index: number) => {
 
 
 const handleSettleOrder = () => {
+  
   settlebillData({
     'settlebill': true,
     'tableno': tableno,

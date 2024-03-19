@@ -1353,6 +1353,7 @@ const Restaurant: React.FC = () => {
   const [CustomerOrderInfo, setCustomerOrderInfo] = useState<any>([]);
   // const onlineTestApp = new OnlineTestApp();
   const [AmountTendered,setAmountTendered] = useState<any>(0)
+  // const [AmountTenderedMultiple,setAmountTenderedMultiple] = useState<any>(0)
   const [ChangeAmount,setChangeAmount] = useState<any>(0)
   const [AmountDue,setAmountDue] = useState<any>(0)
 
@@ -1568,7 +1569,7 @@ const Restaurant: React.FC = () => {
         updatedItems[selectedItemIndex].quantity = quantity;
         updatedItems[selectedItemIndex].totalAmount = calculateTotal();  // Update the quantity to the new value
         setCartItems(updatedItems);
-        AddPosExtended(cartItems[selectedItemIndex])
+        UpdatePosExtended(cartItems[selectedItemIndex])
         closeModal();
       } else {
         console.error('Invalid selectedItemIndex or out of range:', selectedItemIndex);
@@ -1624,10 +1625,11 @@ const Restaurant: React.FC = () => {
 
     try{
 
-      const response = await axios.post(`${BASE_URL}/api/extended-data/`, data);
+      const response = await axios.put(`${BASE_URL}/api/extended-data/`, {data:data,TableNo:TableNo,OrderType:OrderType});
 
       if (response.status==200){
-        console.log('Updated successfully')
+        console.log('added successfully')
+        // sendData();
       }
 
     }catch{
@@ -1636,6 +1638,23 @@ const Restaurant: React.FC = () => {
     }
 
   }
+
+  // const UpdatePosExtended = async (data:any) => {
+
+  //   try{
+
+  //     const response = await axios.post(`${BASE_URL}/api/extended-data/`, data);
+
+  //     if (response.status==200){
+  //       console.log('Updated successfully')
+  //     }
+
+  //   }catch{
+  //     console.error('error');
+      
+  //   }
+
+  // }
 
 
   const DeletePosExtended = async (deleteData:any) => {
@@ -2037,7 +2056,6 @@ const ReprintTransactionReceipt = async (data: { DocNO: any; DocType: any; }) =>
         DocType:data.DocType,
       }})
     if (response.status==200) {
-      console.log('Success',response.status)
 
       setCartItems(response.data.Data)
       localStorage.setItem('cartData', JSON.stringify(response.data.Data));
@@ -2053,11 +2071,13 @@ const ReprintTransactionReceipt = async (data: { DocNO: any; DocType: any; }) =>
 
 
 
+
 ///********************THIS SAVE THE DATA FOR CASH PAYMENT*****************************/
 const CutomerInfoEntryPaymnet = async (data: any) =>{
 setCustomeryPaymentModal(false)
 setLoadingPrint(true)
-
+const customer :any = CustomerOrderInfo
+  let AmountTenderedMultiple :any = 0
   const CashierID = localStorage.getItem('UserID');
   const CashierName = localStorage.getItem('FullName');
   const TerminalNo = localStorage.getItem('TerminalNo');
@@ -2072,21 +2092,62 @@ setLoadingPrint(true)
     doc_type = 'POS CI'
   }else  if (PaymentType === 'MULTIPLE') {
     doc_type = 'POS SI'
+ 
+      let CreditCard:any = ''
+      const creditCardArrayString = localStorage.getItem('CreditCardPayment');
+      if (creditCardArrayString) {
+        try {
+          // Parse the JSON string to convert it back to an array
+          CreditCard = JSON.parse(creditCardArrayString);
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+        }
+      } else {
+        console.error("No data found in localStorage for 'CreditCardPayment'");
+      }
+  
+      let DebitCard:any = ''
+      const DebitCardArrayString = localStorage.getItem('DebitCardPayment');
+      if (DebitCardArrayString) {
+        try {
+          // Parse the JSON string to convert it back to an array
+          DebitCard = JSON.parse(DebitCardArrayString);
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+        }
+      } else {
+        console.error("No data found in localStorage for 'DebitCardPayment'");
+      }
+  
+      let CashAmount:any = 0
+  
+      CashAmount = localStorage.getItem('CashAmount');
+  
+      let totalDebitcard:any = 0
+      DebitCard.DebitCardPaymentList.map((items:any) => {
+        totalDebitcard = parseFloat(items.AmountDue) + parseFloat(totalDebitcard)
+      })
+  
+      let totalCreditcard:any = 0
+      CreditCard.CreditCardPaymentList.map((items:any) => {
+        totalCreditcard = parseFloat(items.AmountDue) + parseFloat(totalCreditcard)
+      })
+      const total:any = parseFloat(CashAmount) + parseFloat(totalCreditcard) + parseFloat(totalDebitcard)  
+      AmountTenderedMultiple=total
   }
 
 
 
-
-
-    console.log(cartItems)
     try {
-      const response = await axios.post(`${BASE_URL}/api/save-sales-order-payment/`,{data:cartItems,AmountTendered:AmountTendered,TableNo:TableNo,CashierID:CashierID,
-                                                                                      TerminalNo:TerminalNo,DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,doctype:doc_type});
+      const response = await axios.post(`${BASE_URL}/api/save-sales-order-payment/`,{data:cartItems,AmountTendered: PaymentType === 'MULTIPLE' ? AmountTenderedMultiple :AmountTendered,
+                                                                                    TableNo:TableNo,CashierID:CashierID,
+                                                                                    TerminalNo:TerminalNo,DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,doctype:doc_type,
+                                                                                    customer:customer});
       if (response.status === 200) {
 
         if (PaymentType === 'CASH') {
           const response1 = await axios.post(`${BASE_URL}/api/save-cash-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
-                                                                                    TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,
+                                                                                    TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,customer:customer,
                                                                                     AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,
                                                                                     DiscountData:DiscountData,DiscountType:DiscountType,DiscountDataList:DiscountDataList,QueNo:QueNo,doctype:doc_type});
           if (response1.status === 200) {
@@ -2110,7 +2171,6 @@ setLoadingPrint(true)
             try {
               // Parse the JSON string to convert it back to an array
               CreditCard = JSON.parse(creditCardArrayString);
-              console.log(CreditCard);
             } catch (error) {
               console.error("Error parsing JSON:", error);
             }
@@ -2122,7 +2182,7 @@ setLoadingPrint(true)
 
           // const CreditCardJson = JSON.parse(CreditCard);
           // console.log(CreditCardJson);
-          const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
+          const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,customer:customer,
                                                                                         TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
                                                                                         ,DiscountDataList:DiscountDataList,OrderType:OrderType,CreditCard:CreditCard,doctype:doc_type});
           if (response1.status === 200) {
@@ -2149,7 +2209,6 @@ setLoadingPrint(true)
             try {
               // Parse the JSON string to convert it back to an array
               DebitCard = JSON.parse(DebitCardArrayString);
-              console.log(DebitCard);
             } catch (error) {
               console.error("Error parsing JSON:", error);
             }
@@ -2160,7 +2219,7 @@ setLoadingPrint(true)
 
 
 
-          const response1 = await axios.post(`${BASE_URL}/api/save-debit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
+          const response1 = await axios.post(`${BASE_URL}/api/save-debit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,customer:customer,
                                                                                         TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
                                                                                         ,DiscountDataList:DiscountDataList,OrderType:OrderType,DebitCard:DebitCard,doctype:doc_type});
           if (response1.status === 200) {
@@ -2180,7 +2239,7 @@ setLoadingPrint(true)
         
         if (PaymentType === 'CHARGE') {
           const CreditCard:any = localStorage.getItem('CreditCardPayment')
-          const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
+          const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,customer:customer,
                                                                                         TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
                                                                                         ,DiscountDataList:DiscountDataList,OrderType:OrderType,CreditCard:CreditCard});
           if (response1.status === 200) {
@@ -2191,7 +2250,6 @@ setLoadingPrint(true)
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
           }
-  
         } else {
           // Handle other response statuses if needed
           console.log('Request failed with status:', response.status);
@@ -2207,7 +2265,6 @@ setLoadingPrint(true)
             try {
               // Parse the JSON string to convert it back to an array
               CreditCard = JSON.parse(creditCardArrayString);
-              console.log(CreditCard);
             } catch (error) {
               console.error("Error parsing JSON:", error);
             }
@@ -2235,7 +2292,7 @@ setLoadingPrint(true)
 
 
 
-          const response1 = await axios.post(`${BASE_URL}/api/save-multiple-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
+          const response1 = await axios.post(`${BASE_URL}/api/save-multiple-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,customer:customer,
                                                                                     TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,
                                                                                     DiscountDataList:DiscountDataList,CreditCard:CreditCard,DebitCard:DebitCard,CashAmount:CashAmount,doctype:doc_type});
           if (response1.status === 200) {
@@ -2416,6 +2473,9 @@ const settlebillData = async (data:any) => {
   setTableNo(data.tableno)
   setPaymentOpenModal(true)
   const DiscountType:string = data.DiscountType
+
+
+
 
   if (DiscountType === 'SC'){
     
@@ -2892,7 +2952,7 @@ useEffect(() => {
         .then(data => {
           setTableList(data.tables);
           setLoading(false) // Assuming the response data has a 'tables' key
-          console.log('TaBLE LIST',data.tables)
+          // console.log('TaBLE LIST',data.tables)
         })
         .catch(error => {
           console.error('There was a problem fetching the data:', error);
@@ -2915,7 +2975,7 @@ useEffect(() => {
         .then(data => {
           setQueList(data.que);
           setLoading(false) // Assuming the response data has a 'tables' key
-          console.log('TaBLE LIST',data.que)
+          // console.log('TaBLE LIST',data.que)
         })
         .catch(error => {
           console.error('There was a problem fetching the data:', error);
@@ -3126,7 +3186,10 @@ useEffect(() => {
             setIsKey(false);
           }
         } else if (e.key === 'Escape') {
-          e.preventDefault(); 
+          e.preventDefault();
+
+          // const iframeID = document.getElementById('myIframe')
+          // if  (!iframeID) {}
           let modal = localStorage.getItem('Modal')
 
           if (modal ==='false'){
@@ -3159,6 +3222,45 @@ useEffect(() => {
       };
 }, [DineIn, TotalDue, SaveOrderClick, PaymentClickControlS]);
   
+
+
+useEffect(() => {
+  const handleKeyPress = (e: KeyboardEvent) => {
+
+ if (e.key === 'Escape') {
+      e.preventDefault();
+
+      // const iframeID = document.getElementById('myIframe')
+      // if  (!iframeID) {}
+      let modal = localStorage.getItem('Modal')
+
+      if (modal ==='false'){
+    
+   
+    setPaymentOpenModal(false)
+    if (tableNoModal){
+      if(SelectTypeOfTransaction){
+        setSelectTypeOfTransaction(false)
+        setTableOnprocess('')
+      }else{
+        setTableNoModal(false)
+        setOrderTypeModal(true)
+        setTimeout(() => {
+          DineInRef.current?.focus()
+        }, 500);
+      }
+  
+    } else if (OtherCommandOpenModal){
+      setOtherCommandOpenModal(false)
+    }}}
+  };
+
+  window.addEventListener('keydown', handleKeyPress);
+
+  return () => {
+    window.removeEventListener('keydown', handleKeyPress);
+  };
+}, []);
 //// FETCH DINE IN DATA EVERY 10 SECONDS ////
   
 
