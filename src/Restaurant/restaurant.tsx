@@ -2120,18 +2120,25 @@ const customer :any = CustomerOrderInfo
       }
   
       let CashAmount:any = 0
-  
-      CashAmount = localStorage.getItem('CashAmount');
+      
+      CashAmount = localStorage.getItem('CashAmount') || 0;
   
       let totalDebitcard:any = 0
-      DebitCard.DebitCardPaymentList.map((items:any) => {
-        totalDebitcard = parseFloat(items.AmountDue) + parseFloat(totalDebitcard)
-      })
+      if (DebitCard){
+        DebitCard.DebitCardPaymentList.map((items:any) => {
+          totalDebitcard = parseFloat(items.AmountDue) + parseFloat(totalDebitcard)
+        })
+      }
+
   
       let totalCreditcard:any = 0
-      CreditCard.CreditCardPaymentList.map((items:any) => {
-        totalCreditcard = parseFloat(items.AmountDue) + parseFloat(totalCreditcard)
-      })
+      if (CreditCard) {
+        CreditCard.CreditCardPaymentList.map((items:any) => {
+          totalCreditcard = parseFloat(items.AmountDue) + parseFloat(totalCreditcard)
+        })
+  
+      }
+
       const total:any = parseFloat(CashAmount) + parseFloat(totalCreditcard) + parseFloat(totalDebitcard)  
       AmountTenderedMultiple=total
   }
@@ -2286,9 +2293,9 @@ const customer :any = CustomerOrderInfo
             console.error("No data found in localStorage for 'DebitCardPayment'");
           }
 
-          let CashAmount:any = ''
+          let CashAmount:any = 0
 
-          CashAmount = localStorage.getItem('CashAmount');
+          CashAmount = localStorage.getItem('CashAmount') || 0;
 
 
 
@@ -4506,10 +4513,10 @@ if (iframe !== null) {
         receiptContent1 += `<div>${description}${spaces}${data}</div>`;
 
         doc.write('<pre>' + receiptContent1 + '</pre>');
-    
+        doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
       } )
     }
-    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+
     
     description = 'CASHIER:';
     data = localStorage.getItem('FullName') || ''; 
