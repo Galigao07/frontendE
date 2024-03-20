@@ -45,7 +45,7 @@ function createWindow() {
       // session: session.fromPartition('persist:name'), 
     },
     fullscreen: true, 
-    frame:true,
+    frame:false,
     
   })
 
@@ -182,7 +182,8 @@ const CreateExtendedMonitor = () => {
               contextIsolation: false, // or true, depending on your setup
               webSecurity: false // This allows loading local files in Electron
           },
-          fullscreen : false
+          fullscreen : true,
+          frame:false,
       });
       // const srcDirectory = app.getAppPath(); // Assuming dataFile.txt is in the app directory
       // // console.log('aaaa',srcDirectory)
