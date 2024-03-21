@@ -3,10 +3,11 @@ import './css/KeyboardGlobal.css'
 
 interface value{
     handleclose:()=> void;
+    currentv:any;
     setvalue:any;
 }
 
-const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
+const OnScreenKeyboard :React.FC <value> = ({handleclose,currentv,setvalue}) => {
     const [inputData,setinputData] = useState<any>('')
 
     const [isLetter,setisLetter] = useState<boolean>(true)
@@ -57,6 +58,9 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
         };
     }, [isDragging]);
 
+    useEffect(() => {
+        setinputData(currentv)
+    },[currentv])
 
     const changeInput = () => {
         if (isLetter === true){
@@ -135,9 +139,12 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
                             // onMouseDown={handleMouseDown}
                             // onMouseMove={handleMouseMove}
                             // onMouseUp={handleMouseUp}
-                            style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '95%', height: '400px' }} >
-        
-            <input defaultValue={inputData} ref={inputRef} style={{textAlign:'center',fontSize:'20px'}}/>
+                            style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '92%', height: '400px' }} >
+             <div style={{display:'flex',flexDirection:'row'}}>
+                <input defaultValue={inputData} ref={inputRef} style={{textAlign:'center',fontSize:'20px',width:'75%',border:'1px solid'}}/>
+                <button onClick={()=> handleclose()} style={{height:'40px',width:'23%'}}>Close</button>
+                </div>
+            
             <div className='container-key'>
         {/* {isLetter ? ( */}
             <div className='container-key1'>
@@ -165,9 +172,11 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
                     ))}
             </div>
             <div className="row">
-                <button style={{ width: "15%" }} onClick={changeInput}>123</button>
-                <button style={{ width: "50%" }} onClick={() =>handleButtonClick(' ')}> </button>
-                <button style={{width:'15%'}} onClick={SendData}>OK</button>
+                <button style={{ width: "8%" }} onClick={() =>handleButtonClick('&')}>$</button>
+                <button style={{ width: "8%" }} onClick={() =>handleButtonClick('#')}>#</button>
+                <button style={{ width: "8%" }} onClick={() =>handleButtonClick('@')}>@</button>
+                <button style={{ width: "40%" }} onClick={() =>handleButtonClick(' ')}> </button>
+                <button style={{width:'20%'}} onClick={SendData}>OK</button>
             </div>                  
         </div>
         {/* ):( */}
@@ -182,8 +191,8 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
 
                 <div className="row1">
                             {[4, 5, 6, 'Clear'].map((key, index) => (
-                                <button key={index} onClick={() => handleButtonClick(key)}>
-                                    { key}
+                                <button key={index} onClick={() => handleButtonClick(key)} style={{ fontSize : key === 'Clear'? '1.5vw':'20px'}}>
+                                    {key}
                                 </button>
                             ))}
                 </div>
@@ -196,9 +205,9 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,setvalue}) => {
                             ))}
                 </div>
                 <div className="row1s">
-                                    <button  onClick={changeInput}>ABC</button>
+                                    <button  onClick={()=> handleclose()} style={{fontSize:'1.5vw'}}>Close</button>
                                     <button  onClick={()=>handleButtonClick('0')}>0</button>
-                                    <button  onClick={SendData}>OK</button>
+                                    <button  style={{width:'46%'}} onClick={SendData}>OK</button>
                 </div>              
             </div>
         {/* )} */}

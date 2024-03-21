@@ -6,7 +6,7 @@ import './css/CashPaymentEntry.css'
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // import { faBackspace, faBackward, faFastBackward, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import Swal from "sweetalert2";
-import { Grid } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 
 interface CashData {
   handleClose: () => void;
@@ -305,39 +305,82 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
             <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
               
 
-            <div className="num-pad" style={{width:'100%'}}>
+            <div className="num-pad-payment" style={{width:'100%'}}>
               <div className="num-pad-row">
-              <button className="num-pad-key" onClick={() => handleInput('100')}>100</button>
+              <button className="num-pad-key" onClick={() => handleInput('100')}>
+                 <Typography      
+                    sx={{
+                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                    100
+                  </Typography>
+              </button>
                 <button className="num-pad-key" onClick={() => handleInput('1')}>1</button>
                 <button className="num-pad-key" onClick={() => handleInput('2')}>2</button>
                 <button className="num-pad-key" onClick={() => handleInput('3')}>3</button>
       
               </div>
               <div className="num-pad-row">
-              <button className="num-pad-key" onClick={() => handleInput('200')}>200</button>
+              <button className="num-pad-key" onClick={() => handleInput('200')}>
+                  <Typography      
+                    sx={{
+                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                    200
+                  </Typography>
+              </button>
                 <button className="num-pad-key" onClick={() => handleInput('4')}>4</button>
                 <button className="num-pad-key" onClick={() => handleInput('5')}>5</button>
                 <button className="num-pad-key" onClick={() => handleInput('6')}>6</button>
              
               </div>
               <div className="num-pad-row">
-              <button className="num-pad-key" onClick={() => handleInput('500')}>500</button>
+              <button className="num-pad-key" onClick={() => handleInput('500')}>
+                  <Typography      
+                    sx={{
+                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                    500
+                  </Typography>
+              </button>
                 <button className="num-pad-key" onClick={() => handleInput('7')}>7</button>
                 <button className="num-pad-key" onClick={() => handleInput('8')}>8</button>
                 <button className="num-pad-key" onClick={() => handleInput('9')}>9</button>
                 
               </div>
               <div className="num-pad-row">
-              <button className="num-pad-key"style={{ width: '25%' }} onClick={() => handleInput('1000')}>1000</button>
-                <button className="num-pad-key"style={{ width: '25%' }}  onClick={() => handleInput('.')}>.</button>
-                <button className="num-pad-key" style={{ width: '25%' }} onClick={() => handleInput('0')}>0</button>
-                <button className="num-pad-key"style={{ width: '25%'}} onClick={() => handleBackspace()}>Back</button>
+                <button className="num-pad-key" onClick={() => handleInput('1000')}>
+                  <Typography      
+                  sx={{
+                    fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' },
+                    width:'25%'}}>
+                    1000
+                  </Typography>
+                </button>
+                <button className="num-pad-key"  onClick={() => handleInput('.')}>.</button>
+                <button className="num-pad-key"  onClick={() => handleInput('0')}>0</button>
+                <button className="num-pad-key"  onClick={() => handleBackspace()}>
+                  <Typography      
+                    sx={{
+                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                    Back
+                  </Typography>
+                </button>
             
               </div>
               <div className="num-pad-row">
-                <button className="num-pad-key" style={{ width: '33%'}} onClick={handleClose}> Close</button> 
+                <button className="num-pad-key" style={{ width: '33%'}} onClick={handleClose}>
+                <Typography      
+                  sx={{
+                    fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                    Close
+                  </Typography>
+                </button> 
                 <button className="num-pad-key" style={{ width: '33%'}} onClick={handleOk}> OK </button>
-                <button className="num-pad-key" style={{ width: '33%'}} onClick={clearInput}> Clear </button>
+                <button className="num-pad-key" style={{ width: '33%'}} onClick={clearInput}>
+                <Typography      
+                  sx={{
+                    fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                    Clear
+                  </Typography>
+                </button>
               </div>
             </div>
 

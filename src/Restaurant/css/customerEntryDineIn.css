@@ -369,3 +369,7 @@ cursor: pointer;
 button:hover{
 background-color: blue;
 }
+
+.Customer-DineIn input{
+  height: 50px !important;
+}

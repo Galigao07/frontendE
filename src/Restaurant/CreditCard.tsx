@@ -9,6 +9,7 @@ import axios, { toFormData } from "axios";
 import BASE_URL from "../config";
 import OnScreenKeyboard from "./KeyboardGlobal";
 import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";
+import OnScreenKeyboardNumericForCardNo from "./KeyboardForCardNo";
 import { isDesktop } from "react-device-detect";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 
@@ -44,6 +45,13 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
     const [CardSearch,setCardSearch] = useState<string>('')
     const [CardList,setCardList] = useState<any>([])
     const [BankList,setBankList] = useState<any>([])
+    // totalAmountDue
+    const [totalAmountDue,settotalAmountDue] = useState<any>(0)
+
+    const [indexMonths,setindexMonths] = useState<any>(null)
+    const [indexYear,setindexYear] = useState<any>(null)
+    const [indexMonths2,setindexMonths2] = useState<any>(null)
+    const [indexYear2,setindexYear2] = useState<any>(null)
 
     const BankSearchRef = useRef<HTMLInputElement>(null)
     const BankListRef = useRef<HTMLTableElement>(null)
@@ -88,7 +96,7 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
         const currentYear = new Date().getFullYear();
         const futureYears = [];
 
-        for (let i = 0; i <= 10; i++) {
+        for (let i = 0; i <= 12; i++) {
             futureYears.push(currentYear + i);
         }
 
@@ -104,14 +112,15 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
         ApprovalNo:'',
         ExpiryMonth:'',
         ExpiryYear:'',
-        AmountDue:'',
+        AmountDue:0,
     })
 
     useEffect(() => {
       let amount: string = amountdue.toString().replace(',', '');
 
-        setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:amount})
-
+        setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:parseFloat(amount)})
+        settotalAmountDue(0)
+        setviewSave(true)
         setTimeout(() => {
             if (cardNoRef.current){
                 cardNoRef.current.focus();
@@ -121,7 +130,24 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
 
     },[]);
     
-    const SaveCreditPayment = async () => {
+
+    useEffect(() => {
+      // Perform any actions you need after CreditCardPaymentList changes
+      setindexMonths(null)
+      setindexMonths2(null)
+      setindexYear(null)
+      setindexYear2(null)
+    }, [CreditCardPaymentList]);
+
+    // const CheckIfListHaveData = async () => {
+  //     if (CreditCardPaymentList.length === 0) {
+  //         await setCreditCardPaymentList((prevList:any) => [...prevList, CreditCardPaymentData]);
+  //     }
+  //     return Promise.resolve();
+  // };
+  
+  const SaveCreditPayment = async () => {
+
         swalWithBootstrapButtons.fire({
             title: 'Confirmation',
             text: "Do you want Save this transaction?",
@@ -133,9 +159,30 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
     
             }).then(async (result) => {
             if (result.isConfirmed) {
-                console.log('Success',CreditCardPaymentList)
-   
-                CreditCardPayment({CreditCardPaymentList})
+
+              // 
+              // CreditCardPayment([CreditCardPaymentData])
+
+            // if (CreditCardPaymentList.length === 0) {
+            //   setCreditCardPaymentList([...CreditCardPaymentList, CreditCardPaymentData]);
+            //   CreditCardPayment({CreditCardPaymentList:CreditCardPaymentData})
+            // }else{
+            //   CreditCardPayment(CreditCardPaymentList:[{CreditCardPaymentList,CreditCardPaymentData}])
+            // }
+            if (CreditCardPaymentList.length === 0) {
+              // If empty, add CreditCardPaymentData to the list and call CreditCardPayment with the new list
+              const updatedList = [...CreditCardPaymentList, CreditCardPaymentData];
+              setCreditCardPaymentList(updatedList); // Update state or variable
+              CreditCardPayment({ CreditCardPaymentList: updatedList }); // Assuming you want to pass an object with a key 'CreditCardPaymentList'
+            } else {
+              // If not empty, just add CreditCardPaymentData to the existing list without creating a new key
+              const updatedList = [...CreditCardPaymentList, CreditCardPaymentData];
+              setCreditCardPaymentList(updatedList); // Update state or variable
+              CreditCardPayment({ CreditCardPaymentList: updatedList }); // Maintain consistency in function calls
+            }
+             
+            
+         
                 setCreditCardPaymentData({
                     CardNo:'',
                     AcquireBank:'',
@@ -144,7 +191,7 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
                     ApprovalNo:'',
                     ExpiryMonth:'',
                     ExpiryYear:'',
-                    AmountDue:'',
+                    AmountDue:0,
                 })
             }
             
@@ -186,8 +233,14 @@ const HandleCreditCardEntry = (e:any) => {
     if (name ==='AmountDue'){
       const isNumber = /^[0-9]*$/;
       if (isNumber.test(value)) {
+        if (value === ''){
+          setCreditCardPaymentData({ ...CreditCardPaymentData, [name]: 0 });
+          
+        }else{
+          setCreditCardPaymentData({ ...CreditCardPaymentData, [name]: parseFloat(value) });
+        }
           // If setQueNo input is a number, update the state
-      setCreditCardPaymentData({ ...CreditCardPaymentData, [name]: value });
+
       }
     }else{
       setCreditCardPaymentData({ ...CreditCardPaymentData, [name]: value });
@@ -278,7 +331,7 @@ if (name== 'ExpiryYear'){
 const [errorData,seterrorData] = useState('')
 const [errorView,seterrorView]= useState(false)
 const validateDataAndAddToList = () => {
-    if (CreditCardPaymentData.AmountDue === '') {
+    if (CreditCardPaymentData.AmountDue === 0) {
         seterrorView(true)
         seterrorData('Please Provide Amount')
         setTimeout(() => {
@@ -287,7 +340,7 @@ const validateDataAndAddToList = () => {
         }, 2000);
       return false;
     }
-    if (CreditCardPaymentData.AmountDue === '0') {
+    if (CreditCardPaymentData.AmountDue === 0) {
         seterrorView(true)
         seterrorData('Please Provide Amount More than Zero')
         // showErrorAlert('Please Provide Amount More than Zero');
@@ -366,6 +419,7 @@ const validateDataAndAddToList = () => {
 
 
   const AddToList = (event: any) => {
+
     let amount: string = amountdue.toString().replace(',', '');
     if (event.key === 'Enter') {
         if (parseFloat(amount) === totalAmountDue){
@@ -379,16 +433,16 @@ const validateDataAndAddToList = () => {
             return;
             }   
             
-        if (parseFloat(amount) < (totalAmountDue + parseFloat(CreditCardPaymentData.AmountDue))){
-                seterrorView(true)  
-                seterrorData('Total Amount Tendered more than Amount Due..')
-                setTimeout(() => {
-                    seterrorView(false)
-                    seterrorData('')
-                }, 2000);
+        // if (parseFloat(amount) < (totalAmountDue + CreditCardPaymentData.AmountDue)){
+        //         seterrorView(true)  
+        //         seterrorData('Total Amount Tendered more than Amount Due..')
+        //         setTimeout(() => {
+        //             seterrorView(false)
+        //             seterrorData('')
+        //         }, 2000);
         
-                return;
-                } 
+        //         return;
+        //         } 
                 
                 const currentYear = new Date().getFullYear();
                 const currentMonth = new Date().getMonth() + 1; // Note: Month is zero-based
@@ -418,7 +472,7 @@ const validateDataAndAddToList = () => {
           ApprovalNo: '',
           ExpiryMonth: '',
           ExpiryYear: '',
-          AmountDue: '',
+          AmountDue: 0,
         });
       }
      } 
@@ -427,6 +481,7 @@ const validateDataAndAddToList = () => {
   };
 
   const handleClickAddToList = () => {
+
     if (CreditCardPaymentData.CardNo.length < 16){
       showErrorAlert('Please Provide Correct Card No..!')
       return;
@@ -443,7 +498,7 @@ const validateDataAndAddToList = () => {
         return;
         }   
         
-    if (parseFloat(amount) < (totalAmountDue + parseFloat(CreditCardPaymentData.AmountDue))){
+    if (parseFloat(amount) < (totalAmountDue + CreditCardPaymentData.AmountDue)){
             seterrorView(true)  
             seterrorData('Total Amount Tendered more than Amount Due..')
             setTimeout(() => {
@@ -482,14 +537,56 @@ if (validateDataAndAddToList()) {
       ApprovalNo: '',
       ExpiryMonth: '',
       ExpiryYear: '',
-      AmountDue: '',
+      AmountDue: 0,
     });
   }
   }
 
-  let totalAmountDue = 0;
-  CreditCardPaymentList.forEach((payment: { AmountDue: any; }) => totalAmountDue += parseFloat(payment.AmountDue));
+  useEffect(() => {
 
+    let amountD: string = amountdue.replace(',', '')
+
+    if (CreditCardPaymentData.AmountDue > parseFloat(amountD)){
+      showErrorAlert('Amount Tendered Exceded Amount Due!!')
+      settotalAmountDue(0);
+      setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:parseFloat(amountD)})
+    }else{
+
+      if (CreditCardPaymentList.length !== 0){
+
+        let x :any = 0
+        CreditCardPaymentList.map((data:any) =>{
+          x = parseFloat(data.AmountDue) + parseFloat(x)
+        })
+
+        let y :any = 0
+        const z:any = CreditCardPaymentData.AmountDue
+
+        y = parseFloat(x) + parseFloat(z)
+
+         if (parseFloat(y) > parseFloat(amountD)){
+          showErrorAlert('Amount Tendered Exceded Amount Due!!')
+          settotalAmountDue(0);
+          setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:parseFloat(amountD) - parseFloat(x)})
+        }else{
+          settotalAmountDue(parseFloat(amountD) - parseFloat(y))
+        }
+      }else{
+        settotalAmountDue(parseFloat(amountD) - CreditCardPaymentData.AmountDue);
+      }
+    
+    }
+
+  }, [CreditCardPaymentData.AmountDue]); // Run effect when CreditCardPaymentList changes
+ 
+
+  useEffect(() => {
+    if (totalAmountDue === 0){
+      setviewSave(true);
+    }else{
+      setviewSave(false);
+    }
+  },[totalAmountDue])
 
 
 const SelectData = (index:any) =>{
@@ -532,7 +629,7 @@ const onDelete = () => {
             ApprovalNo: '',
             ExpiryMonth: '',
             ExpiryYear: '',
-            AmountDue: '',
+            AmountDue: 0,
           });
           setisEdit(false)
     } else {
@@ -569,7 +666,7 @@ const onDelete = () => {
               ApprovalNo: '',
               ExpiryMonth: '',
               ExpiryYear: '',
-              AmountDue: '',
+              AmountDue: 0,
             });
             setisEdit(false)
         }
@@ -584,17 +681,17 @@ const onDelete = () => {
   const [viewSave,setviewSave] = useState(false)
   const [isEdit,setisEdit] = useState(false)
 
-  useEffect(() =>{
-    let amount: string = amountdue.toString().replace(',', '');
-    if (parseFloat(amount) === totalAmountDue)  {
-        setviewSave(true)
-    } else {
-        setviewSave(false)
-    }
+  // useEffect(() =>{
+  //   let amount: string = amountdue.toString().replace(',', '');
+  //   if (parseFloat(amount) === totalAmountDue)  {
+  //       setviewSave(true)
+  //   } else {
+  //       setviewSave(false)
+  //   }
 
-    const bal :any = parseFloat(amount)- totalAmountDue
-    setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:bal})
-  },[totalAmountDue])
+  //   const bal :any = parseFloat(amount)- totalAmountDue
+  //   setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:bal})
+  // },[totalAmountDue])
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -756,19 +853,25 @@ const onDelete = () => {
     }, 100);
        }
     
+       type CreditCardPaymentDataKey = keyof typeof CreditCardPaymentData;
 
-       const [focusedInput, setFocusedInput] = useState<any>('');
+       const [focusedInput, setFocusedInput] = useState<CreditCardPaymentDataKey| 'CardNo'>('CardNo');
        const [cursorPosition, setCursorPosition] = useState<any>(0);
        const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
        const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
        const [isShowKeyboardNumeric, setisShowKeyboardNumeric] = useState<boolean>(false);
+       const [isShowKeyboardNumericForCardNo, setisShowKeyboardNumericForCardNo] = useState<boolean>(false);
        const [isShow, setisShow] = useState<boolean>(false);
        const showOnScreenKeybaord = (ref:any) => {
         if (isDesktop){
           if (isShow){
-            if (ref === 'ApprovalNo' || ref === 'ExpiryMonth' || ref === 'ExpiryYear' || ref === 'AmountDue' || ref === 'CardNo') {
+            if (ref === 'ExpiryMonth' || ref === 'ExpiryYear' || ref === 'AmountDue') {
               setisShowKeyboardNumeric(true)
-            }else{
+            }else if (ref === 'CardNo'){
+              setisShowKeyboardNumericForCardNo(true)
+            }
+            
+            else{
               setisShowKeyboard(true)
             }
      
@@ -782,11 +885,12 @@ const onDelete = () => {
 
        const setvalue = (value: any) => {
          if (focusedInput) {
-          if (focusedInput ==='Bank'){
-              setBankSearch(value);
-          } else if (focusedInput ==='card'){
-              setCardSearch(value);
-          } else if (focusedInput ==='CardNo'){
+          // if (focusedInput ==='Bank'){
+          //     setBankSearch(value);
+          // } else if (focusedInput ==='card'){
+          //     setCardSearch(value);
+          // } else 
+          if (focusedInput ==='CardNo'){
             setCreditCardPaymentData((prevData: any) => ({
               ...prevData,
               [focusedInput]: value.slice(0,16)
@@ -815,10 +919,12 @@ const onDelete = () => {
          }
          setisShowKeyboard(false)
          setisShowKeyboardNumeric(false)
+         setisShowKeyboardNumericForCardNo(false)
        };
        const closekeyBoard = () => {
          setisShowKeyboard(false)
          setisShowKeyboardNumeric(false)
+         setisShowKeyboardNumericForCardNo(false)
        }
 
 
@@ -838,7 +944,12 @@ const onDelete = () => {
           if (totalAmountDue === parseFloat(amount) && CreditCardPaymentList.length !== 0){
             setviewSave(true);
           }else{
-            setviewSave(false);
+            if (totalAmountDue === 0){
+              setviewSave(true);
+            }else{
+              setviewSave(false);
+            }
+         
           }
          
         }
@@ -976,7 +1087,8 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, expiryYearRef, AmountDueRef)} 
                             value={CreditCardPaymentData.ExpiryYear} name="ExpiryYear"
                             // onClick={()=>showOnScreenKeybaord('ExpiryYear')}
-                            onFocus={()=>setYearView(true)}
+                            // onFocus={()=>setYearView(true)}
+                            onFocus={()=>{setMonthsView(true)}}
                             readOnly
                             // onChange={HandleCreditCardEntry}
                             />
@@ -988,7 +1100,7 @@ const onDelete = () => {
                             <Typography                             sx={{
                                 fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                 overflow: 'auto',width:'40%'}}>
-                                Amout Due
+                               AMOUNT TENDERED
                             </Typography>
                             <input type="text" placeholder="0.00"  autoComplete="off" style={{textAlign:'end'}}
                             name="AmountDue" 
@@ -1005,7 +1117,7 @@ const onDelete = () => {
                         <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between' }}>
                             <div style={{ width: '100%', margin:'5px'}}>
                                 {viewSave ? (
-                                        <Button  onClick={SaveCreditPayment} disabled = {isEdit}  style={{
+                                        <Button onClick={()=>SaveCreditPayment()}                                 disabled = {isEdit}  style={{
                                             backgroundColor: isEdit ? 'gray' : 'blue', // Different color when disabled
                                             cursor: isEdit ? 'not-allowed' : 'pointer', // Change cursor when disabled
                                           }}>SAVE</Button>
@@ -1090,7 +1202,7 @@ const onDelete = () => {
                             <div>
                                 <Typography  sx={{
                                 fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
-                                overflow: 'auto',width:'40%'}}>AMOUNT TENDERED</Typography>
+                                overflow: 'auto',width:'40%'}}>BALANCE</Typography>
                                  <input type="text" placeholder="0.00" readOnly autoComplete="off" style={{textAlign:'end'}} value={totalAmountDue.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} />
                             
                             </div>
@@ -1209,38 +1321,154 @@ const onDelete = () => {
 
 {MonthsView && (
                        <div className='modal'>
-                         <div className='modal-content-waiter' style={{width:'20%'}}>
-                   
-                           <div className='card'>
-                             <h1>Select Months</h1>
-                           <div className='Waiterlist-Container'>
-                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Month')} ref={MonthsRef}>
+                         <div className='modal-content-waiter' style={{width:'60%',}}>
+                          <div style={{display:'flex',flexDirection:'row',margin:'10px'}}>
+                            <div className='card'>
+                              <h1>Select Months</h1>
+                            <div className='Select-Container' style={{display:'flex',flexDirection:'row',margin:'10px'}}>
+                              <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Month')} ref={MonthsRef}>
+                                <thead>
+                                  <tr>
+                                    <th>Code</th>
+                                    <th>Months</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                {months.slice(0, 6).map((item: any, index: any) => (
+                                    <tr
+                                      key={index}
+                                      onClick={() => {
+                                        setCreditCardPaymentData({ ...CreditCardPaymentData, ExpiryMonth: item.monthNumber });
+                                        {indexYear !== null || indexYear2 !== null ? setMonthsView(false):setMonthsView(true)};
+                                        setindexMonths(index);
+                                        setindexMonths2(null);
+                                      }}
+                                      tabIndex={0}
+                                      style={{
+                                        backgroundColor: indexMonths === index ? 'blue' : 'white',
+                                        color: indexMonths === index ? 'white' : 'black',
+                                        height: '50px',
+                                      }}
+                                    >
+                                      <td>{item.monthNumber.padStart(2, '0')}</td>
+                                      <td>{item.monthName}</td>
+                                    </tr>
+                                  ))}
+
+                                {/* {months.map((item:any,index:any) => (
+                                    <tr
+                                      key={index}
+                                      className={selectedItemIndex === index ? 'selected' : ''}
+                                      onClick={() => {setCreditCardPaymentData({... CreditCardPaymentData, ExpiryMonth: item.monthNumber});setMonthsView(false)}}
+                                      tabIndex={0}
+                    
+                                      style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                                    color:selectedItemIndex === index ? 'white':'black',height:'50px' }}
+                                    >
+                                      <td>{item.monthNumber.padStart(2,'0')}</td>
+                                      <td>{item.monthName}</td>
+                                    </tr>
+                                  ))} */}
+                                </tbody>
+                              </Table>
+
+
+                              <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Month')} ref={MonthsRef}>
+                                <thead>
+                                  <tr>
+                                    <th>Code</th>
+                                    <th>Months</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                {months.slice(6, 12).map((item: any, index: any) => (
+                                    <tr
+                                      key={index}
+                                      className={selectedItemIndex === index ? 'selected' : ''}
+                                      onClick={() => {
+                                        setCreditCardPaymentData({ ...CreditCardPaymentData, ExpiryMonth: item.monthNumber });
+                                        {indexYear !== null  || indexYear2 !== null? setMonthsView(false):setMonthsView(true)};
+                                        setindexMonths2(index);
+                                        setindexMonths(null);
+                                      }}
+                                      tabIndex={0}
+                                      style={{
+                                        backgroundColor: indexMonths2 === index ? 'blue' : 'white',
+                                        color: indexMonths2 === index ? 'white' : 'black',
+                                        height: '50px',
+                                      }}
+                                    >
+                                      <td>{item.monthNumber.padStart(2, '0')}</td>
+                                      <td>{item.monthName}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </Table>
+                                </div>
+                            </div>
+                            
+                            <div className='card'>
+                             <h1>Select Year</h1>
+                           <div className='Select-Container' style={{display:'flex',flexDirection:'row',margin:'10px'}}>
+
+                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Year')} ref={YearsRef}>
                                <thead>
                                  <tr>
-                                   <th>Code</th>
-                                   <th>Months</th>
+                                   <th>Year</th>
                                  </tr>
                                </thead>
                                <tbody>
-                               {months.map((item:any,index:any) => (
+                               {years.slice(0,6).map((year:any,index:any) => (
                                    <tr
                                      key={index}
-                                     className={selectedItemIndex === index ? 'selected' : ''}
-                                     onClick={() => {setCreditCardPaymentData({... CreditCardPaymentData, ExpiryMonth: item.monthNumber});setMonthsView(false)}}
+                                     onClick={() => {setCreditCardPaymentData({... CreditCardPaymentData, ExpiryYear: year});
+                                      setindexYear(index);
+                                      setindexYear2(null);
+                                     {indexMonths !== null || indexMonths2 !== null ? setMonthsView(false):setMonthsView(true)};
+                                    } }
                                      tabIndex={0}
                    
-                                     style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
-                                   color:selectedItemIndex === index ? 'white':'black',height:'50px' }}
+                                     style={{backgroundColor:indexYear === index ? 'blue':'white',
+                                      color:indexYear === index ? 'white':'black',height:'50px' ,fontSize:'2vw',}}
                                    >
-                                     <td>{item.monthNumber.padStart(2,'0')}</td>
-                                     <td>{item.monthName}</td>
+                                     <td style={{textAlign:'center'}}>{year}</td>
                                    </tr>
                                  ))}
                                </tbody>
                              </Table>
 
+                                
+                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Year')} ref={YearsRef}>
+                               <thead>
+                                 <tr>
+                                   <th>Year</th>
+                                 </tr>
+                               </thead>
+                               <tbody>
+                               {years.slice(6, 12).map((year:any,index:any) => (
+                                   <tr
+                                     key={index}
+
+                                     onClick={() => {setCreditCardPaymentData({... CreditCardPaymentData, ExpiryYear: year});
+                                     setindexYear2(index)
+                                     setindexYear(null);
+                                     {indexMonths !== null || indexMonths2 !== null ? setMonthsView(false):setMonthsView(true)};
+                                    }}
+                                     tabIndex={0}
+                   
+                                     style={{backgroundColor:indexYear2 === index ? 'blue':'white',
+                                      color:indexYear2 === index ? 'white':'black',height:'50px' ,fontSize:'2vw',}}
+                                   >
+                                     <td style={{textAlign:'center'}}>{year}</td>
+                                   </tr>
+                                 ))}
+                               </tbody>
+                             </Table>
                                </div>
                            </div>
+
+                          </div>
+
                            <div className='Button-Container'>
                                 <button onClick={() => setMonthsView(false)}>Close</button>
                             </div>
@@ -1297,8 +1525,10 @@ const onDelete = () => {
 
        
         </div>
-        {isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard} setvalue={setvalue}/>}
-        {isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard} setvalue={setvalue}/>}
+        {isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard} currentv={CreditCardPaymentData[focusedInput]} setvalue={setvalue}/>}
+        {isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard}    currentv={CreditCardPaymentData[focusedInput]} setvalue={setvalue}/>}
+        {isShowKeyboardNumericForCardNo && < OnScreenKeyboardNumericForCardNo handleclose = {closekeyBoard} currentv = {CreditCardPaymentData.CardNo} setvalue={setvalue}/>}
+
   </div>
     )
 }

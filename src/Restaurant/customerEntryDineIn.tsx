@@ -13,6 +13,8 @@ import OnScreenKeyboard from './KeyboardGlobal';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { isDesktop} from 'react-device-detect';
 import {  Button, Grid, Table, Typography } from '@mui/material';
+import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
+import OnScreenKeyboardNumericForCardNo from './KeyboardForCardNo';
 
 
 
@@ -69,19 +71,20 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
 
     const CustomerListRef = useRef<HTMLTableElement>(null)
     const [isTextHighlighted, setIsTextHighlighted] = useState<boolean>(false);
-  const [customerFocus, setCustomerFocus] = useState<boolean>(false);
-const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
-const [waiterFocus, setWaiterFocus] =useState<boolean>(false);
-
-const [selectionStart , setselectionStart] = useState<any>(0);
-const [selectionEnd , setselectionEnd] = useState<any>(0);
-const [selectedOption, setSelectedOption] = useState<string>('option2'); // Initialize the selected option
-const [cursorPosition, setCursorPosition] = useState<any>(0);
-const [selectedItemIndex, setSelectedItemIndex] = useState<any>(0);
-const [WaiterSearch, setWaiterSearch] = useState<any>('');
-const WaiterSearchRef = useRef<HTMLInputElement>(null)
-const CustomerSearchRef = useRef<HTMLInputElement>(null)
-const [CustomerSearch, setCustomerSearch] = useState<any>('');
+    const [customerFocus, setCustomerFocus] = useState<boolean>(false);
+    const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
+    const [waiterFocus, setWaiterFocus] =useState<boolean>(false);
+    const [isShowKeyboardNumeric, setisShowKeyboardNumeric] = useState<boolean>(false);
+    const [isShowKeyboardNumericForCardNo, setisShowKeyboardNumericForCardNo] = useState<boolean>(false);
+    const [selectionStart , setselectionStart] = useState<any>(0);
+    const [selectionEnd , setselectionEnd] = useState<any>(0);
+    const [selectedOption, setSelectedOption] = useState<string>('option2'); // Initialize the selected option
+    const [cursorPosition, setCursorPosition] = useState<any>(0);
+    const [selectedItemIndex, setSelectedItemIndex] = useState<any>(0);
+    const [WaiterSearch, setWaiterSearch] = useState<any>('');
+    const WaiterSearchRef = useRef<HTMLInputElement>(null)
+    const CustomerSearchRef = useRef<HTMLInputElement>(null)
+    const [CustomerSearch, setCustomerSearch] = useState<any>('');
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -864,13 +867,28 @@ if (category==='Waiter'){
 
 
 const [focusedInput, setFocusedInput] = useState<any>('');
+const [focusedInput2, setFocusedInput2] = useState<any>('');
 const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
 
-const [isShow, setisShow] = useState<boolean>(false);
+const [isShow, setisShow] = useState<boolean>(true);
 const showOnScreenKeybaord = (ref:any) => {
   if (isDesktop){
     if (isShow){
+      if (ref === 'Customer') {
+
+        setFocusedInput2(customer)
+        
       setisShowKeyboard(true)
+      }else if (ref === 'QueNo') {
+
+        setFocusedInput2(QueNo)
+        setisShowKeyboardNumeric(true)
+      }else if (ref === 'GuestCount') {
+        setisShowKeyboardNumeric(true)
+        setFocusedInput2(guestCount)
+      }
+   
+
       setFocusedInput(ref)
     }
   }
@@ -881,32 +899,44 @@ const ShowKeyorNot = () => {
 const setvalue = (value: any) => {
   if (focusedInput) {
    if (focusedInput ==='Customer'){
-       setCustomerSearch(value);
-       handleSearchInputChange(value, 'Customer')
+
+      if (CustomerRef.current){
+          setCustomer(value)
+      }else{
+        setCustomerSearch(value);
+        handleSearchInputChange(value, 'Customer')
+      }
+
    } else if (focusedInput ==='Waiter'){
        setWaiterSearch(value);
        handleSearchInputChange(value, 'Waiter')
-   }
+   }else if (focusedInput ==='QueNo'){
+    setQueNo(value);
+  }else if (focusedInput ==='GuestCount'){
+    setGuestCount(value);
    
 
   }
   setisShowKeyboard(false)
+  setisShowKeyboardNumeric(false)
 };
+}
 const closekeyBoard = () => {
   setisShowKeyboard(false)
+  setisShowKeyboardNumeric(false)
 }
 
   return (
     <div>
         <div className="modal">
-          <div className="modal-contentCustomerDine" style={{width:'100%', display:'flex',flexDirection:'row'}}>
+          <div className="modal-contentCustomerDine" style={{width:'50%', display:'flex',flexDirection:'row'}}>
 
           <Grid container className="CreditCard-Container" spacing={2}>
 
-            <Grid item xs={12} md={3} >
-              <div style={{width:'100%',height:'100%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
-                <h2 style={{ color: '#007bff', padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
-                borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid' }}
+            <Grid item xs={12} md={12} >
+              <div   style={{width:'100%',height:'100%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
+                <h2 style={{ color: 'blue', padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
+                borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid',fontSize:'50px' }}
                 >Sales Order  {typeandtable.OrderType} </h2>
                 <div className="customer-type">
                   <span className="customer-type-label">Customer Type:</span>
@@ -918,7 +948,7 @@ const closekeyBoard = () => {
 
                   {/* Input fields */}
                   <div style={{ display: 'flex', flexDirection: 'column'}}>
-                  <div style={{display:'flex',flexDirection:'column'}}>
+                  <div className= "Customer-DineIn" style={{display:'flex',flexDirection:'row'}}>
                         <label htmlFor="input1">Customer Name:</label>
                         <input ref={CustomerRef} 
                         onKeyDown={(e) =>
@@ -929,20 +959,17 @@ const closekeyBoard = () => {
                           disabled={typeandtable.OrderType === 'ADD ORDER'}
                           onChange={(e) => setCustomer(e.target.value)}  autoComplete="off"
                           onInput={ ()=> OpenWaiterModal('Customer')}
-                          // onInput={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
-                          onClick={() => handleClick(CustomerRef)}
+                          onClick={() => showOnScreenKeybaord('Customer')}
                           // onFocus={CustomerF} 
                           onFocus={(event) => {
-                            CustomerF();
                             customerType !== 'Walk-in' ? OpenWaiterModal('Customer'):'';
                           }}
-                          onMouseUp={() => checkSelection(CustomerRef)}
-                          // onKeyUp={() => checkSelection(CustomerRef)}
+                          // onMouseUp={() => checkSelection(CustomerRef)}
                           value={customer} required/>
 
                     </div>
                     
-                    <div style={{display:'flex',flexDirection:'column'}}>
+                    <div className= "Customer-DineIn" style={{display:'flex',flexDirection:'row'}}>
                       {isDineIn ? (
                         <><label>
                             Table Number
@@ -955,6 +982,7 @@ const closekeyBoard = () => {
                             <input type="text" placeholder="0" pattern="[0-9]*" 
                                   value={QueNo}
                                   ref={QueNoRef}
+                                    onFocus={()=> showOnScreenKeybaord('QueNo')}
                                     onChange={(e) => {
                                     const value = e.target.value;
                                     const isNumber = /^[0-9]*$/;
@@ -967,7 +995,7 @@ const closekeyBoard = () => {
 
                   </div>
 
-                  <div style={{display:'flex',flexDirection:'column'}}>
+                  <div className= "Customer-DineIn" style={{display:'flex',flexDirection:'row'}}>
                       <label htmlFor="input3">Guest Count:</label>
                       <input ref={GuestCountRef}  onKeyDown={(e) => handleKeyDown(e, GuestCountRef, WaiterRef)}  id="input3" 
                       type = "text"  pattern="[0-9]*"  placeholder="Guest Count" 
@@ -981,15 +1009,15 @@ const closekeyBoard = () => {
                               setGuestCount(value);
                           }
                       }}autoComplete="off"
-                        onFocus={GuestCountF}
-                    
+                        // onFocus={GuestCountF}
+                        onFocus={()=> showOnScreenKeybaord('GuestCount')}
                         value={guestCount}
-                        onClick={() => handleClick(GuestCountRef)}
+                        // onClick={() => handleClick(GuestCountRef)}
                         // onClick={handleClick}
                         required />
                   </div>
                   
-                  <div style={{display:'flex',flexDirection:'column'}}>
+                  <div className= "Customer-DineIn" style={{display:'flex',flexDirection:'row'}}>
                   <label htmlFor="input4">Waiter:</label>
                             <input  ref={WaiterRef} type="text" id="input4" placeholder="Select Waiter"  
                               onChange={(e) => setWaiter(e.target.value)} autoComplete="off" 
@@ -1027,17 +1055,22 @@ const closekeyBoard = () => {
                     >Save Order</button>
                   
                   </div>
-                  <button tabIndex={2} type="button" className ='button-cancel' ref={CloseBtnRef}
-                    onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,CloseBtnRef,PaymentSaveBtnRef,2) } 
-                  style={{width:'100%'}} onClick={handleclose}>Exit</button>
+                  <div style={{display:'flex',flexDirection:'row',margin:'5px'}} >
+                    <button tabIndex={2} type="button" className ='button-cancel' ref={CloseBtnRef}
+                         style={{margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}
+                      onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,CloseBtnRef,PaymentSaveBtnRef,2) } 
+                      onClick={handleclose}>Exit</button>
 
-                <button className="btn-show"  type='button' 
-                onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
-              </button>
+                      <button className ='button-ok' type='button' 
+                      style={{margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}
+                      onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
+                    </button>
+                  </div>
+
               </div>
             </Grid>
 
-          <Grid item xs={12} md={9} style={{ height: '100%',width:'100%'}}>
+          {/* <Grid item xs={12} md={9} style={{ height: '100%',width:'100%'}}>
 
             {isDesktop && (
               <div className='keyboardScreen'>
@@ -1046,7 +1079,7 @@ const closekeyBoard = () => {
             </div>
             )}
 
-            </Grid>
+            </Grid> */}
 
         </Grid>
 
@@ -1158,7 +1191,9 @@ const closekeyBoard = () => {
     )}
 
         </div>
-        {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+        {isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard} currentv={[focusedInput2]} setvalue={setvalue}/>}
+        {isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard}  currentv={[focusedInput2]} setvalue={setvalue}/>}
+    
     </div>
 
   );

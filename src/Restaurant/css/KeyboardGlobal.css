@@ -28,6 +28,7 @@
       }
       
       .container-key1,.container-key2{
+
         width: 100%;
         display: flex;
         flex-direction: column;
@@ -35,11 +36,13 @@
       }
 
     .container-key2{
-        width: 50%;
+ 
+        width: 30%;
         display: flex;
         flex-direction: column;
         justify-content: center;
       }
+
     .modal-content-keyboard .entry-drag{
     display: flex;
     flex-direction: row;
@@ -70,26 +73,26 @@
     }
 
   .rowf button{
-  width: 8%;
+  width: 8.5%;
 
   }
 
   .rows button{
-      width: 8%;
+    width: 8.5%;
   }
 
 
   .rowt button{
-    width: 8%;
+    width: 8.5%;
   }
 
   .row1 button{
-    width: 20%;
+    width: 22%;
   }
 
   
   .row1s button{
-    width: 20%;
+    width: 22%;
   }
 
     
