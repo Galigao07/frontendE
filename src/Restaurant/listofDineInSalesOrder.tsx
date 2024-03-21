@@ -642,7 +642,7 @@ useEffect(() => {
   if (SettleSORef.current){
     SettleSORef.current.focus();
     SettleSORef.current.style.backgroundColor = 'blue';
-    setisFocus(3)
+    setisFocus(0)
 
   }
 
@@ -890,7 +890,42 @@ useEffect(() => {
                  <div className="PaymentType-content" style={{width:'100%'}}>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px'}}>
+                  <div     
+                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
+                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+     
+                      }}
+                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,ViewCancelSORef,SettleSORef,PrintSORef,0)}
+                      tabIndex={0}
+                      ref={SettleSORef}
+                      onClick={handleSettleOrder}>
 
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' , 
+                         color: isFocus == 0 ? 'white':'blue',textAlign:'center'}}>
+                      Settle Bill</p>
+                      <img src= {SettleImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div>
+                    
+                    <div     
+                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
+                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+              
+                      }}
+                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,SettleSORef,PrintSORef,CancelSORef,1)}
+                      ref={PrintSORef}
+                      tabIndex={1}
+                      >
+
+                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,  
+                        color: isFocus == 1 ? 'white':'blue',textAlign:'center'}}>
+                      Print Bill</p>
+                      <img src= {ReprintImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div>
+
+
+              
 
                     <div     
                       style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
@@ -898,12 +933,12 @@ useEffect(() => {
                       borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
                   
                       }}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,CloseSORef,CancelSORef,ViewCancelSORef,0)}
-                      tabIndex={0}
+                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,PrintSORef,CancelSORef,ViewCancelSORef,2)}
+                      tabIndex={2}
                       onClick={CancellSO}
                       ref={CancelSORef}
                       >
-                      <p style={{ color: isFocus == 0? 'white':'blue', textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' ,textAlign:'center'}}>
+                      <p style={{ color: isFocus == 2? 'white':'blue', textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' ,textAlign:'center'}}>
                       Cancel SO</p>
                       <img src= {CancellSOImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
                     </div>
@@ -915,49 +950,16 @@ useEffect(() => {
                       borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
                    
                       }}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,CancelSORef,ViewCancelSORef,PrintSORef,1)}
-                      tabIndex={1}
+                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,CancelSORef,ViewCancelSORef,SeniorDSORef,3)}
+                      tabIndex={3}
                       ref={ViewCancelSORef}
                       >
 
-                      <p style={{ color: isFocus == 1 ? 'white':'blue', textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,textAlign:'center'}}>
+                      <p style={{ color: isFocus == 3 ? 'white':'blue', textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,textAlign:'center'}}>
                       View Cancelled SO</p>
                       <img src= {ViewCancellSOImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
                     </div>
 
-                    <div     
-                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              
-                      }}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,ViewCancelSORef,PrintSORef,SettleSORef,2)}
-                      ref={PrintSORef}
-                      tabIndex={2}
-                      >
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,  
-                        color: isFocus == 2 ? 'white':'blue',textAlign:'center'}}>
-                      Print Bill</p>
-                      <img src= {ReprintImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div>
-
-                    <div     
-                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-     
-                      }}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,PrintSORef,SettleSORef,SeniorDSORef,3)}
-                      tabIndex={3}
-                      ref={SettleSORef}
-                      onClick={handleSettleOrder}>
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' , 
-                         color: isFocus == 3 ? 'white':'blue',textAlign:'center'}}>
-                      Settle Bill</p>
-                      <img src= {SettleImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div>
                       
 
                   </div>
@@ -974,7 +976,7 @@ useEffect(() => {
                 
                       }} onClick={() => OpenVireficationEntry('Senior')}
                       ref={SeniorDSORef}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,SettleSORef,SeniorDSORef,PWDDSORef,4)}
+                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,ViewCancelSORef,SeniorDSORef,PWDDSORef,4)}
                       tabIndex={4}
                       >
                       <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,   
@@ -1062,7 +1064,7 @@ useEffect(() => {
                       }}
                       onClick={handleclose}
                       tabIndex={9}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,ItemDSORef,CloseSORef,CancelSORef,9)}
+                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,ItemDSORef,CloseSORef,SettleSORef,9)}
                       ref={CloseSORef}
                       >
 

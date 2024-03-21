@@ -135,6 +135,7 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
   
 
     const [focusedInput, setFocusedInput] = useState<any>('');
+    const [focusedInput2, setFocusedInput2] = useState<any>('');
     const [cursorPosition, setCursorPosition] = useState<any>(0);
     const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
     const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
@@ -143,6 +144,11 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
     const showOnScreenKeybaord = (ref:any) => {
       if (isDesktop){
         if (isShow){
+          if (ref === 'username'){
+            setFocusedInput2(username)
+          }else{
+            setFocusedInput2(password)
+          }
           setisShowKeyboard(true)
           setFocusedInput(ref)
         }
@@ -256,7 +262,7 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
           </div>
         </div>
         </div>
-        {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+        {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} currentv={focusedInput2} setvalue={setvalue}/>}
       </div>
     );
 }

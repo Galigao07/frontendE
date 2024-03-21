@@ -6,6 +6,8 @@ import React, { useEffect, useRef, useState } from "react";
 import './css/DiscountSeniorCitezen.css'
 import Swal from "sweetalert2";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
+import { isDesktop } from "react-device-detect";
+import OnScreenKeyboard from "./KeyboardGlobal";
 
 
 interface SeniorCitezenDiscountData{
@@ -371,6 +373,37 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
       //************* PREVENT KEYPRESS***************** */
 
 
+      type SeniorDiscountDatakey = keyof typeof SeniorDiscountData;
+
+      const [focusedInput, setFocusedInput] = useState<SeniorDiscountDatakey| 'SeniorID'>('SeniorID');
+      const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+      
+      const [isShow, setisShow] = useState<boolean>(false);
+      const showOnScreenKeybaord = (ref:any) => {
+        if (isDesktop){
+          if (isShow){
+            setisShowKeyboard(true)
+            setFocusedInput(ref)
+          }
+        }
+      }
+      const ShowKeyorNot = () => {
+        setisShow(!isShow);
+      }
+      const setvalue = (value: any) => {
+        if (focusedInput) {
+        
+            setSeniorDiscountData((prevData: any) => ({
+                ...prevData,
+                [focusedInput]: value
+              }));
+        }
+        setisShowKeyboard(false)
+      };
+      const closekeyBoard = () => {
+        setisShowKeyboard(false)
+      }
+      
 
     return (
         <>
@@ -390,6 +423,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                         <input type="text" placeholder="Senior ID" autoComplete="off" ref={SeniorIDRef} id ='seniorId'
                             value={SeniorDiscountData.SeniorID} name="SeniorID"
                             onKeyDown={(e) => handleKeyDown(e, SeniorIDRef, SeniorFulnnameRef)} 
+                            onClick={()=>showOnScreenKeybaord('SeniorID')}
                             onChange={(e) => handleChange('SeniorID', e.target.value)}/>
                     </div>
 
@@ -402,6 +436,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                         <input type="text" placeholder="Senior Full Name"  autoComplete="off"  ref={SeniorFulnnameRef}
                             value={SeniorDiscountData.SeniorFulnname} name="SeniorFulnname"
                             onKeyDown={(e) => handleKeyDown(e, SeniorFulnnameRef, SeniorTINRef)} 
+                            onClick={()=>showOnScreenKeybaord('SeniorFulnname')}
                             onChange={(e) => handleChange('SeniorFulnname', e.target.value)}/>
                     </div>
 
@@ -414,6 +449,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                             type="text" placeholder="Senior TIN" autoComplete="off" ref={SeniorTINRef}
                             value={SeniorDiscountData.SeniorTIN} name="SeniorTIN"
                             onKeyDown={(e) => AddNewSenior(e)}
+                            onClick={()=> showOnScreenKeybaord('SeniorTIN')}
                             // onKeyDown={(e) => handleKeyDown(e, SeniorTINRef, SGuestCountRef)} 
                             onChange={(e) => handleChange('SeniorTIN', e.target.value)} style={{width:'65%'}} />
                             <button 
@@ -513,7 +549,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                     </div>
 
 
-                    <div style={{ width: '100%', margin:'5px'}}>
+                    <div className="Button-container" style={{ width: '100%', margin:'5px'}}>
                         <Button style={{backgroundColor:'blue'}}  ref= {ViewListRef}  
                         onKeyDown={(e)=> HandleKeydownButton(e,CloseRef,ViewListRef,SaveButtonRef,0)}
                         tabIndex={0} onClick={ViewList}>View List</Button>
@@ -525,6 +561,10 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                         <Button style={{backgroundColor:'red'}}   ref= {CloseRef}  
                                      onKeyDown={(e)=> HandleKeydownButton(e,SaveButtonRef,CloseRef,ViewListRef,2)}
                         tabIndex={2} onClick={handleClose}>EXIT</Button>
+
+                        <Button  style={{fontSize:'10px',backgroundColor:'blue'}}
+                                    onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
+                        </Button>
                     </div>
                 </div>
                 </div>
@@ -577,6 +617,8 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                    
                 </div>
             </div>}
+
+            {isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard}  currentv = {SeniorDiscountData[focusedInput]} setvalue={setvalue}/>}
         </>
    
     )

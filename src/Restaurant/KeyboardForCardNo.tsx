@@ -3,11 +3,11 @@ import './css/KeyboardGlobal.css'
 
 interface value{
     handleclose:()=> void;
-    currentv :any;
+    currentv:any;
     setvalue:any;
 }
 
-const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalue}) => {
+const OnScreenKeyboardNumericForCardNo :React.FC <value> = ({handleclose,currentv,setvalue}) => {
     const [inputData,setinputData] = useState<any>('')
 
     const [isLetter,setisLetter] = useState<boolean>(true)
@@ -58,10 +58,11 @@ const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalu
         };
     }, [isDragging]);
 
+
     useEffect(() => {
         setinputData(currentv)
     },[currentv])
-    
+
     const changeInput = () => {
         if (isLetter === true){
             setisLetter(false)
@@ -101,7 +102,9 @@ const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalu
 
 
     const SendData = () => {
-        setvalue(inputData);
+
+        let stringWithoutDashes = inputData.replace(/-/g, '');
+        setvalue(stringWithoutDashes);
     }
 
     const handleButtonClick = (value:any) => {
@@ -127,12 +130,27 @@ const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalu
                 
           
             }else{
-                setinputData(inputData + String(value));
+
+                let x :any = 0
+
+                x = inputData + String(value)
+                    if (x.length <= 16 ){
+                        setinputData(inputData + String(value));
+                    }
+           
+
             }
           
         }
     };
 
+    useEffect(() => {
+        if (inputData.length === 16) {
+          const formattedValue = inputData.replace(/(\d{4})(\d{4})(\d{4})(\d{4})/, '$1-$2-$3-$4');
+    
+          setinputData(formattedValue);
+        }
+    }, [inputData]);
     return (
         <div className='modal-key'>
             <div  ref= {modalRef} className='modal-content-keyboard'
@@ -181,4 +199,4 @@ const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalu
     );
 }
 
-export default OnScreenKeyboardNumeric;
+export default OnScreenKeyboardNumericForCardNo;

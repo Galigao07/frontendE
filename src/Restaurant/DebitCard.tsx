@@ -10,6 +10,7 @@ import OnScreenKeyboard from "./KeyboardGlobal";
 import { isDesktop } from "react-device-detect";
 import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
+import OnScreenKeyboardNumericForCardNo from "./KeyboardForCardNo";
 
 
 
@@ -41,25 +42,27 @@ const DebitCardPayment: React.FC<DebitCardPaymentTrans> = ({handleClose,amountdu
     const BankListRef = useRef<HTMLTableElement>(null)
     const [selectedItemIndex, setSelectedItemIndex] = useState<any>(null);
     const [DebitCardPaymentList,setDebitCardPaymentList] = useState<any>([])
-
+    const [totalAmountDue,settotalAmountDue] = useState<any>(0)
     const [DebitCardPaymentData,setDebitCardPaymentData] = useState({
         CardNo:'',
         AcquireBank:'',
         CardHolder:'',
         ApprovalNo:'',
-        AmountDue:'',
+        AmountDue: 0,
     })
 
     useEffect(() => {
-
+      let amount = amountdue.replace(',','')
+      setDebitCardPaymentData({...DebitCardPaymentData,AmountDue:amount})
+      settotalAmountDue(0)
+      setviewSave(true)
         setTimeout(() => {
             if (cardNoRef.current){
                 cardNoRef.current.focus();
                 cardNoRef.current.select()
             }
         }, 100);
-        let amount = amountdue.replace(',','')
-        setDebitCardPaymentData({...DebitCardPaymentData,AmountDue:amount})
+
     },[]);
     
     const SaveCreditPayment = async () => {
@@ -74,14 +77,26 @@ const DebitCardPayment: React.FC<DebitCardPaymentTrans> = ({handleClose,amountdu
     
             }).then(async (result) => {
             if (result.isConfirmed) {
-                console.log('Success')
-                debitcardpayment({DebitCardPaymentList})
+                // console.log('Success')
+                // debitcardpayment({DebitCardPaymentList})
+
+                if (DebitCardPaymentList.length === 0) {
+                  // If empty, add CreditCardPaymentData to the list and call CreditCardPayment with the new list
+                  const updatedList = [...DebitCardPaymentList, DebitCardPaymentData];
+                  setDebitCardPaymentList(updatedList); // Update state or variable
+                  debitcardpayment({ DebitCardPaymentList: updatedList }); // Assuming you want to pass an object with a key 'CreditCardPaymentList'
+                } else {
+                  // If not empty, just add CreditCardPaymentData to the existing list without creating a new key
+                  const updatedList = [...DebitCardPaymentList, DebitCardPaymentData];
+                  setDebitCardPaymentList(updatedList); // Update state or variable
+                  debitcardpayment({ DebitCardPaymentList: updatedList }); // Maintain consistency in function calls
+                }
                 setDebitCardPaymentData({
                     CardNo:'',
                     AcquireBank:'',
                     CardHolder:'',
                     ApprovalNo:'',
-                    AmountDue:'',
+                    AmountDue: 0,
                 })
             }
             
@@ -181,7 +196,7 @@ if (name== 'ApprovalNo'){
 const [errorData,seterrorData] = useState('')
 const [errorView,seterrorView]= useState(false)
 const validateDataAndAddToList = () => {
-    if (DebitCardPaymentData.AmountDue === '') {
+    if (DebitCardPaymentData.AmountDue === 0) {
         seterrorView(true)
         seterrorData('Please Provide Amount')
         setTimeout(() => {
@@ -190,7 +205,7 @@ const validateDataAndAddToList = () => {
         }, 2000);
       return false;
     }
-    if (DebitCardPaymentData.AmountDue === '0') {
+    if (DebitCardPaymentData.AmountDue === 0) {
         seterrorView(true)
         seterrorData('Please Provide Amount More than Zero')
         // showErrorAlert('Please Provide Amount More than Zero');
@@ -249,16 +264,6 @@ const validateDataAndAddToList = () => {
             return;
             }   
             
-        if (parseFloat(amount) < (totalAmountDue + parseFloat(DebitCardPaymentData.AmountDue))){
-                seterrorView(true)  
-                seterrorData('Total Amount Tendered more than Amount Due..')
-                setTimeout(() => {
-                    seterrorView(false)
-                    seterrorData('')
-                }, 2000);
-        
-                return;
-                } 
                 
     if (validateDataAndAddToList()) {
         setDebitCardPaymentList([...DebitCardPaymentList, DebitCardPaymentData]);
@@ -267,7 +272,7 @@ const validateDataAndAddToList = () => {
           AcquireBank: '',
           CardHolder: '',
           ApprovalNo: '',
-          AmountDue: '',
+          AmountDue: 0,
         });
       }
      } 
@@ -292,7 +297,7 @@ const validateDataAndAddToList = () => {
         return;
         }   
         
-    if (parseFloat(amount) < (totalAmountDue + parseFloat(DebitCardPaymentData.AmountDue))){
+    if (parseFloat(amount) < (totalAmountDue + DebitCardPaymentData.AmountDue)){
             seterrorView(true)  
             seterrorData('Total Amount Tendered more than Amount Due..')
             setTimeout(() => {
@@ -311,13 +316,13 @@ if (validateDataAndAddToList()) {
       AcquireBank: '',
       CardHolder: '',
       ApprovalNo: '',
-      AmountDue: '',
+      AmountDue: 0,
     });
   }
   }
 
-  let totalAmountDue = 0;
-  DebitCardPaymentList.forEach((payment: { AmountDue: any; }) => totalAmountDue += parseFloat(payment.AmountDue));
+
+  // DebitCardPaymentList.forEach((payment: { AmountDue: any; }) => totalAmountDue += parseFloat(payment.AmountDue));
 
 
 const SelectData = (index:any) =>{
@@ -354,7 +359,7 @@ const onDelete = () => {
             AcquireBank: '',
             CardHolder: '',
             ApprovalNo: '',
-            AmountDue: '',
+            AmountDue: 0,
           });
           setisEdit(false)
     } else {
@@ -385,7 +390,7 @@ const onDelete = () => {
               AcquireBank: '',
               CardHolder: '',
               ApprovalNo: '',
-              AmountDue: '',
+              AmountDue: 0,
             });
             setisEdit(false)
         }
@@ -422,7 +427,7 @@ const onDelete = () => {
 
  const bal : any = parseFloat(amount) - totalAmountDue
         setDebitCardPaymentData({...DebitCardPaymentData,AmountDue: bal})
-  },[totalAmountDue])
+  },[])
 
 
   useEffect(() => {
@@ -531,20 +536,29 @@ const onDelete = () => {
     };
 
     ///// ********************KEYBOARD*************************///////////////
-    const [focusedInput, setFocusedInput] = useState<any>('');
+
+    type DebitCardPaymentDataKey = keyof typeof DebitCardPaymentData;
+
+    const [focusedInput, setFocusedInput] = useState<DebitCardPaymentDataKey| 'CardNo'>('CardNo');
+    // const [focusedInput, setFocusedInput] = useState<any>('');
     const [cursorPosition, setCursorPosition] = useState<any>(0);
     const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
     const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
     const [isShowKeyboardNumeric, setisShowKeyboardNumeric] = useState<boolean>(false);
+    const [isShowKeyboardNumericForCardNo, setisShowKeyboardNumericForCardNo] = useState<boolean>(false);
     const [isShow, setisShow] = useState<boolean>(false);
 
     const showOnScreenKeybaord = (ref:any) => {
       if (isDesktop){
         if (isShow){
-          if (ref === 'CardHolder') {
-            setisShowKeyboard(true)
-          }else{
+          if (ref === 'CardNo') {
+            setisShowKeyboardNumericForCardNo(true)
+          }else if (ref ==='AmountDue'){
             setisShowKeyboardNumeric(true)
+          }
+          
+          else{
+            setisShowKeyboard(true)
           }
        
           setFocusedInput(ref)
@@ -558,9 +572,10 @@ const onDelete = () => {
     }
     const setvalue = (value: any) => {
       if (focusedInput) {
-       if (focusedInput ==='Bank'){
-           setBankSearch(value);
-       }else if (focusedInput ==='CardNo'){
+      //  if (focusedInput ==='Bank'){
+      //      setBankSearch(value);
+      //  }else
+        if (focusedInput ==='CardNo'){
         setDebitCardPaymentData((prevData: any) => ({
           ...prevData,
           [focusedInput]: value.slice(0,16)
@@ -591,10 +606,12 @@ const onDelete = () => {
       }
       setisShowKeyboard(false)
       setisShowKeyboardNumeric(false)
+      setisShowKeyboardNumericForCardNo(false)
     };
     const closekeyBoard = () => {
       setisShowKeyboard(false)
       setisShowKeyboardNumeric(false)
+      setisShowKeyboardNumericForCardNo(false)
     }
 
   //   useEffect(() => {
@@ -604,6 +621,54 @@ const onDelete = () => {
   //         setviewSave(true);
   //     }
   // }, [DebitCardPaymentData.ApprovalNo]);
+
+
+
+  useEffect(() => {
+
+    let amountD: string = amountdue.replace(',', '')
+
+    if (DebitCardPaymentData.AmountDue > parseFloat(amountD)){
+      showErrorAlert('Amount Tendered Exceded Amount Due!!')
+      settotalAmountDue(0);
+      setDebitCardPaymentData({...DebitCardPaymentData,AmountDue:parseFloat(amountD)})
+    }else{
+
+      if (DebitCardPaymentList.length !== 0){
+
+        let x :any = 0
+        DebitCardPaymentList.map((data:any) =>{
+          x = parseFloat(data.AmountDue) + parseFloat(x)
+        })
+
+        let y :any = 0
+        const z:any = DebitCardPaymentData.AmountDue
+
+        y = parseFloat(x) + parseFloat(z)
+
+         if (parseFloat(y) > parseFloat(amountD)){
+          showErrorAlert('Amount Tendered Exceded Amount Due!!')
+          settotalAmountDue(0);
+          setDebitCardPaymentData({...DebitCardPaymentData,AmountDue:parseFloat(amountD) - parseFloat(x)})
+        }else{
+          settotalAmountDue(parseFloat(amountD) - parseFloat(y))
+        }
+      }else{
+        settotalAmountDue(parseFloat(amountD) - DebitCardPaymentData.AmountDue);
+      }
+    
+    }
+
+  }, [DebitCardPaymentData.AmountDue]); // Run effect when CreditCardPaymentList changes
+ 
+
+  useEffect(() => {
+    if (totalAmountDue === 0){
+      setviewSave(true);
+    }else{
+      setviewSave(false);
+    }
+  },[totalAmountDue])
 
 
 
@@ -623,7 +688,11 @@ const onDelete = () => {
       if (totalAmountDue === parseFloat(amount) && DebitCardPaymentList.length !== 0){
         setviewSave(true);
       }else{
-        setviewSave(false);
+         if (totalAmountDue === 0){
+              setviewSave(true);
+            }else{
+              setviewSave(false);
+            }
       }
      
     }
@@ -739,7 +808,7 @@ const onDelete = () => {
                         <div style={{display:'flex',flexDirection:'row'}}>
                             <Typography                             sx={{
                                 fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
-                                overflow: 'auto',width:'40%'}}>Amout Due</Typography>
+                                overflow: 'auto',width:'40%'}}>Amount Tendered</Typography>
                             <input type="text" placeholder="0.00"  autoComplete="off" style={{textAlign:'end'}}
                             name="AmountDue" 
                             ref={AmountDueRef}
@@ -837,7 +906,7 @@ const onDelete = () => {
                             <div>
                                 <Typography  sx={{
                                 fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
-                                overflow: 'auto',width:'40%'}}>AMOUNT TENDERED</Typography>
+                                overflow: 'auto',width:'40%'}}>BALANCE</Typography>
                                  <input type="text" placeholder="0.00" readOnly autoComplete="off" style={{textAlign:'end'}} value={totalAmountDue.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} />
                             
                             </div>
@@ -900,8 +969,9 @@ const onDelete = () => {
         
             </div>
         </div>
-        {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
-        {isShowKeyboardNumeric && <OnScreenKeyboardNumeric  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+        {isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard} currentv={DebitCardPaymentData[focusedInput]} setvalue={setvalue}/>}
+        {isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard}    currentv={DebitCardPaymentData[focusedInput]} setvalue={setvalue}/>}
+        {isShowKeyboardNumericForCardNo && < OnScreenKeyboardNumericForCardNo handleclose = {closekeyBoard} currentv = {DebitCardPaymentData.CardNo} setvalue={setvalue}/>}
         </div>
   
     )

@@ -10,6 +10,9 @@ import  './css/keyboard.css';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { Grid, Table, Typography } from '@mui/material';
+import { isDesktop } from 'react-device-detect';
+import OnScreenKeyboard from './KeyboardGlobal';
+import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
 
 interface CustomerPaymentData {
   handlemodaldata:any
@@ -437,20 +440,69 @@ const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
     }else if (event.key === 'Enter'){
 
         ClickCustomerList(selectedItemIndex)
-      
-  
     }
   };
 
+
+  const [isShowKeyboardNumeric, setisShowKeyboardNumeric] = useState<boolean>(false);
+  const [isShowKeyboardNumericForCardNo, setisShowKeyboardNumericForCardNo] = useState<boolean>(false);
+  const [focusedInput, setFocusedInput] = useState<any>('');
+  const [focusedInput2, setFocusedInput2] = useState<any>('');
+  const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+
+const [isShow, setisShow] = useState<boolean>(true);
+const showOnScreenKeybaord = (ref:any) => {
+  if (isDesktop){
+    if (isShow){
+      if (ref ==='Customer'){
+        setFocusedInput2(customer)
+     } else if (ref ==='Address'){
+      setFocusedInput2(customerAddress)
+     }else if (ref ==='TIN'){
+      setFocusedInput2(customerTIN)
+    }else if (ref ==='BStyle'){
+      setFocusedInput2(customerBusinessStyle)
+    }
+        
+      setisShowKeyboard(true)
+      setFocusedInput(ref)
+    
+  }
+}}
+const ShowKeyorNot = () => {
+  setisShow(!isShow);
+}
+const setvalue = (value: any) => {
+  if (focusedInput) {
+   if (focusedInput ==='Customer'){
+      setCustomer(value)
+   } else if (focusedInput ==='Address'){
+    setcustomerAddress(value)
+   }else if (focusedInput ==='TIN'){
+    setcustomerTIN(value)
+  }else if (focusedInput ==='BStyle'){
+    setcustomerBusinessStyle(value)
+  }
+  setisShowKeyboard(false)
+  setisShowKeyboardNumeric(false)
+};
+}
+const closekeyBoard = () => {
+  setisShowKeyboard(false)
+  setisShowKeyboardNumeric(false)
+}
+
   return (
+    <>
+   
     <div className="modal">
-      <div className="modal-contentCustomerDine" style={{width:'100%', display:'flex',flexDirection:'row'}}>
+      <div className="modal-contentCustomerDine" style={{width:'50%', display:'flex',flexDirection:'row'}}>
 
 
       <Grid container className="CreditCard-Container" spacing={2}>
 
-        <Grid item xs={12} md={3} style={{ height: '100%',width:'100%'}}>
-          <div style={{width:'100%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
+        <Grid item xs={12} md={12} style={{ height: '100%',width:'100%'}}>
+          <div  className = 'Customer-DineIn' style={{width:'100%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
             <h2 style={{ color: 'blue', padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
             borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid' }}
             >Customer Info</h2>
@@ -463,59 +515,50 @@ const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
             </div>
 
               {/* Input fields */}
-              <div style={{ display: 'flex', flexDirection: 'column'}}>
+              <div style={{ display: 'flex', flexDirection: 'row'}}>
                 <label htmlFor="input1">Customer Name:</label>
                 <input ref={CustomerRef} 
-                onKeyDown={(e) =>
-                            customerType === 'Walk-in'
-                              ? handleKeyDown(e, CustomerRef, customerAddressRef)
-                              : handleKeys(e, 'Customer')}
-                        onInput={(e: ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
-                type="text" id="input1" placeholder="Customer" 
-                  onChange={(e) => setCustomer(e.target.value)}  autoComplete="off"
-                  onClick={() => handleClick(CustomerRef)}
-                  onFocus={CustomerF} 
-                  value={customer} required/>
+                  onKeyDown={(e) =>
+                      customerType === 'Walk-in'
+                      ? handleKeyDown(e, CustomerRef, customerAddressRef)
+                      : handleKeys(e, 'Customer')}
+                    // onInput={(e: ChangeEvent<HTMLInputElement>) => handleSearchInputChange(e.target.value, 'Customer')}
+                    type="text" id="input1" placeholder="Customer" 
+                    onChange={(e) => {setCustomer(e.target.value);handleSearchInputChange(e.target.value, 'Customer')}}  autoComplete="off"
+                    // onClick={() => handleClick(CustomerRef)}
+                    onClick={()=> customerType === 'Walk-in' ? showOnScreenKeybaord('Customer'):null}
+                    // onFocus={CustomerF} 
+                    value={customer} required/>
 
-                  {/* {CustomerListModal && (
-                      <div className='CustomerlistPayment-Container' onKeyDown={(event) => handleKeys(event, 'customer')} >
-                      <ul id="list" className='ul-list customer'   onKeyDown={(event) => handleKeys(event, 'customer')}  ref ={CustomerListRef}>
-                        {CustomerList.map((result,index) => (
-                          <li tabIndex={0} key={index}
-                          onKeyDown={(event) => handleKeys(event, 'Customer')}
-                            onClick={() => ClickCustomerList(index)}
-                          >{result.id_code.padStart(4, '0')} - {result.trade_name}</li>
-                              ))}
-                            </ul>
-                            </div>
-            )}  */}
-
-
-
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'row'}}>
                 <label htmlFor="input3">Address:</label>
                 <input ref={customerAddressRef}  onKeyDown={(e) => handleKeyDown(e, customerAddressRef, customerTINRef)}  id="input3" type = "text"  placeholder="Address" 
                   onChange={(e) => setcustomerAddress(e.target.value)} autoComplete="off"
-                  onFocus={AddressF}
+                  // onFocus={AddressF}
+                  onClick={()=> showOnScreenKeybaord('Address')}
                   value={customerAddress}
-                  onClick={() => handleClick(customerAddressRef)}
-                  // onClick={handleClick}
+                  // onClick={() => handleClick(customerAddressRef)}
                   required />
-
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'row'}}>
                 <label htmlFor="input4">TIN:</label>
                 <input  ref={customerTINRef} type="text" id="input4" placeholder="Tax Identification"  
                   onChange={(e) => setcustomerTIN(e.target.value)} autoComplete="off" value={customerTIN}
-                  onFocus={TINF}
+                  // onFocus={TINF}
+                  onClick={()=> showOnScreenKeybaord('TIN')}
                   onKeyDown={(e) => handleKeyDown(e, customerTINRef, customerBusinessStyleRef)}
-                  onClick={() => handleClick(customerTINRef)}
+                  // onClick={() => handleClick(customerTINRef)}
                   required/>
-
-
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'row'}}>
               <label htmlFor="input4">Business Style:</label>
                 <input  ref={customerBusinessStyleRef} type="text" id="input45" placeholder="Business Style"  
                   onChange={(e) => setcustomerBusinessStyle(e.target.value)} autoComplete="off" value={customerBusinessStyle}
-                  onFocus={BusinessStyleF}
+                  // onFocus={BusinessStyleF}
+                  onClick={()=> showOnScreenKeybaord('BStyle')}
                   onKeyDown={(e) => handleKeyDown(e, customerTINRef, customerBusinessStyleRef)}
-                  onClick={() => handleClick(customerBusinessStyleRef)}
+                  // onClick={() => handleClick(customerBusinessStyleRef)}
 
                   required/>
               </div>
@@ -530,12 +573,12 @@ const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
       </Grid>
 
 
-    <Grid item xs={12} md={9} style={{ height: '100%',width:'100%'}}>
+    {/* <Grid item xs={12} md={9} style={{ height: '100%',width:'100%'}}>
       <div className='keyboardScreen'>
         {rows}
         <button className="num-pad-key" style={{width:'98%',margin:'8px 10px'}} onClick={() => handleButtonClick(' ')}>SPACE</button>
       </div>
-    </Grid>
+    </Grid> */}
   </Grid>
 
 
@@ -592,44 +635,13 @@ const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
 )}
 
 
-
-
-
-
-    {/* <div>
-      <div className="num-pad" style={{width:'50% !important'}}>
-      <div className="num-pad-row">
-        <button className="num-pad-key" onClick={() => handleButtonClick('1')}>1</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('2')}>2</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('3')}>3</button>
-      </div>
-      <div className="num-pad-row">
-        <button className="num-pad-key" onClick={() => handleButtonClick('4')}>4</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('5')}>5</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('6')}>6</button>
-      </div>
-      <div className="num-pad-row">
-        <button className="num-pad-key" onClick={() => handleButtonClick('7')}>7</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('8')}>8</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('9')}>9</button>
-      </div>
-      <div className="num-pad-row">
-        <button className="num-pad-key" onClick={handleClear}><FontAwesomeIcon icon={faTimesCircle}/>Clear</button>
-        <button className="num-pad-key" onClick={() => handleButtonClick('0')}>0</button>
-        <button className="num-pad-key" onClick={handleBackspace}><FontAwesomeIcon icon={faBackspace}/>Back</button>
-      </div>
-      <div className="num-pad-row">
-      <button className="num-pad-key"  onClick={handleButtonClick}>ABC</button>
-        <button className="num-pad-key"  onClick={handleButtonClick}>Close</button>
-        <button className="num-pad-key" onClick={handleButtonClick}>OK</button>
-      </div>
     </div>
-    </div> */}
-
+    
     </div>
-    </div>
-
-
+      {isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard} currentv={[focusedInput2]} setvalue={setvalue}/>}
+      {isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard}  currentv={[focusedInput2]} setvalue={setvalue}/>}
+ 
+    </>
   );
 };
 

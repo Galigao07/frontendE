@@ -1,4 +1,4 @@
-.num-pad {
+.num-pad-payment {
     display: flex;
     flex-direction: column;
     border: 2px solid #ccc;
@@ -14,19 +14,22 @@
   }
   
   
-  .num-pad-row button{
-  padding: 30px;
+  .num-pad-payment .num-pad-row button{
+  /* padding: 30px; */
+  height:100px;
   }
   
-  .num-pad-key {
-    padding: 10px 15px;
+  .num-pad-payment .num-pad-key {
+    /* padding: 0; */
+    /* padding: 10px 15px; */
+    /* height: 25%; */
     border: 1px solid #ccc;
     border-radius: 5px;
     background-color: #fff;
-    font-size: 30px;
     cursor: pointer;
-    width: 100%;
+    width: 25%;
     transition: background-color 0.3s ease;
+    text-align: center !important;
   }
 
   
