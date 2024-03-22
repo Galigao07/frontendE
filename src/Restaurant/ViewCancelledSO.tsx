@@ -33,19 +33,14 @@ import TransactionDiscount from './DiscountTransaction';
 import showErrorAlert from '../SwalMessage/ShowErrorAlert';
 import { Grid, Table, Typography } from '@mui/material';
 import { getWaiterName } from '../global';
-import ViewCancelledSOData from './ViewCancelledSO';
 // import TradeDiscount from './DiscountTrade';
 
 interface ListOfDineInSalesOrderProps {
-  handleclose: () => void; // Define the type for handleclose function
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  settlebillData: any; // Define the type for settlebillData (Replace 'any' with appropriate type)
-  tableno: string; // Define the type for tableno (Assuming tableno is of type string, adjust if needed)
-  queno:string;
+    handleclose: any; // Define the type for handleclose function
 }
 
 
-const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handleclose,  settlebillData, tableno, queno}) => {
+const ViewCancelledSO: React.FC<ListOfDineInSalesOrderProps>  = ({handleclose}) => {
 
 
   interface SalesOrderItem {
@@ -83,7 +78,6 @@ const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handlec
     const [OpenVireficationModal,setOpenVireficationModal] = useState<boolean>(false)
     const [OpenItemDiscountModal,setOpenItemDiscountModal] = useState<boolean>(false)
     const [OpenTradeDiscountModal,setOpenTradeDiscountModal] = useState<boolean>(false)
-    const [ViewCancelledSOModal,setViewCancelledSOModal] = useState<boolean>(false)
     const [OpenTransactionDiscountModal,setOpenTransactionDiscountModal] = useState<boolean>(false)
     const [OpenSeniorCitezenDiscountModal,setOpenSeniorCitezenDiscountModal] = useState<boolean>(false)
     const [SelectedItemDiscount,setSelectedItemDiscount] = useState(null)
@@ -93,6 +87,7 @@ const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handlec
     const [DiscountType,setDiscountType] = useState<any>('')
     const [SubTotal,setSubTotal] = useState<any>('')
     const [tmpSO,settmpSO] = useState<any>(null)
+    const [tmpTableNo,settmpTableNo] = useState<any>(null)
 
     const CancelSORef = useRef<HTMLDivElement>(null)
     const ViewCancelSORef = useRef<HTMLDivElement>(null)
@@ -126,25 +121,12 @@ const CloseButtonModal = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                if (tableno !=''){
-                  const response = await axios.get(`${BASE_URL}/api/sales-order-list/`, {
-                    params: {
-                        tableno: tableno // or use the dynamic value that you want
-                    }
-                });
+  
+                const response = await axios.get(`${BASE_URL}/api/sales-order-list-cancelled/`);
                 setSalesOrderList(response.data);
                 console.log(response.data)
-                }else{
-                  const response = await axios.get(`${BASE_URL}/api/sales-order-list/`, {
-                    params: {
-                        queno: queno // or use the dynamic value that you want
-                    }
-                });
-                setSalesOrderList(response.data);
-                }
+                
   
-  
-
               } catch (error: unknown) {
                 if (axios.isAxiosError(error)) {
                   const axiosError = error as AxiosError;
@@ -177,12 +159,12 @@ const CloseButtonModal = () => {
            
             const fetchSalesOrderListing = async () => {
                 try {
-                    const response = await axios.get(`${BASE_URL}/api/sales-order-listing/`, {
+                    const response = await axios.get(`${BASE_URL}/api/sales-order-listing-cancelled/`, {
                         params: {
                             // Use data from the first item in SalesOrderList
-                            // Modify this according to your object structure if needed
-                          tableno:tableno,
-                          queno:queno,
+                        //     // Modify this according to your object structure if needed
+                        //   tableno:tableno,
+                        //   queno:queno,
                            document_no :documentNumbers
                             // Add other necessary parameters as needed
                         }
@@ -204,24 +186,10 @@ const CloseButtonModal = () => {
 
     const ShowAllInListing = async() => {
       settmpSO(null)
-      try {
-        if (tableno !=''){
-          const response = await axios.get(`${BASE_URL}/api/sales-order-list/`, {
-            params: {
-                tableno: tableno // or use the dynamic value that you want
-            }
-        });
-        setSalesOrderList(response.data);
-        }else{
-          const response = await axios.get(`${BASE_URL}/api/sales-order-list/`, {
-            params: {
-                queno: queno // or use the dynamic value that you want
-            }
-        });
-        setSalesOrderList(response.data);
-        }
 
-
+        try{
+          const response = await axios.get(`${BASE_URL}/api/sales-order-list-cancelled/`)
+            setSalesOrderList(response.data);
 
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
@@ -316,9 +284,11 @@ const ShowOrderListing = async (index: number) => {
   const tableNo = selectedItem.table_no
   const so_no = selectedItem.SO_no
   settmpSO(so_no)
+  settmpTableNo(tableNo)
+
   try {
     // Assuming 'selectedItem' needs to be part of the URL query parameters
-    const response = await axios.get(`${BASE_URL}/api/sales-order-listing/`, {
+    const response = await axios.get(`${BASE_URL}/api/sales-order-listing-cancelled/`, {
       // params: selectedItem,
       params: {
         tableno :tableNo,
@@ -361,16 +331,7 @@ const ClickShowOrderListing = async (index: number) => {
 }
 
 
-const handleSettleOrder = () => {
-  
-  settlebillData({
-    'settlebill': true,
-    'tableno': tableno,
-    'DiscountData':DisEntry,
-    'DiscountType':DiscountType,
-    
-  });
-};
+
 
 const swalWithBootstrapButtons = Swal.mixin({
   customClass: {
@@ -381,12 +342,12 @@ const swalWithBootstrapButtons = Swal.mixin({
 })
 
 
-const CancellSO = () => {
+const UnCancellSO = () => {
   try {
 
     swalWithBootstrapButtons.fire({
       title: 'Confirmation',
-      text: "Do you want to Cancel Sales Order?",
+      text: `Do you want to UnCancel SO no. ${tmpSO} ?`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Yes',
@@ -394,9 +355,9 @@ const CancellSO = () => {
       reverseButtons: true
     }).then( async (result) => {
       if (result.isConfirmed) {
-        const response = await axios.post(`${BASE_URL}/api/cancel-sales-order/`, {
+        const response = await axios.post(`${BASE_URL}/api/uncancel-sales-order/`, {
           params: {
-            tableno:tableno,
+            tableno:tmpTableNo,
             so_no:tmpSO,
           }
       });
@@ -600,43 +561,43 @@ const PaymentModalHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:
 
 }
 
-if (event.key == 'Enter'){
-   if (index == 0){
-    handleSettleOrder()
-   }
-   if (index == 1){
-    PrintBill()
-   }
-   if (index == 2){
-    CancellSO()
-   }
-   if (index == 3){
-    ViewCancelledSO()
-   }
-   if (index == 4){
-    OpenVireficationEntry('Senior')
-   }
-   if (index == 5){
+// if (event.key == 'Enter'){
+//    if (index == 0){
+//     handleSettleOrder()
+//    }
+//    if (index == 1){
+//     PrintBill()
+//    }
+//    if (index == 2){
+//     CancellSO()
+//    }
+//    if (index == 3){
+//     ViewCancelledSO()
+//    }
+//    if (index == 4){
+//     OpenVireficationEntry('Senior')
+//    }
+//    if (index == 5){
   
-    OpenVireficationEntry('PWD')
-   }
-   if (index == 6){
+//     OpenVireficationEntry('PWD')
+//    }
+//    if (index == 6){
   
-    OpenVireficationEntry('Trade')
-   }
-   if (index == 7){
+//     OpenVireficationEntry('Trade')
+//    }
+//    if (index == 7){
   
-    OpenVireficationEntry('Transaction')
-   }
-   if (index == 8){
+//     OpenVireficationEntry('Transaction')
+//    }
+//    if (index == 8){
   
-    OpenVireficationEntry('Item')
-   }
-  if (index == 9){
+//     OpenVireficationEntry('Item')
+//    }
+//   if (index == 9){
  
-    handleclose();
-  }
-}
+//     handleclose();
+//   }
+// }
 
 }
 
@@ -784,10 +745,10 @@ const printReceipt = async () => {
           doc.write('<p> BILLS </p>');
           doc.write('</div>')
           doc.write(`<DIV>Customer: ${customer} </DIV>`);
-          doc.write(`<div>Table No: ${tableno}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          &nbsp;&nbsp;&nbsp;&nbsp;
-          &nbsp; Guest Count: ${guestcount}</div>`);
+        //   doc.write(`<div>Table No: ${tableno}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        //   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        //   &nbsp;&nbsp;&nbsp;&nbsp;
+        //   &nbsp; Guest Count: ${guestcount}</div>`);
           doc.write('<div style="text-align: center;">');
           doc.write(`<p> DINE IN</p>`);
           doc.write('</div>')
@@ -1060,10 +1021,6 @@ cartItems.forEach((item:any) => {
 };
 
 
-const CloseViewCancelledSO = () => {
-setViewCancelledSOModal(false)
-}
-
   return (
     <div>
         <iframe id="myIframe" style={{position:'absolute',display:'none',backgroundColor:'#ffff',height:'90%',marginTop:'10px',width:'25%',
@@ -1079,7 +1036,7 @@ setViewCancelledSOModal(false)
                   <h2 style={{ color: '#ffffff', backgroundColor: '#007bff',
                     padding: '4px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',width:'80%',
                       borderRadius: '5px', fontWeight: 'bold', textAlign: 'center', caretColor:'transparent'
-                      }}>Sales Order List </h2>
+                      }}> CANCELLED TRANSACTION </h2>
 
                       <button style={{width:'20%',height:'40px',marginTop:'8px'}} onClick={()=>ShowAllInListing()}>Show All</button>
                   </div>
@@ -1094,10 +1051,7 @@ setViewCancelledSOModal(false)
                       <tr>
                           <th>Date</th>
                           <th>Time</th>
-                          <th>
-                          {tableno !== '' ?  'Table No.' : 'Que No.'}
-                      
-                            </th>
+                          <th>Table No.</th>
                           <th>SO</th>
                           <th>Customer</th>
                           <th>Waiter</th>
@@ -1112,17 +1066,12 @@ setViewCancelledSOModal(false)
                             }}> 
                           <td style={{textAlign:'center'}}>{item.date_trans}</td>
                           <td title={item.description}>{item.time_trans}</td>
-                          <td style={{textAlign:'center'}}>  
-                          {tableno !== '' ? item.table_no : parseInt(item.q_no)}
-
-                        
-                          </td>
+                          <td style={{textAlign:'center'}}>{item.table_no}</td>
                           <td style={{textAlign:'center'}}>{item.SO_no}</td>
                           <td style={{textAlign:'center'}} >{item.customer_name}</td>
                           <td style={{textAlign:'center'}} >{item.waiter_id}</td>
                           <td style={{textAlign:'center'}} >{item.guest_count}</td>
-
-                              </tr>
+                          </tr>
                           ))
                           ) : (
                             <tr>
@@ -1259,7 +1208,7 @@ setViewCancelledSOModal(false)
               <div style={{width:'100%' , border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px'}}>
                 <div className="Payment">
                  <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
-                 SELECT TRANSACTION</h2>
+                SELECT TRANSACTION</h2>
                  <div className="PaymentType-content" style={{width:'100%'}}>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px'}}>
@@ -1269,14 +1218,15 @@ setViewCancelledSOModal(false)
                       borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
      
                       }}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,ViewCancelSORef,SettleSORef,PrintSORef,0)}
+                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,CloseSORef,SettleSORef,CloseSORef,0)}
                       tabIndex={0}
                       ref={SettleSORef}
-                      onClick={handleSettleOrder}>
+                      onClick={UnCancellSO}
+                      >
 
                       <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' , 
                          color: isFocus == 0 ? 'white':'blue',textAlign:'center'}}>
-                      Settle Bill</p>
+                      Uncancell Transaction</p>
                       <img src= {SettleImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
                     </div>
                     
@@ -1286,173 +1236,19 @@ setViewCancelledSOModal(false)
                       borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
               
                       }}
-                      onClick={()=>PrintBill()}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,SettleSORef,PrintSORef,CancelSORef,1)}
-                      ref={PrintSORef}
+                      onClick={()=>handleclose()}
+                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,SettleSORef,CloseSORef,SettleSORef,1)}
+                      ref={CloseSORef}
                       tabIndex={1}
                       >
 
                       <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,  
                         color: isFocus == 1 ? 'white':'blue',textAlign:'center'}}>
-                      Print Bill</p>
-                      <img src= {ReprintImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div>
-
-
-              
-
-                    <div     
-                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                  
-                      }}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,PrintSORef,CancelSORef,ViewCancelSORef,2)}
-                      tabIndex={2}
-                      onClick={CancellSO}
-                      ref={CancelSORef}
-                      >
-                      <p style={{ color: isFocus == 2? 'white':'blue', textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' ,textAlign:'center'}}>
-                      Cancel SO</p>
-                      <img src= {CancellSOImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div>
-                      
-
-                    <div     
-                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                   
-                      }}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,CancelSORef,ViewCancelSORef,SeniorDSORef,3)}
-                      tabIndex={3}
-                      ref={ViewCancelSORef}
-                      onClick={()=> setViewCancelledSOModal(true)}
-                      >
-
-                      <p style={{ color: isFocus == 3 ? 'white':'blue', textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,textAlign:'center'}}>
-                      View Cancelled SO</p>
-                      <img src= {ViewCancellSOImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div>
-
-                      
-
-                  </div>
-
-                  <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
-                            SELECT DISCOUNT</h2>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px'}}>
-              
-                    <div     
-                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                
-                      }} onClick={() => OpenVireficationEntry('Senior')}
-                      ref={SeniorDSORef}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,ViewCancelSORef,SeniorDSORef,PWDDSORef,4)}
-                      tabIndex={4}
-                      >
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,   
-                       color: isFocus == 4 ? 'white':'blue',textAlign:'center'}}>
-                      Señior Citezin Discount</p>
-                      <img src= {Senior} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div>
-
-                    <div     
-                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                
-                    }} 
-                    onClick={() => OpenVireficationEntry('PWD')}
-                    tabIndex={5}
-                    ref={PWDDSORef}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,SeniorDSORef,PWDDSORef,TradeDSORef,5)}
-                    >
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' 
-                      ,fontWeight:'bold' ,    color: isFocus == 5 ? 'white':'blue',textAlign:'center'}}>
-                      PWD Discount</p>
-                      <img src= {pwdD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div>
-                    
-                    <div     
-                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-        
-                    }} onClick={() => OpenVireficationEntry('Trade')}
-                    tabIndex={6}
-                    ref={TradeDSORef}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,PWDDSORef,TradeDSORef,TransactionDSORef,6)}
-                    >
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px'
-                       ,fontWeight:'bold' ,    color: isFocus == 6 ? 'white':'blue',textAlign:'center'}}>
-                      Trade Discount</p>
-                      <img src= {tradeD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div>
-
-
-                    <div     
-                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                     
-                    }} onClick={() => OpenVireficationEntry('Transaction')}
-                    tabIndex={7}
-                    ref={TransactionDSORef}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,TradeDSORef,TransactionDSORef,ItemDSORef,7)}
-                    >
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold'
-                       ,color: isFocus == 7 ? 'white':'blue',textAlign:'center'}}>
-                      Transaction Discount</p>
-                      <img src= {transactD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div>
-
-                    
-                    <div     
-                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      
-                    }} onClick={() => OpenVireficationEntry('Item')}
-                    tabIndex={8}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,TransactionDSORef,ItemDSORef,CloseSORef,8)}
-                    ref={ItemDSORef}
-                    >
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,  
-                        color: isFocus == 8 ? 'white':'blue',textAlign:'center'}}>
-                      Item Discount</p>
-                      <img src= {transactD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div>
-
-                    <div     
-                      style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                  
-                      }}
-                      onClick={handleclose}
-                      tabIndex={9}
-                      onKeyDown={(e)=> PaymentModalHandleKeydown(e,ItemDSORef,CloseSORef,SettleSORef,9)}
-                      ref={CloseSORef}
-                      >
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)'  ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,   
-                       color: isFocus == 9 ? 'white':'blue',textAlign:'center'}}>
                       Close</p>
                       <img src= {CloseIcon} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
                     </div>
-
-                    </div>
-              </div>
-
-              
+                  </div>
+                </div>
                 </div>
               </div>
 
@@ -1465,166 +1261,9 @@ setViewCancelledSOModal(false)
 
         </div>
 
-        {ButtonModalOpen && (
-        <div className="modal" >
-          <div className="modal-content" style={{width:'50%'}}>
-          <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
-                    SELECT PAYMENT</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px'}}>
 
-
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Cancel SO</p>
-              <img src= {cash} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-              
-
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               View Cancelled SO</p>
-              <img src= {credit} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Print Bill</p>
-              <img src= {epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Settle Bill</p>
-              <img src= {Multiple} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-              
-
-            {/* <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue', textAlign:'center'}}>
-               Charge To Room</p>
-              <img src= {ChargeRoom} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div> */}
-
-          </div>
-
-
-
-          <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
-                    SELECT DISCOUNT</h2>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px'}}>
-       
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Señior Citezin Discount</p>
-              <img src= {Senior} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               PWD Discount</p>
-              <img src= {pwdD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-            
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Trade Discount</p>
-              <img src= {tradeD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-
-
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Transaction Discount</p>
-              <img src= {transactD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-
-            
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }} onClick={() => setOpenItemDiscountModal(true)}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Item Discount</p>
-              <img src= {transactD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)'  ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Close</p>
-              <img src= {CloseIcon} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-            </div>
-
-            </div>
-
-
-
-            
-        </div>
-        </div>
-      )}
-
-
-                  {OpenVireficationModal && <Verification handleClose={CloseVerification} VerificationEntry={OKVerification}/>}
-                  {OpenSeniorCitezenDiscountModal && <SeniorCitezenDiscount handleClose={CloseSeniorCitezenDiscount} SeniorData={SaveSeniorCitezenDiscount} 
-                                              amountcover={TotalAmountD} SeniorOrderData={SalesOrderList}/>}
-                  {OpenItemDiscountModal && <ItemDiscounts handleClose={CloseItemDiscountsEntry}  SelectedItemDiscount={SelectedItemDiscount} DiscountedData={SaveItemDiscountEntry}/>}
-                  {ViewCancelledSOModal && <ViewCancelledSOData handleclose={CloseViewCancelledSO} />}
-                  {OpenTradeDiscountModal && <TradeDiscountList handleClose={CloseTradeDiscountsEntry} SalesOrderListings ={SalesOrderListing} TradeData={SaveTradessDiscountEntry}/>}
-                  {OpenTransactionDiscountModal && <TransactionDiscount handleClose={CloseTransactionDiscountsEntry} SalesOrderListings ={SalesOrderListing} TransactionData={SaveTransactionDiscountEntry}/>}
     </div>
   );
 };
 
-export default ListOfDineInSalesOrder;
+export default ViewCancelledSO;

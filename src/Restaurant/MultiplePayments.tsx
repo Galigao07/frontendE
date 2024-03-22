@@ -23,7 +23,7 @@ const MultiplePayments:React.FC<MultiplepaymentsData> = ({handleclose,totalDue,M
   ;
     const [DebitCardPaymentModal, setDebitCardPaymentModal] = useState<boolean>(false);
     const [CreditCardPaymentModal, setCreditCardPaymentModal] = useState<boolean>(false);
-    const [CashAmount, setCashAmount] = useState<any>('0.00')
+    const [CashAmount, setCashAmount] = useState<any>('')
     const [CurrentCheckAmount, setCurrentCheckAmount] =  useState<any>('0.00')
     const [DebitCardAmount, setDebitCardAmount] = useState<any>('0.00')
     const [CreditCardAmount, setCreditCardAmount] =  useState<any>('0.00')
@@ -250,7 +250,19 @@ const OpenCreditCardPayment = () => {
       }
       const setvalue = (value: any) => {
         if (focusedInput) {
-          setCashAmount(value)
+          if (value > parseFloat(amountDue)){
+
+            let x:any = amountDue.replace(',', '')
+            setCashAmount(x)
+          }else{
+            if (value){
+              setCashAmount(value)
+            }else{
+              setCashAmount(0)
+            }
+          
+          }
+         
          }
   
         
@@ -273,7 +285,7 @@ const OpenCreditCardPayment = () => {
                 <div className="Container">
                     <div className="form-group">
                         <label>Cash</label>
-                        <input ref={CashAmountRef} value={CashAmount}  placeholder="0.00"
+                        <input ref={CashAmountRef} value={parseFloat(CashAmount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}  placeholder="0.00"
                         onFocus={()=> showOnScreenKeybaord('Cash')}
                         onKeyDown={(e) => Handlekeydown(e,CashAmountRef,CashAmountRef,CurrentCheckAmountRef)}
                         onChange={(e) => {
@@ -337,7 +349,7 @@ const OpenCreditCardPayment = () => {
                         <input value={amountTendered} placeholder="0.00" disabled/>
                     </div>
                     <div className="form-group">
-                        <label>Change</label>
+                        <label>Balance</label>
                         <input value={parseFloat(change).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
                         placeholder="0.00" disabled/>
                     </div>
@@ -370,7 +382,7 @@ const OpenCreditCardPayment = () => {
             {DebitCardPaymentEntryModal && <DebitCardPaymentEntry handleClose={CloseDebitCardPaymentEntryModal} amountdue={totalDue} amounttendered={SaveDebitCardPayment} />}
            
         </div>
-        {isShowKeyboard && <OnScreenKeyboardNumeric  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+        {isShowKeyboard && <OnScreenKeyboardNumeric  handleclose = {closekeyBoard}  currentv = {CashAmount} setvalue={setvalue}/>}
         </>
     )
 
