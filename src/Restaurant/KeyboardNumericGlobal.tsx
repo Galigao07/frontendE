@@ -139,14 +139,14 @@ const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalu
             style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '40%', height: '480px' }} >
                 <div style={{display:'flex',flexDirection:'row'}}>
                     <input defaultValue={inputData} ref={inputRef} style={{textAlign:'center',fontSize:'20px',width:'80%'}}/>
-                    <button onClick={()=> handleclose()} style={{height:'40px',width:'20%',margin:'5px'}}>Close</button>
+                    <button onClick={()=> handleclose()} style={{height:'40px',width:'20%',margin:'0'}}>Close</button>
                 </div>
 
             <div className='container-key'>
             <div className='container-key2' style={{width:'100%'}}>
                 <div className="row1" >
                             {[1, 2, 3, '⌫'].map((key, index) => (
-                                <button key={index} onClick={() => handleButtonClick(key)} style={{width:'24%',fontSize:'30px',height:'100px'}}>
+                                <button key={index} onClick={() => handleButtonClick(key)} style={{width:'22%',fontSize:'30px',height:'100px'}}>
                                     {key}
                                 </button>
                             ))}
@@ -154,7 +154,7 @@ const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalu
 
                 <div className="row1">
                             {[4, 5, 6, 'Clear'].map((key, index) => (
-                                <button key={index} onClick={() => handleButtonClick(key)} style={{width:'24%',fontSize:'30px',height:'100px'}}>
+                                <button key={index} onClick={() => handleButtonClick(key)} style={{width:'22%',fontSize:'30px',height:'100px'}}>
                                     { key}
                                 </button>
                             ))}
@@ -162,15 +162,15 @@ const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalu
 
                 <div className="row1">
                             {[7, 8, 9, '.'].map((key, index) => (
-                                <button key={index} onClick={() => handleButtonClick(key)} style={{width:'24%',fontSize:'30px',height:'100px'}}>
+                                <button key={index} onClick={() => handleButtonClick(key)} style={{width:'22%',fontSize:'30px',height:'100px'}}>
                                     {key}
                                 </button>
                             ))}
                 </div>
                 <div className="row1s">
                       
-                                    <button style={{width:'49%'}}  onClick={()=>handleButtonClick('0')}>0</button>
-                                    <button style={{width:'49%'}}  onClick={SendData}>OK</button>
+                                    <button style={{width:'45%'}}  onClick={()=>handleButtonClick('0')}>0</button>
+                                    <button style={{width:'45%'}}  onClick={SendData}>OK</button>
                 </div>              
             </div>
             </div>

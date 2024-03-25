@@ -176,7 +176,9 @@ const handleKeyDown = (event :any, BackRef : any, nextRef:any) => {
     }
   }
 };
-const [focusedInput, setFocusedInput] = useState<any>('');
+
+type formDatakey = keyof typeof formData;
+const [focusedInput, setFocusedInput] = useState<formDatakey>('username');
 const [cursorPosition, setCursorPosition] = useState<any>(0);
 const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
 const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
@@ -375,7 +377,7 @@ const handleSpecialButtonClick = (value:any) => {
       </div>
     </div>
   </div>
-  {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard} setvalue={setvalue}/>}
+  {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard}  currentv ={formData[focusedInput]} setvalue={setvalue}/>}
 
 </div>
 

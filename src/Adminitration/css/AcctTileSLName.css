@@ -12,7 +12,16 @@ h2 {
     flex-direction: row;
 
 }
-
+ tr:hover{
+    background-color: blue;
+    color: white;
+}
+.table-list.AcctTitle thead {
+    position: sticky;
+    top: 0; /* Stick the header to the top */
+    background-color: white; /* Ensure the header is visible */
+    z-index: 1; /* Ensure the header stays above other content */
+}
 
 .form-group {
     width: 100%;

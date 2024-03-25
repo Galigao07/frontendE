@@ -1066,9 +1066,25 @@ setViewCancelledSOModal(false)
 
   return (
     <div>
-        <iframe id="myIframe" style={{position:'absolute',display:'none',backgroundColor:'#ffff',height:'90%',marginTop:'10px',width:'25%',
+            <iframe
+              id="myIframe"
+              style={{
+                position: 'absolute',
+                display: 'none',
+                backgroundColor: '#ffff',
+                height: '90%',
+                marginTop: '10px',
+                width: '300px',
+                borderRadius: '10px',
+                zIndex: '9999',
+                left: '0',
+                right: '0' // Ensure iframe is centered horizontally
+              }}
+              src="https://example.com"
+            ></iframe>
+        {/* <iframe id="myIframe" style={{position:'absolute',display:'none',backgroundColor:'#ffff',height:'90%',marginTop:'10px',width:'30%',
           marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.com">
-        </iframe>
+        </iframe> */}
         <div className="modal">
             
             <div className='modal-contentSO'>
