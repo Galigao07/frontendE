@@ -6,7 +6,7 @@ import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 import BASE_URL from "../config";
 import { Table } from "@mui/material";
 import './css/Setup.css'
-import AcctTileSLName from "./AcctTileSLName";
+import AcctTileSLName from "./AcctTileGlobal";
 interface TransTypeData {
     Transaction :string,
     TransType :string,
@@ -20,7 +20,7 @@ const Setup: React.FC<TransTypeData> = ({Transaction,TransType}) => {
     const [DebitSalesTransactionTable ,setDebitSalesTransactionTable] = useState<boolean>(false)
     const [CreditSalesTransactionTable ,setCreditSalesTransactionTable] = useState<boolean>(false)
     let type = ''
-
+    const [selectedindex,setselectedindex] = useState<any>(null)
     const [showAcctTitleModal,setshowAcctTitleModal] = useState<boolean>(false)
     const [SLorAcct,setSLorAcct]   = useState('');
     const [selectedData,setselectedData]   = useState('');
@@ -37,6 +37,7 @@ setshowAcctTitleModal(true)
 setSLorAcct('Account Title') 
 const data = listOfdata[index]
 setselectedData(data)
+setselectedindex(index)
 }
 
 const ChangeSlAccount = (index:any) => {
@@ -44,7 +45,7 @@ const ChangeSlAccount = (index:any) => {
     setSLorAcct('SL Account')
 }
 
-    useEffect(()=> {
+useEffect(()=> {
 
         const FecthData = async() => {
             try {
@@ -82,13 +83,21 @@ const ChangeSlAccount = (index:any) => {
         }
         FecthData();
 
-    },[Transaction])
+},[Transaction])
+
+
 const handleclose = () => {
     setshowAcctTitleModal(false)
 }
 
 const DataSend = (data:any) => {
     setshowAcctTitleModal(false)
+    if (SLorAcct === 'Account Title'){
+        const newData = [...listOfdata]; // Make a copy of the data array
+        newData[selectedindex].accttitle = data.selected.subsidiary_acct_title; // Update the edited value
+        setlistOfdata(newData); // Update the state with the new data
+    }
+    
 }
 
 
@@ -199,7 +208,7 @@ const DataSend = (data:any) => {
 
             </div>
 
-            {showAcctTitleModal && <AcctTileSLName handleClose = {handleclose} Transaction ={SLorAcct} selectedData={selectedData} DataSend = {DataSend} />}
+            {showAcctTitleModal && <AcctTileSLName handleClose = {handleclose} Transaction ={SLorAcct} currentvalue={selectedData} DataSend = {DataSend} />}
         </div>
     )
 

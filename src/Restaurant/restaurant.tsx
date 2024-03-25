@@ -1988,6 +1988,7 @@ const PaymentClickControlS = () => {
 
     const CashierID = localStorage.getItem('UserID');
     const TerminalNo = localStorage.getItem('TerminalNo');
+    console.log(dictionary)
    
     try {
       const response = await axios.post(`${BASE_URL}/api/add-sales-order/`,{data:cartItems,data2:dictionary,TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo});
@@ -2864,8 +2865,8 @@ useEffect(() => {
         setTableOnprocess(0)
       
     }
-    await fecthTableList();
-    await fecthQueList();
+      fecthTableList();
+    //  fecthQueList();
 
   };
 
