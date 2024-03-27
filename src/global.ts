@@ -58,12 +58,12 @@ if (response.status == 200){
 }
 
 
-export async function GetSLAccount(str:any) {
+export async function GetSLAccount(sl_type:any) {
   try {
     // Assuming you're fetching the waiter name from some API
     const response = await axios.get(`${BASE_URL}/api/sl-account/`,{
       params: {
-        sl_acct:str
+        sl_type:sl_type
       }
     });
 if (response.status == 200){

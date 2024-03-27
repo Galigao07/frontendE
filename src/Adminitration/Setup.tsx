@@ -7,6 +7,7 @@ import BASE_URL from "../config";
 import { Table } from "@mui/material";
 import './css/Setup.css'
 import AcctTileSLName from "./AcctTileGlobal";
+import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
 interface TransTypeData {
     Transaction :string,
     TransType :string,
@@ -24,6 +25,10 @@ const Setup: React.FC<TransTypeData> = ({Transaction,TransType}) => {
     const [showAcctTitleModal,setshowAcctTitleModal] = useState<boolean>(false)
     const [SLorAcct,setSLorAcct]   = useState('');
     const [selectedData,setselectedData]   = useState('');
+    const [SlType ,setSlType] = useState<any>('')
+
+    const ConfigRef = useRef<HTMLButtonElement>(null)
+
 
 const HideTable = () => {
     setCreditTable(false)
@@ -41,8 +46,21 @@ setselectedindex(index)
 }
 
 const ChangeSlAccount = (index:any) => {
-    setshowAcctTitleModal(true)
     setSLorAcct('SL Account')
+    setselectedindex(index)
+    const data = listOfdata[index]
+    if (data.sl_type !== ''){
+        setSlType(data.sl_type)
+    }
+ 
+    setselectedData(data)
+    if (data.accttitle.trim() === '') {
+        return
+    }else{
+        setshowAcctTitleModal(true)
+    }
+ 
+   
 }
 
 useEffect(()=> {
@@ -93,11 +111,80 @@ const handleclose = () => {
 const DataSend = (data:any) => {
     setshowAcctTitleModal(false)
     if (SLorAcct === 'Account Title'){
-        const newData = [...listOfdata]; // Make a copy of the data array
-        newData[selectedindex].accttitle = data.selected.subsidiary_acct_title; // Update the edited value
-        setlistOfdata(newData); // Update the state with the new data
+        if (data === ''){
+            const newData = [...listOfdata]; // Make a copy of the data array
+            newData[selectedindex].accttitle = '';
+            newData[selectedindex].sl_type =''; // Update the edited value
+            newData[selectedindex].slacct = '';
+            newData[selectedindex].slid = '0'; // Update the edited value
+            setlistOfdata(newData); // Update the state with the new data
+            setSlType('')
+        }else{
+            const newData = [...listOfdata]; // Make a copy of the data array
+            newData[selectedindex].accttitle = data.selected.subsidiary_acct_title;
+            newData[selectedindex].sl_type = data.selected.sl_type; // Update the edited value
+            setlistOfdata(newData); // Update the state with the new data
+            setSlType(data.selected.sl_type)
+        }
+
+    } else if (SLorAcct === 'SL Account'){
+        if (data === ''){
+            const newData = [...listOfdata]; // Make a copy of the data array
+            newData[selectedindex].slacct = '';
+            newData[selectedindex].slid = '0'; // Update the edited value
+            setlistOfdata(newData); // Update the state with the new data
+            setSlType('')
+        }
+        else{
+            const newData = [...listOfdata]; // Make a copy of the data array
+            if (SlType === 'O'){
+                newData[selectedindex].slacct = data.selected.sl_name;
+
+                newData[selectedindex].slid = data.selected.id_code; // Update the edited value
+                setlistOfdata(newData); // Update the state with the new data
+                setSlType(data.selected.sl_type)
+            }else if (SlType ==='E'){
+
+                newData[selectedindex].slacct = data.selected.last_name + ', ' + data.selected.first_name + ', ' + data.selected.middle_name
+
+                newData[selectedindex].slid = data.selected.id_code; 
+                setlistOfdata(newData); 
+                setSlType(data.selected.sl_type)
+            }else if (SlType ==='C'){
+
+                newData[selectedindex].slacct = data.selected.trade_name
+
+                newData[selectedindex].slid = data.selected.id_code; 
+                setlistOfdata(newData); 
+                setSlType(data.selected.sl_type)
+            }else if (SlType ==='R'){
+
+                newData[selectedindex].slacct = data.selected.description
+
+                newData[selectedindex].slid = data.selected.desc_code; 
+                setlistOfdata(newData); 
+                setSlType(data.selected.sl_type)
+            }
+
+
+        }
+
     }
     
+}
+
+const HandleClickConfigure = async() => {
+    try{
+
+        const response = await axios.post(`${BASE_URL}/api/setup-configure/`,{data:listOfdata})
+        
+        if (response.status == 200){
+                showSuccessAlert(`Successfully Save ${Transaction}`)
+        }
+
+    }catch{
+        showErrorAlert(`Error while Saving ${Transaction}`)
+    }
 }
 
 
@@ -171,7 +258,36 @@ const DataSend = (data:any) => {
                 }
 
 
-                {DebitSalesTransactionTable || CreditSalesTransactionTable && 
+                {CreditSalesTransactionTable && 
+                    <Table>
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Account Title</th>
+                                <th>Subsidiary Account</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {listOfdata.length > 0 ? (
+                            listOfdata.map((item:any, index:any) => (
+                                <tr key={index}>
+                                    <td>{item.event}</td>
+                                    <td onClick={(e) => ChangeAcctitle(index)}>{item.accttitle}</td>
+                                    <td onClick={(e) => ChangeSlAccount(index)}> {item.slacct}</td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={3}></td>
+                            </tr>
+                        )}
+                           
+                        </tbody>
+                    </Table>
+                    
+                }
+
+            {DebitSalesTransactionTable && 
                     <Table>
                         <thead>
                             <tr>
@@ -202,9 +318,15 @@ const DataSend = (data:any) => {
 
 
 
-
+                
                 </div>
-
+                <div className="Button-Container" style={{ justifyContent: 'flex-end'}}>
+                <button ref={ConfigRef} style={{ width: '200px',  backgroundColor: 'blue', }}
+                onClick ={()=> {HandleClickConfigure()}}>
+                    Configure
+                </button>
+                </div>
+                
 
             </div>
 
