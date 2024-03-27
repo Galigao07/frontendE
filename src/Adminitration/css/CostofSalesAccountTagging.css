@@ -1,0 +1,24 @@
+.costofsales .form-group{
+    display: flex;
+    flex-direction: row;
+}
+.costofsales .form-group label{
+    width: 50%;
+
+}
+
+
+.costofsales {
+  border: 1px solid;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 10px;
+
+}
+
+.card thead {
+  position: sticky;
+  top: 0; /* Stick the header to the top */
+  background-color: white; /* Ensure the header is visible */
+  z-index: 1; /* Ensure the header stays above other content */
+}

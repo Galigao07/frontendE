@@ -3,10 +3,10 @@ import axios from "axios";
 import { Tab } from "react-tabs";
 import { Table } from "@mui/material";
 import './css/AcctTileSLName.css';
-import { GetAccountTitle } from "../global";
+import { GetAccountTitle, GetSLAccount } from "../global";
 
 interface acctDataSL {
-    handleClose: () => void;
+    handleClose:()=>void;
     Transaction:string;
     currentvalue:any;
     DataSend:any;
@@ -14,10 +14,10 @@ interface acctDataSL {
 
 const AcctTileSLName:React.FC <acctDataSL> = ({handleClose,Transaction,currentvalue,DataSend})=>{
     const [eventnameH,seteventnameH] = useState<any>('')
-
+    const [SlType ,setSlType] = useState<any>('')
     const [acctTitleH,setacctTitleH] = useState<any>('')
     const [openAcctitleModal,setopenAcctitleModal] = useState<boolean>(false)
-    const [AcctTitleList,setAcctTitleList] = useState<any>('')
+    const [AcctTitleList,setAcctTitleList] = useState<any>([])
     const [AccTitleSearch,setAccTitleSearch] = useState<any>('')
     const [selectedItemIndex,setselectedItemIndex] = useState<any>(null)
 
@@ -33,21 +33,25 @@ const AcctTileSLName:React.FC <acctDataSL> = ({handleClose,Transaction,currentva
     const SLAccountListRef = useRef<HTMLTableElement>(null)
 
 
-    useEffect(() => {
+useEffect(() => {
         const fetchData = async () => {
             if (Transaction === 'Account Title') {
                 setopenAcctitleModal(true);
                 const x = await GetAccountTitle('');
-                setAcctTitleList(x);
+                    setAcctTitleList(x);
             } else if (Transaction === 'SL Account') {
                 setopenSLAccountModal(true);
+                setSlType(currentvalue.sl_type)
+                const x = await GetSLAccount(currentvalue.sl_type);
+                setSLAccountList(x);
+                console.log(x);
             }
-            console.log(currentvalue);
+       
         };
     
         fetchData(); // Call the asynchronous function immediately
     
-    }, []);
+}, []);
 
 const ClickAccountTitle = (index:any) => {
     console.log('account')
@@ -58,20 +62,17 @@ const ClickAccountTitle = (index:any) => {
 }
 
 const ClickSlAccount = (index:any) => {
-    console.log('account')
     setselectedItemIndex(index)
-
- 
+    const selected = SLAccountList[index];
+    DataSend({selected})
 }
 
-const ClickSave = () => {
-
+const ClickClear = () => {
+    DataSend('')
 }
 
 const handleKeys2 = (event:any) => {
     if (Transaction=='SL Account'){
-
- 
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault(); // Prevent scrolling on arrow key press
       const newIndex = selectedItemIndex + (event.key === 'ArrowDown' ? 1 : -1);
@@ -101,7 +102,6 @@ const handleKeys2 = (event:any) => {
     }else if (event.key === 'Enter'){
         ClickSlAccount(selectedItemIndex)
     }
-
     }else if (Transaction=='Account Title'){
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault(); // Prevent scrolling on arrow key press
@@ -133,24 +133,17 @@ const handleKeys2 = (event:any) => {
         ClickAccountTitle(selectedItemIndex)
       }
     }
-
   };
 
     return(
         <div className="modal">
             <div className="modal-contentSL">
                 <div className="card">
-
                     <div className="SL-container">
-
                         <h2>{Transaction}</h2>
-
-                     
                     {openAcctitleModal &&  (
-
                             <div className='modal'>
                             <div className='modal-content-waiter'>
-
                             <div className='card'>
                                 <h1>Select Account Title</h1>
                                 <input
@@ -160,35 +153,38 @@ const handleKeys2 = (event:any) => {
                                 onKeyDown={(e) => handleKeys2(e)}
                                 />
                             <div className='AcctTitle-Container' style={{overflow:'auto',height:'330px'}}>
-          
                                 <Table id="table-list" className='table-list AcctTitle' onKeyDown={(event) => handleKeys2(event)} ref={AcctTitleListRef}>
                                 <thead>
                                     <tr>
                                     <th>Account Code</th>
                                     <th>Account Title</th>
                                     </tr>
-                                </thead >
-                                <tbody className="table-body">
-                                    {AcctTitleList && AcctTitleList.map((result:any, index:any) => (
-                                    <tr
-                                        key={index}
-                                        onClick={() => ClickAccountTitle(index)}
-                                        tabIndex={0}
-
-                                        style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
-                                        color:selectedItemIndex === index ? 'white':'black',height:'50px' }}
-                                    >
-                                        <td>{result.primary_code}</td>
-                                        <td>{result.subsidiary_acct_title}</td>
-                                    </tr>
-                                    ))}
-                                </tbody>
+                                </thead>
+                                    <tbody>
+                                        {AcctTitleList && AcctTitleList.map((result:any,index:any)=>(
+                                            <tr
+                                            key={index}
+                                            onClick={()=>ClickAccountTitle(index)}
+                                            // tabIndex={0}
+                                            style={{
+                                                backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                                                color:selectedItemIndex === index ? 'white':'black',
+                                                height:'50px',
+                                            }}
+                                            >
+                                            <td>{result.primary_code}</td>
+                                            <td>{result.subsidiary_acct_title.trim()}</td>
+                                            </tr>
+                                        ))
+                                        }
+                                    </tbody>
                                 </Table>
 
                                 </div>
                             </div>
                             <div className='Button-Container'>
                                 <button onClick={() => handleClose()}>Close</button>
+                                <button onClick={() => ClickClear()}>Clear</button>
                             </div>
                             </div>
 
@@ -203,56 +199,78 @@ const handleKeys2 = (event:any) => {
 
                     <div className='card'>
                         <h1>Select Subsidiary Account</h1>
-                    <div className='Waiterlist-Container'>
-                    <input
-                        ref={AccTitleSearchRef}
-                        value={AccTitleSearch}
-                        onChange={(e) => setAccTitleSearch(e.target.value)}
+                        <input
+                        ref={SLAccountSearchRef}
+                        value={SLAccountSearch}
+                        onChange={(e) => setSLAccountSearch(e.target.value)}
                         onKeyDown={(e) => handleKeys2(e)}
                         />
-                        <Table id="table-list" className='table-list AcctTitle' onKeyDown={(event) => handleKeys2(event)} ref={AcctTitleListRef}>
-                        <thead>
-                            <tr>
-                            <th>SL Code</th>
-                            <th>Subsidiary Account</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {AcctTitleList && AcctTitleList.map((result:any, index:any) => (
-                            <tr
+                    <div className='Waiterlist-Container'>
+
+                        <Table id="table-list" className='table-list AcctTitle' onKeyDown={(event) => handleKeys2(event)} ref={SLAccountListRef}>
+                            <thead>
+                                <tr>
+                                <th>SL Code</th>
+                                <th>Subsidiary Account</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {SLAccountList && SLAccountList.map((result:any, index:any) => (
+                                <tr
                                 key={index}
                                 className={selectedItemIndex === index ? 'selected' : ''}
-                                onClick={() => ClickAccountTitle(index)}
+                                onClick={() => ClickSlAccount(index)}
                                 tabIndex={0}
-
-                                style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
-                                color:selectedItemIndex === index ? 'white':'black',height:'50px' }}
-                            >
-                                <td>{result.id_code.padStart(4,'0')}</td>
-                                <td>{result.company_description}</td>
-                            </tr>
+                                style={{
+                                    backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                                    color:selectedItemIndex === index ? 'white':'black',
+                                    height:'50px'
+                                }}
+                                >
+                                {SlType === 'O' &&
+                                    <>
+                                    <td>{String(result.id_code).padStart(4, '0')}</td>
+                                    <td>{result.sl_name}</td>
+                                    </>
+                                }
+                                {SlType === 'C' && 
+                                    <>
+                                    <td>{String(result.id_code).padStart(4, '0')}</td>
+                                    <td>{result.trade_name}</td>
+                                    </>
+                                }
+                                {SlType === 'E' && 
+                                    <>
+                                    <td>{String(result.id_code).padStart(4, '0')}</td>
+                                    <td>{result.last_name}, {result.first_name} {result.middle_name}</td>
+                                    </>
+                                }
+                                {SlType === 'R' && 
+                                    <>
+                                    <td>{String(result.desc_code).padStart(4, '0')}</td>
+                                    <td>{result.description}</td>
+                                    </>
+                                }
+                                </tr>
                             ))}
-                        </tbody>
+                            </tbody>
+
                         </Table>
 
                         </div>
                     </div>
                     <div className='Button-Container'>
                         <button onClick={() => handleClose()}>Close</button>
+                        <button onClick={() => ClickClear()}>Clear</button>
                     </div>
                     </div>
 
                     </div>
 
                     )}
-
-
                     </div>
-
                 </div>
-
             </div>
-
         </div>
     )
 }

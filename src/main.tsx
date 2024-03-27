@@ -24,10 +24,13 @@ import React from 'react';
 import { HashRouter } from 'react-router-dom';
 import App from './App.tsx'
 import ReactDOM from 'react-dom/client'
+import { UserContextProvider } from './GlobalState/GlobalContextProvider.tsx'
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
+    <UserContextProvider> 
     <HashRouter>
       <App />
     </HashRouter>
+    </UserContextProvider> 
   </React.StrictMode>
 );

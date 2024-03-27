@@ -26,6 +26,7 @@ import CustomerDetails from './Reference/CustomerDetails'
 import SupplierDetails from './Reference/SupplierDetails'
 import CashCount from './Reference/CashCount'
 import XreadZred from './Reference/XreadZread'
+import CostofSalesAccountTagging from './Adminitration/CostofSalesAccountTagging'
 // import OnlineTestApp from './OnlineTestApp';
 // import electron, { BrowserWindow } from 'electron';
 
@@ -34,6 +35,7 @@ import XreadZred from './Reference/XreadZread'
 import { createBrowserHistory } from 'history';
 import DebitCardTagging from './Adminitration/Setup'
 import Setup from './Adminitration/Setup'
+
 const history = createBrowserHistory();
 function App() {
   const navigate = useNavigate();
@@ -356,6 +358,7 @@ const logoutClick = async () => {
   return (
 
 
+
     <div> 
       {isLogin ? (
         userRank === 'Cashier' || userRank === 'Salesman' ? (
@@ -466,7 +469,7 @@ const logoutClick = async () => {
                              </div>
                            </div>
    
-                           <NavLink   to="#">Cost of Sales Account Tagging</NavLink>
+                           <NavLink   to="/cost-of-sales">Cost of Sales Account Tagging</NavLink>
                            <NavLink   to="#">Tagging of SL Account for Sales</NavLink>
    
    
@@ -585,6 +588,8 @@ const logoutClick = async () => {
     </div>
     // <Provider store={store}>
     // </Provider>
+
+
       );
 
 }
@@ -605,6 +610,8 @@ const Content = () => {
       <Route path="/Customer-Details" element={<CustomerDetails />} />
       <Route path="/Cash-Count" element={<CashCount />} />
       <Route path="/Xread-Zread" element={<XreadZred />} />
+      <Route path="/cost-of-sales" element={<CostofSalesAccountTagging/>} />
+      
       <Route path="/Credit-Account-Sales-Transaction" element={<Setup Transaction = "Setp-up of Credit account for Sales Transaction"  TransType='' />} />
       <Route path="/Debit-Account-Sales-Transaction" element={<Setup Transaction = "Setp-up of Debit account for Sales Transaction"  TransType='' />} />
       <Route path="/Debit-Card" element={<Setup  Transaction = "Event Setup - Debit" TransType='Bank'/>} />
