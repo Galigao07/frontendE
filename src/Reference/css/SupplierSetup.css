@@ -11,15 +11,15 @@
 .Supplier-entry {
     display: flex;
     flex-direction: row;
- 
+     width: 100%;
 }
 
-.form-group {
-    width: 100%;  
-    padding: 5px;
+.Supplier-entry .SupplierSetup{
+    width: 100% !important;
+    margin: 5px;
 }
 
-.form-group input, label{
+.Supplier-entry .SupplierSetup .form-group input{
 width: 100%;
 }
 
@@ -31,4 +31,5 @@ width: 100%;
     border-radius: 0.25rem;
     border-top: 3px solid #007bff;
     padding: 40px;
+    width: 100%;
 }

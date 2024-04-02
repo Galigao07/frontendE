@@ -1700,6 +1700,8 @@ const Restaurant: React.FC = () => {
   const CloseLogout = () =>{
     setCloseTerminalModal(false)
     setOrderTypeModal(true)
+    setisSelected(0)
+    setisSelected(0)
     setTimeout(() => {
       DineInRef.current?.focus()
     }, 50);
@@ -1778,6 +1780,7 @@ const Restaurant: React.FC = () => {
     const CloseCashBreakDownModal = () => {
       setCashBreakDownModal(false)
       setOrderTypeModal(true)
+      setisSelected(0)
       setTimeout(() => {
         DineInRef.current?.focus()
       }, 50);
@@ -1859,6 +1862,7 @@ const BacktoHome = () => {
 
   if (cartItems.length === 0){
     setOrderTypeModal(true)
+    setisSelected(0)
     setTimeout(() => {
       DineInRef.current?.focus()
     }, 50);
@@ -1899,6 +1903,7 @@ const BacktoHome = () => {
         setTableNoModal(false);
       }else{
         setOrderTypeModal(true)
+        setisSelected(0)
         setOrderType('')
         setTableNoModal(false);
   
@@ -1973,33 +1978,33 @@ const PaymentClickControlS = () => {
     setCustomerDineInModal(false);
   
    // Update the GuestCount state
-    const keys = Object.keys(dataFromModal);
-    const values = Object.values(dataFromModal);
+    // const keys = Object.keys(dataFromModal);
+    // const values = Object.values(dataFromModal);
 
 // Create a new dictionary using the keys and values
-    const dictionary: Record<string, any> = {};
+    // const dictionary: Record<string, any> = {};
 
-    keys.forEach((key: string, index: number) => {
-      dictionary[key] = values[index];
-    });
+    // keys.forEach((key: string, index: number) => {
+    //   dictionary[key] = values[index];
+    // });
           
 
 
 
     const CashierID = localStorage.getItem('UserID');
     const TerminalNo = localStorage.getItem('TerminalNo');
-    console.log(dictionary)
+    // console.log(dictionary)
    
     try {
-      const response = await axios.post(`${BASE_URL}/api/add-sales-order/`,{data:cartItems,data2:dictionary,TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo});
+      const response = await axios.post(`${BASE_URL}/api/add-sales-order/`,{data:cartItems,data2:dataFromModal,TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo});
       if (response.status === 200) {
         setLoadingPrint(false)
-        if (dictionary.PaymentType === 'Sales Order')
-        setSOCustomer(dictionary)
+        if (dataFromModal.PaymentType === 'Sales Order')
+        setSOCustomer(dataFromModal)
         printReceipt(dataFromModal,response.data.SOdata);
       } else {
         // Handle other response statuses if needed
-        setSOCustomer(dictionary)
+        setSOCustomer(dataFromModal)
         printReceipt(dataFromModal,response.data.SOdata);
         setDineIn(false)
       }
@@ -2077,7 +2082,13 @@ const ReprintTransactionReceipt = async (data: { DocNO: any; DocType: any; }) =>
 const CutomerInfoEntryPaymnet = async (data: any) =>{
 setCustomeryPaymentModal(false)
 setLoadingPrint(true)
-const customer :any = CustomerOrderInfo
+let customer:any = ''
+if (OrderType === 'TAKE OUT'){
+  customer= ''
+}else{
+customer = CustomerOrderInfo
+}
+
   let AmountTenderedMultiple :any = 0
   const CashierID = localStorage.getItem('UserID');
   const CashierName = localStorage.getItem('FullName');
@@ -2382,6 +2393,7 @@ const CloseCustomerPaymentModal = async () => {
         setCartItems('')
         setTableNo('')
         setOrderTypeModal(true)
+        setisSelected(0)
         DeletePosExtendedAll()
         setTimeout(() => {
           DineInRef.current?.focus()
@@ -2425,6 +2437,7 @@ const CloseModal = async () => {
           setCartItems('')
           setTableNo('')
           setOrderTypeModal(true)
+          setisSelected(0)
           DeletePosExtendedAll()
           setTimeout(() => {
             DineInRef.current?.focus()
@@ -3211,6 +3224,7 @@ useEffect(() => {
           }else{
             setTableNoModal(false)
             setOrderTypeModal(true)
+            setisSelected(0)
             setTimeout(() => {
               DineInRef.current?.focus()
             }, 500);
@@ -3253,6 +3267,7 @@ useEffect(() => {
       }else{
         setTableNoModal(false)
         setOrderTypeModal(true)
+        setisSelected(0)
         setTimeout(() => {
           DineInRef.current?.focus()
         }, 500);
@@ -3468,6 +3483,7 @@ useEffect(() => {
   localStorage.removeItem('cartData');
   setOrderType('')
   setOrderTypeModal(true)
+  setisSelected(0)
   setTimeout(() => {
     DineInRef.current?.focus()
   }, 50);
@@ -3984,6 +4000,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
               if (SOInfo.PaymentType ==='Sales Order'){
                 setOrderType('')
                 setOrderTypeModal(true)
+                setisSelected(0)
                 setTimeout(() => {
                   DineInRef.current?.focus()
                 }, 50);
@@ -3991,7 +4008,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
                 iframe.style.display = 'none';
                 setCartItems([])
                 setTableNo('')
-
+                setCustomerOrderInfo([])
                 // window.location.reload(); 
               }
               else{
@@ -4284,6 +4301,7 @@ if (iframe !== null) {
     localStorage.removeItem('cartData');
     setOrderType('')
     setOrderTypeModal(true)
+    setisSelected(0)
     setTimeout(() => {
       DineInRef.current?.focus()
     }, 50);
@@ -4614,6 +4632,7 @@ if (iframe !== null) {
 
     setOrderType('')
     setOrderTypeModal(true)
+    setisSelected(0)
     // setChangeModal(true)
     setTimeout(() => {
       DineInRef.current?.focus()
@@ -5044,6 +5063,7 @@ if (iframe !== null) {
 
     setOrderType('')
     setOrderTypeModal(true)
+    setisSelected(0)
     // setChangeModal(true)
     setTimeout(() => {
       DineInRef.current?.focus()
@@ -5391,6 +5411,7 @@ if (currentHours > 12) {
     endShitf();
     setOrderType('')
     setOrderTypeModal(true)
+    setisSelected(0)
     setTimeout(() => {
       DineInRef.current?.focus()
     }, 50);

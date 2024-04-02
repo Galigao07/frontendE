@@ -16,9 +16,9 @@
 
 }
 
-.card thead {
+ .cost-of-sales thead tr th {
   position: sticky;
   top: 0; /* Stick the header to the top */
   background-color: white; /* Ensure the header is visible */
-  z-index: 1; /* Ensure the header stays above other content */
+  z-index: 0; /* Ensure the header stays above other content */
 }

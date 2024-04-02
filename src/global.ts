@@ -58,12 +58,13 @@ if (response.status == 200){
 }
 
 
-export async function GetSLAccount(sl_type:any) {
+export async function GetSLAccount(sl_type:any,name:any) {
   try {
     // Assuming you're fetching the waiter name from some API
     const response = await axios.get(`${BASE_URL}/api/sl-account/`,{
       params: {
-        sl_type:sl_type
+        sl_type:sl_type,
+        name:name
       }
     });
 if (response.status == 200){
@@ -76,4 +77,31 @@ if (response.status == 200){
     // Handle error appropriately, you might want to log the error
     return null; // or throw error depending on your use case
   }
+}
+
+export async function GetCurrentDateOnly() {
+const currentDate: Date = new Date();
+const year: number = currentDate.getFullYear();
+const month: number = currentDate.getMonth() + 1; // Month is zero-indexed, so add 1
+const day: number = currentDate.getDate();
+// If you want to format the date as a string in a specific format:
+const formattedDate: string = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+return formattedDate
+}
+
+export async function GetCurrentDateAndTime() {
+  const currentDate: Date = new Date();
+  const year: number = currentDate.getFullYear();
+  const month: number = currentDate.getMonth() + 1; // Month is zero-indexed, so add 1
+  const day: number = currentDate.getDate();
+  const hours: number = currentDate.getHours();
+  const minutes: number = currentDate.getMinutes();
+  const seconds: number = currentDate.getSeconds();
+  // If you want to format the date as a string in a specific format:
+  const formattedDate: string = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const formattedTime: string = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  // Combine date and time
+  const formattedDateTime: string = `${formattedDate} ${formattedTime}`;
+
+  return formattedDateTime;
 }

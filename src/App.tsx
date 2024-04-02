@@ -27,6 +27,10 @@ import SupplierDetails from './Reference/SupplierDetails'
 import CashCount from './Reference/CashCount'
 import XreadZred from './Reference/XreadZread'
 import CostofSalesAccountTagging from './Adminitration/CostofSalesAccountTagging'
+import MultiplePriceTypeSiteSetup from './Adminitration/MultiplePriceTypeSiteSetup'
+import TaggingofSaslesCategoryList from './Adminitration/TaggingofSaslesCategoryList'
+import TaggingPerTerminal from './Adminitration/TaggingPerTerminal'
+
 // import OnlineTestApp from './OnlineTestApp';
 // import electron, { BrowserWindow } from 'electron';
 
@@ -459,18 +463,16 @@ const logoutClick = async () => {
                            <div className="nested5-dropdown" >
                              <NavLink to="#" id="transtypesetupid" onClick={handleTransactionTypeClick} className="link-with-icon" style={{width: '95%'}}>Tagging of Sales Transaction<i className="fas fa-caret-down"></i></NavLink>
                              <div className="nested5-dropdown-content" id="transtypesetupidcontent" style={{display : TransactionTypeVisible ? 'block' : 'none'}}>
-                                 <NavLink   to="/Debit-Account-Sales-Transaction">Debit Accounts for Sales Transaction</NavLink>
-                                 <NavLink   to="/Credit-Account-Sales-Transaction">Credit Accounts for Sales Transaction</NavLink>
-                                 <NavLink   to="#">Per Category</NavLink>
-                                 <NavLink   to="#">Credit Account for Sales Return</NavLink>
-                                 <NavLink   to="#">Cost Sales</NavLink>
-                                 <NavLink   to="#">Per Terminal</NavLink>
+                                 <NavLink   to="/Debit-Account-Sales-Transaction">Debit Accounts for Sales</NavLink>
+                                 <NavLink   to="/Credit-Account-Sales-Transaction">Credit Accounts for Sales</NavLink>
+                                 <NavLink   to="/Tagging-of-sales-Category-List">Per Category</NavLink>
+                                 <NavLink   to="/Tagging-per-terminal">Per Terminal</NavLink>
                          
                              </div>
                            </div>
    
                            <NavLink   to="/cost-of-sales">Cost of Sales Account Tagging</NavLink>
-                           <NavLink   to="#">Tagging of SL Account for Sales</NavLink>
+                           <NavLink   to="/Setup-SL-Per-terminal">Tagging of SL Account for Sales</NavLink>
    
    
                          <div className="nested6-dropdown" >
@@ -487,8 +489,8 @@ const logoutClick = async () => {
                          <div className="nested7-dropdown" >
                            <NavLink  to="#" id="Withheldtaxid"  onClick={handlewithHeldTaxClick}  className="link-with-icon">Terminal price type Setup<i className="fas fa-caret-down"></i></NavLink>
                            <div className="nested7-dropdown-content" id="Withheldtaxidcontent" style={{display : withHeldTaxVisible ? 'block' : 'none'}}>
-                               <NavLink   to="#">Default Price Type</NavLink>
-                               <NavLink   to="#">Allowed Price Type</NavLink>
+                               <NavLink   to="/Default-price-type">Default Price Type</NavLink>
+                               <NavLink   to="/Allowed-price-type">Allowed Price Type</NavLink>
      
                        
                            </div>
@@ -616,8 +618,12 @@ const Content = () => {
       <Route path="/Debit-Account-Sales-Transaction" element={<Setup Transaction = "Setp-up of Debit account for Sales Transaction"  TransType='' />} />
       <Route path="/Debit-Card" element={<Setup  Transaction = "Event Setup - Debit" TransType='Bank'/>} />
       <Route path="/Credit-Card" element={<Setup Transaction = "Event Setup - Credit"  TransType='Bank' />} />
+      <Route path="/Default-price-type" element={<Setup Transaction = "Default Price Type"  TransType='PriceType' />} />
+      <Route path="/Setup-SL-Per-terminal" element={<Setup Transaction = "Setup SL Type Per Terminal"  TransType='' />} />
+      <Route path="/Allowed-price-type" element={<MultiplePriceTypeSiteSetup/>} />
+      <Route path="/Tagging-of-sales-Category-List" element={<TaggingofSaslesCategoryList/>} />
+      <Route path="/Tagging-per-terminal" element={<TaggingPerTerminal/>} />
 
-      Setp-up of Debit account for Sales Transaction
     </Routes>
   );
 };

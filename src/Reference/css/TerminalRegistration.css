@@ -3,14 +3,31 @@ display: flex;
 flex-direction: column;
 margin: 5px;
 }
+.terminal-entry{
+    /* border: solid; */
+    margin: 5px;
+    width: 75% !important;
+}
 
-.modal-content {
+.terminal-entry .form-group input{
+    width: 100%;
+}
+.terminal-entry.one{
+    /* border: solid; */
+    margin: 5px;
+    width: 25% !important;
+}
+.terminal-entry.one .form-group input{
+    width: 100%;
+}
+
+.modal-contentTerminalReg{
     background-color: #fefefe;
     padding: 20px;
     border-radius: 10px;
-    max-width: 500px;
-    max-height: 90%;
-    overflow-y: auto;
+    width: 35%;
+    height: 80%;
+    /* overflow-y: auto; */
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
   }
 
@@ -22,3 +39,9 @@ margin: 5px;
 .terminal-entry2 .form-group2{
     margin: 3px;
 }
+.TerminalReg{
+    margin: 5px;
+}
+/* .terminal-entry .form-group input{
+   width: 250px;
+} */
