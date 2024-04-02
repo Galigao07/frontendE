@@ -140,8 +140,9 @@ const DataSend = (value:any) => {
                         </button>
                     </div>
                 
-                    <div className="card" style={{height:'600px',overflow:'auto'}}>
-                    <Table >
+                    <div className="card cost" style={{height:'600px',overflow:'auto'}}>
+                        <div className="cost-of-sales">
+                        <Table >
                         <thead>
                             <tr>
                                 <th>Category Code</th>
@@ -168,6 +169,8 @@ const DataSend = (value:any) => {
                         )} 
                         </tbody>
                     </Table>
+                        </div>
+
                     </div>
                 </div>
 

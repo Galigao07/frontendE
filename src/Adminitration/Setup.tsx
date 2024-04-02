@@ -18,8 +18,10 @@ const Setup: React.FC<TransTypeData> = ({Transaction,TransType}) => {
     const [listOfdata,setlistOfdata] = useState<any>([])
     const [DebitTable ,setDebitTable] = useState<boolean>(false)
     const [CreditTable ,setCreditTable] = useState<boolean>(false)
+    const [AllowedPricetypeTable ,setAllowedPricetypeTable] = useState<boolean>(false)
     const [DebitSalesTransactionTable ,setDebitSalesTransactionTable] = useState<boolean>(false)
     const [CreditSalesTransactionTable ,setCreditSalesTransactionTable] = useState<boolean>(false)
+    const [SetupSLPerTerminal ,setSetupSLPerTerminal] = useState<boolean>(false)
     let type = ''
     const [selectedindex,setselectedindex] = useState<any>(null)
     const [showAcctTitleModal,setshowAcctTitleModal] = useState<boolean>(false)
@@ -35,6 +37,8 @@ const HideTable = () => {
     setDebitTable(false)
     setDebitSalesTransactionTable(false)
     setCreditSalesTransactionTable(false)
+    setAllowedPricetypeTable(false)
+    setSetupSLPerTerminal(false)
 }
 
 const ChangeAcctitle = (index:any) => {
@@ -81,6 +85,12 @@ useEffect(()=> {
                 }else if (Transaction =='Setp-up of Credit account for Sales Transaction'){
                     setCreditSalesTransactionTable(true)
                     type  = 'Setp-up of Credit account for Sales Transaction'
+                }else if (Transaction =='Default Price Type'){
+                    type  = 'Default Price Type'
+                    setAllowedPricetypeTable(true)
+                }else if (Transaction =='Setup SL Type Per Terminal'){
+                    type  = 'Setup SL Type Per Terminal'
+                    setSetupSLPerTerminal(true)
                 }
                 const response = await axios.get(`${BASE_URL}/api/setup/`,{
                     params: {
@@ -254,7 +264,6 @@ const HandleClickConfigure = async() => {
                            
                         </tbody>
                     </Table>
-                    
                 }
 
 
@@ -284,10 +293,9 @@ const HandleClickConfigure = async() => {
                            
                         </tbody>
                     </Table>
-                    
                 }
 
-            {DebitSalesTransactionTable && 
+                {DebitSalesTransactionTable && 
                     <Table>
                         <thead>
                             <tr>
@@ -312,8 +320,63 @@ const HandleClickConfigure = async() => {
                         )}
                            
                         </tbody>
-                    </Table>
-                    
+                    </Table>   
+                }
+
+                {AllowedPricetypeTable && 
+                    <Table>
+                        <thead>
+                            <tr>
+                                <th>Side Code</th>
+                                <th>Site Name</th>
+                                <th>Default Price Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {listOfdata.length > 0 ? (
+                            listOfdata.map((item:any, index:any) => (
+                                <tr key={index}>
+                                    <td>{item.site_code}</td>
+                                    <td>{item.site_name}</td>
+                                    <td onClick={(e) => ChangeSlAccount(index)}> {item.default_pricetype}</td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={3}></td>
+                            </tr>
+                        )}
+                           
+                        </tbody>
+                    </Table>   
+                }
+
+                {SetupSLPerTerminal && 
+                    <Table>
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Acount Title</th>
+                                <th>Subsidiary Account Title</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {listOfdata.length > 0 ? (
+                            listOfdata.map((item:any, index:any) => (
+                                <tr key={index}>
+                                    <td>{item.event}</td>
+                                    <td onClick={(e) => ChangeAcctitle(index)}>{item.accttitle}</td>
+                                    <td onClick={(e) => ChangeSlAccount(index)}> {item.slacct}</td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={3}></td>
+                            </tr>
+                        )}
+                           
+                        </tbody>
+                    </Table>   
                 }
 
 

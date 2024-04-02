@@ -1,0 +1,15 @@
+.multiplePriceType{
+    display: flex;
+    flex-direction: row;
+    margin: 10px;
+}
+
+.multiplePriceType .table{
+    margin: 10px;
+}
+
+.multiplePriceType .table.two{
+
+
+    height: 100%;
+}

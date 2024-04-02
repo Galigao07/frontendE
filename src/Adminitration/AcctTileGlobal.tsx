@@ -42,16 +42,37 @@ useEffect(() => {
             } else if (Transaction === 'SL Account') {
                 setopenSLAccountModal(true);
                 setSlType(currentvalue.sl_type)
-                const x = await GetSLAccount(currentvalue.sl_type);
+                const x = await GetSLAccount(currentvalue.sl_type,'');
                 setSLAccountList(x);
                 console.log(x);
             }
        
         };
     
-        fetchData(); // Call the asynchronous function immediately
-    
+        fetchData(); // Call the asynchronous function immediately   
 }, []);
+
+
+useEffect(() => {
+    const fetchData = async () => {
+        if (Transaction === 'Account Title') {
+            setopenAcctitleModal(true);
+            const x = await GetAccountTitle(AccTitleSearch);
+                setAcctTitleList(x);
+        } else if (Transaction === 'SL Account') {
+            setopenSLAccountModal(true);
+            setSlType(currentvalue.sl_type)
+            const x = await GetSLAccount(currentvalue.sl_type,SLAccountSearch);
+            setSLAccountList(x);
+            console.log(x);
+        }
+   
+    };
+
+    fetchData(); // Call the asynchronous function immediately   
+}, [AccTitleSearch,SLAccountSearch]);
+
+
 
 const ClickAccountTitle = (index:any) => {
     console.log('account')
@@ -70,6 +91,8 @@ const ClickSlAccount = (index:any) => {
 const ClickClear = () => {
     DataSend('')
 }
+
+
 
 const handleKeys2 = (event:any) => {
     if (Transaction=='SL Account'){
@@ -140,7 +163,7 @@ const handleKeys2 = (event:any) => {
             <div className="modal-contentSL">
                 <div className="card">
                     <div className="SL-container">
-                        <h2>{Transaction}</h2>
+                        {/* <h2>{Transaction}</h2> */}
                     {openAcctitleModal &&  (
                             <div className='modal'>
                             <div className='modal-content-waiter'>

@@ -167,16 +167,18 @@ const OpenCreditCardPayment = () => {
         
 
     useEffect(() => {
-    localStorage.setItem('MULTIPLE','true')
+        localStorage.setItem('MULTIPLE','true')
         setamountDue(totalDue)
-
         setchange((parseFloat(CashAmount) + parseFloat(CurrentCheckAmount) + 
         parseFloat(DebitCardAmount) + parseFloat(CreditCardAmount) + parseFloat(CreditSalesAmount) - parseFloat(totalDue) ))
+  
+        if(CashAmount === isNaN || CashAmount === ''){
+          setCashAmount(0)
 
+        }
         if (CashAmountRef.current){
             CashAmountRef.current.focus()
             CashAmountRef.current.select()
-
         }
     },[])
 
@@ -189,12 +191,12 @@ const OpenCreditCardPayment = () => {
         const totalDued:number = removeThousandSeparator(totalDue) ;
     
         const totalReceived = cash + check + debitCard + creditCard + creditSales;
-        const change = totalReceived - totalDued
+        const change =   totalDued - totalReceived
     
         setchange(change);
         setamountTendered(totalReceived.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));
 
-        
+
     }, [CashAmount, CurrentCheckAmount, DebitCardAmount, CreditCardAmount, CreditSalesAmount, totalDue]);
     
             
@@ -285,7 +287,7 @@ const OpenCreditCardPayment = () => {
                 <div className="Container">
                     <div className="form-group">
                         <label>Cash</label>
-                        <input ref={CashAmountRef} value={parseFloat(CashAmount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}  placeholder="0.00"
+                        <input ref={CashAmountRef} value={(CashAmount)}  placeholder="0.00"
                         onFocus={()=> showOnScreenKeybaord('Cash')}
                         onKeyDown={(e) => Handlekeydown(e,CashAmountRef,CashAmountRef,CurrentCheckAmountRef)}
                         onChange={(e) => {

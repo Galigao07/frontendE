@@ -342,12 +342,12 @@ const HandleKeydown = (event:any, Backref:any, Currentref:any, nextRef:any) => {
                                 textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
                                 borderRadius: '10px',
                                 padding: '10px',
-                                color: 'red !important',
+                                color: 'blue',
                                 fontWeight:'bold'
                                 }} >Client Configuration Setup
                             </Typography>
                                
-                                <div  style={{margin:'10px'}}>
+                                <div className="card" style={{width :'50%',padding:'10px'}}>
                                     <div className="Supplier-container">
                                         <div className="Supplier-entry">
 
@@ -446,7 +446,7 @@ const HandleKeydown = (event:any, Backref:any, Currentref:any, nextRef:any) => {
                                                 </div>
                                             </div>
                                         </div>          
-                                    </div>
+                               
                                    
 
                                     
@@ -468,12 +468,12 @@ const HandleKeydown = (event:any, Backref:any, Currentref:any, nextRef:any) => {
 
                                     <Button type="button" variant="contained" color="primary" fullWidth style={{margin:'5px',backgroundColor:'red'}} onClick={CloseModal}> Close</Button>
                                     </div>
-
+                                    </div>
                                 </div>
             
                                 
                             
-                        </Grid>
+        </Grid>
 
 
         </>

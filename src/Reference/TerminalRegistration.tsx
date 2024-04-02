@@ -9,7 +9,8 @@ import Swal from "sweetalert2";
 import { faPlus, faPrint } from "@fortawesome/free-solid-svg-icons";
 import { isDesktop } from "react-device-detect";
 import './css/TerminalRegistration.css'
-
+import { format } from 'date-fns';
+import { GetCurrentDateOnly } from "../global";
 const swalWithBootstrapButtons = Swal.mixin({
     customClass: {
       confirmButton: 'btn btn-success',
@@ -76,8 +77,6 @@ const TerminalRegistration: React.FC = () => {
 useEffect(() => {
         // Fetch data when the component mounts
         fetchData();
-
-
 }, []); // Empty dependency array to run this effect only once
 
 const fetchData = async () => {
@@ -250,8 +249,9 @@ const handleDelete = async () => {
 
 
 
-const AddUser =() => {
+const AddUser = async() => {
         setOpenaddUsermodal(true)
+        let dateOnly = await GetCurrentDateOnly()
         setTerminalD({
             autonum:'',
             ulcode:'',
@@ -259,11 +259,11 @@ const AddUser =() => {
             machineno: '',
             serialno: '',
             ptu: '',
-            siteno: '',
+            siteno: '0',
             modelno: '',
             description: '',
-            dateissue: '',
-            datevalid: '',
+            dateissue: dateOnly,
+            datevalid: dateOnly,
         });
         setisEdit(false)
         setTimeout(() => {
@@ -283,6 +283,8 @@ const CloseModal =() => {
 const handleRetrieveUserData = (index: number) => {
                 if (users[index]) {
                   const selectedUser = users[index]; // Retrieve the user data at the specified index
+                  const formattedDateIssue = format(new Date(selectedUser.date_issue), 'yyyy-MM-dd');
+                  const formattedDateValid = format(new Date(selectedUser.date_valid), 'yyyy-MM-dd');
                   setTerminalD({
                     autonum:selectedUser.autonum,
                     ulcode:selectedUser.ul_code,
@@ -293,8 +295,8 @@ const handleRetrieveUserData = (index: number) => {
                     modelno:selectedUser.Model_no,
                     machineno: selectedUser.Machine_no,
                     ptu: selectedUser.PTU_no,
-                    dateissue: selectedUser.date_issue,
-                    datevalid: selectedUser.date_valid,
+                    dateissue: formattedDateIssue,
+                    datevalid: formattedDateValid,
                 });
                 setOpenaddUsermodal(true)
                 setisEdit(true)
@@ -462,7 +464,7 @@ const HandleKeydown = (event:any, Backref:any, Currentref:any, nextRef:any) => {
 
         
                     <div style={{width:'100%'}}>
-                    <Typography
+                            <Typography
                                 variant="h2" // Adjust variant as needed (h1, h2, h3, etc.)
                                 sx={{
                                 fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
@@ -534,8 +536,8 @@ const HandleKeydown = (event:any, Backref:any, Currentref:any, nextRef:any) => {
 
             {OpenaddUsermodal && (
                  <div className="modal">
-                 <div className="modal-content">
-                            <Grid item xs={12} sm={12} md={12} lg={12} style={{margin:'0px',padding: '0px', display: 'flex',flexDirection: 'column',width:'100%',
+                 <div className="modal-contentTerminalReg">
+                            <Grid item lg={12} style={{margin:'0px',padding: '0px', display: 'flex',flexDirection: 'column',width:'100%',
                             alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                             borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
                             }}>
@@ -547,14 +549,14 @@ const HandleKeydown = (event:any, Backref:any, Currentref:any, nextRef:any) => {
                                 textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
                                 borderRadius: '10px',
                                 padding: '10px',
-                                color: 'red !important',
+                                color: 'blue',
                                 fontWeight:'bold'
                                 }} >Terminal Registration Setup
                             </Typography>
                                
                                 <div  style={{margin:'10px'}}>
-                                    <div className="TerminalReg" style={{display:'flex',flexDirection:'row'}}>
-                                        <div className="terminal-entry">
+                                    <div className="TerminalReg" style={{display:'flex',flexDirection:'row',margin:'5px'}}>
+                                        <div className="terminal-entry one" style={{width:'50%'}}>
 
                                                     <div className="form-group">
                                                         <label>UL Code.</label>
@@ -628,7 +630,7 @@ const HandleKeydown = (event:any, Backref:any, Currentref:any, nextRef:any) => {
                                             </div>
                                             <div className="form-group">
                                                 <label>Date Valid</label>
-                                                <input  type='date' value={TerminalD.datevalid} ref={datevalidRef}
+                                                <input type='date' value={TerminalD.datevalid} ref={datevalidRef}
                                                          onKeyDown={(e) => HandleKeydown(e,dateissueRef,datevalidRef,datevalidRef)}
                                                 onChange={(e) => handleInputChange(e, 'datevalid')}
                                                 />            
