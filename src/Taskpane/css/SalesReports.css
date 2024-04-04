@@ -1,0 +1,49 @@
+.Sales-Reports-Filter .form-group{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.Sales-Reports-Filter .form-group input{
+    width: 100%;
+}
+.Sales-Reports-Filter .form-group label{
+    width: 40%;
+}
+
+.Sales-Reports-Filter{
+    border: 1px solid;
+    border-radius: 10px;
+    padding: 15px;
+}
+.modal-contentSalesReports{
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    width: 500px;
+    height: 500;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.Sales-Reports-Container .card{
+    margin-left: 10px;
+width: 98%;
+height: 600px;
+}
+
+.Reports-Container {
+    margin: 10px;
+}
+
+.Reports-Container button{
+   background-color: blue;
+   color: white;
+   border: none;
+   margin: 2px;
+   padding: 5px;
+   cursor: pointer;
+}
+.Reports-Container button:hover{
+    background-color: darkblue;
+}

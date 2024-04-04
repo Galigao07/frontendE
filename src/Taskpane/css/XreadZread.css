@@ -49,8 +49,12 @@
 
 .xcontainer .form-group input{
  text-align: end;
-}
 
+}
+.xcontainer .form-group label{
+   width: 100%;
+   
+   }
 .button-container{
     display: flex;
     flex-direction: row;
@@ -63,7 +67,7 @@
     width: 30%;
     background-color: blue;
     color: white;
-    border-radius: 20px;
+    /* border-radius: 20px; */
     border: none;
 }
 .button-container button:hover{

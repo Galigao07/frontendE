@@ -170,8 +170,8 @@ const XreadUpdateStatus = async(data:any) => {
         <div className="xzRead-container">
             <Typography variant="h2" align="center" sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
                         textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', borderRadius: '10px', padding: '10px',
-                        color: 'red !important',fontWeight:'bold' }} 
-            >X Reading and Z Reading</Typography>
+                        color: 'blue',fontWeight:'bold' }} 
+                    >X Reading and Z Reading</Typography>
                 <div className="XZContainer">
 
 

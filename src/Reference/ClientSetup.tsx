@@ -330,7 +330,6 @@ const HandleKeydown = (event:any, Backref:any, Currentref:any, nextRef:any) => {
 
     return(
         <>
-
         <Grid item xs={12} sm={12} md={12} lg={12} style={{margin:'0px',padding: '0px', display: 'flex',flexDirection: 'column',width:'100%',
                             alignItems: 'center'
                             }}>
@@ -474,8 +473,6 @@ const HandleKeydown = (event:any, Backref:any, Currentref:any, nextRef:any) => {
                                 
                             
         </Grid>
-
-
         </>
     )
 }

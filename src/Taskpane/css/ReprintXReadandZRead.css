@@ -1,0 +1,22 @@
+.Reprint-Container{
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+margin-top:  100px;
+
+/* align-self: center;
+align-content: center; */
+
+}
+.Reprint-Container .card{
+    padding: 10px;
+}
+
+.Reprint-Container .card button{
+   background-color: blue;
+}
+
+.Reprint-Container .card button:hover{
+    background-color: darkblue;
+ }

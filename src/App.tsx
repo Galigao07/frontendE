@@ -24,12 +24,15 @@ import SupplierSetup from './Reference/SupplierSetup'
 import ClientSetup from './Reference/ClientSetup'
 import CustomerDetails from './Reference/CustomerDetails'
 import SupplierDetails from './Reference/SupplierDetails'
-import CashCount from './Reference/CashCount'
-import XreadZred from './Reference/XreadZread'
+import CashCount from './Taskpane/CashCount'
+import XreadZred from './Taskpane/XreadZread'
 import CostofSalesAccountTagging from './Adminitration/CostofSalesAccountTagging'
 import MultiplePriceTypeSiteSetup from './Adminitration/MultiplePriceTypeSiteSetup'
 import TaggingofSaslesCategoryList from './Adminitration/TaggingofSaslesCategoryList'
 import TaggingPerTerminal from './Adminitration/TaggingPerTerminal'
+import ReprintXReadandZRead from './Taskpane/ReprintXReadandZRead'
+import SalesReports from './Taskpane/SalesReports'
+
 
 // import OnlineTestApp from './OnlineTestApp';
 // import electron, { BrowserWindow } from 'electron';
@@ -79,6 +82,7 @@ const isLogin = localStorage.getItem('isLogin') === 'true';
 // const PrintSO = localStorage.setItem('PrintSO','false');
 const PrintSO = localStorage.getItem('PrintSO') === 'true';
 const userRank = localStorage.getItem('UserRank');
+const [openReports,setopenReports] = useState<boolean>(false)
 
 // if (userRank === 'Cashier') {
 //   // Perform actions specific to the 'Admin' user rank
@@ -540,17 +544,18 @@ const logoutClick = async () => {
                       <span className={`nav-header-name ${show ? 'show' : null}`}>TASK PANE</span>
                       <div className="nav-list" >
                       <NavLink id='sidebutton' className={active === "1" ? "nav-link active" : "nav-link"} to="/Cash-Count" title="Sales Invoice">
-                         <FontAwesomeIcon icon={faDollarSign} className="nav-link-icon" key={1} id={"icon1"} onClick={handleClick} />
-                         <span className={`nav-link-name ${show ? 'show' : ''}`}     onClick={handleClick}>Cash Count</span>
+                         <FontAwesomeIcon icon={faDollarSign} className="nav-link-icon" key={1} id={"icon1"}  />
+                         <span className={`nav-link-name ${show ? 'show' : ''}`}  >Cash Count</span>
                          </NavLink>
                           <NavLink id='sidebutton1'  className={active === "2" ? "nav-link active" : "nav-link"} to="/Xread-Zread"  title="POS" >
-                          <FontAwesomeIcon icon={faReceipt} className="nav-link-icon"  key={2} id={"2"} onClick={handleClick}></FontAwesomeIcon>
-                              <span className={`nav-link-name ${show ? 'show' : null}`} onClick={handleClick}>X Reading And Z reading</span>    
+                          <FontAwesomeIcon icon={faReceipt} className="nav-link-icon"  key={2} id={"2"} ></FontAwesomeIcon>
+                              <span className={`nav-link-name ${show ? 'show' : null}`} >X Reading And Z reading</span>    
                           </NavLink>  
-                          <NavLink id='sidebutton2'   className={active === "3" ? "nav-link active" : "nav-link"} to="/TaskPane/Inventory"   title="Inventory">
-                          <FontAwesomeIcon icon={faListAlt} className="nav-link-icon"  key={3} id={"3"} onClick={handleClick}></FontAwesomeIcon>
-                              <span className={`nav-link-name ${show ? 'show' : null}`}  onClick={handleClick}>Reports</span>    
+                          <NavLink id='sidebutton2'   className={active === "3" ? "nav-link active" : "nav-link"} to=""  onClick={()=>setopenReports(true)} title="Reports">
+                          <FontAwesomeIcon icon={faListAlt} className="nav-link-icon"  key={3} id={"3"} onClick={()=>setopenReports(true)}></FontAwesomeIcon>
+                              <span className={`nav-link-name ${show ? 'show' : null}`}  onClick={()=>setopenReports(true)}>Reports</span>    
                           </NavLink>  
+                        
                           <NavLink id='sidebutton3'  className={active === "9" ? "nav-link active" : "nav-link"} key={9} onClick={() => logoutClick()} title="Logout" to={''}>
                               <FontAwesomeIcon icon={faPowerOff} className="nav-link-icon" key={9} id={"9"} onClick={() => logoutClick()}></FontAwesomeIcon>
                               <span className={`nav-link-name ${show ? 'show' : null}`}  onClick={() => logoutClick()}>Logout</span>    
@@ -580,7 +585,32 @@ const logoutClick = async () => {
           </aside>
   
     
-        
+                      {openReports && 
+                        <>
+                          <div className='modal'>
+                            <div className='modal-content'>
+                              <h1>Select Types of Reports</h1>
+                              <div className='Button-ContainerReports' style={{display:'flex',flexDirection:'column'}}>
+                                <NavLink to='/Sales-Reports' onClick={()=>setopenReports(false)}>Sales Reports</NavLink>
+                                <NavLink to='' onClick={()=>setopenReports(false)}>Sales Return</NavLink>
+                                <NavLink to='' onClick={()=>setopenReports(false)}>Discount</NavLink>
+                                <NavLink to='' onClick={()=>setopenReports(false)}>Remittance</NavLink>
+                                <NavLink to='' onClick={()=>setopenReports(false)}>Void Transaction</NavLink>
+                                <NavLink to='' onClick={()=>setopenReports(false)}>Cancelled Transaction</NavLink>
+                                <NavLink to='' onClick={()=>setopenReports(false)}>Grand Total Monitoring</NavLink>
+                                <NavLink to='' onClick={()=>setopenReports(false)}>Collection Details</NavLink>
+                                <NavLink to='/Reprint-Xread-Zread' onClick={()=>setopenReports(false)}>X and Zread Re-Printing</NavLink>
+                                <NavLink to='' onClick={()=>setopenReports(false)}>Price Overide</NavLink>
+                                <NavLink className='Close' to='' onClick={()=>setopenReports(false)} >Close</NavLink>
+                     
+                              </div>
+
+                            
+                            </div>
+                          </div>
+
+                          </>
+                          }
          </main>
 
         )
@@ -623,6 +653,8 @@ const Content = () => {
       <Route path="/Allowed-price-type" element={<MultiplePriceTypeSiteSetup/>} />
       <Route path="/Tagging-of-sales-Category-List" element={<TaggingofSaslesCategoryList/>} />
       <Route path="/Tagging-per-terminal" element={<TaggingPerTerminal/>} />
+      <Route path="/Reprint-Xread-Zread" element={<ReprintXReadandZRead/>} />
+      <Route path="/Sales-Reports" element={<SalesReports/>} />
 
     </Routes>
   );

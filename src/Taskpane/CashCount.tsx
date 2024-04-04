@@ -758,7 +758,7 @@ const PrintCashBreakDown = (dataDinomination:any,dataInfo:any) => {
                             <input type="date" value={DateTo} onChange={(e) => setDateTo(e.target.value)}  ref={DateToRef} />
                         </div>
                         <div className="filter-group">
-                        <button className="btn-filter" onClick={filterDate}>Filter</button>
+                            <button className="btn-filter" onClick={filterDate} style={{width :'80px'}}>Filter</button>
                         </div>
                  
                     </div>

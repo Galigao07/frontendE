@@ -432,3 +432,39 @@ link title{
   .tooltip-link:hover::after {
     opacity: 1;
   }
+
+.Button-ContainerReports a{
+    background:#007bff !important;
+    text-align: start;
+    width: 100%;
+    padding: 5px !important;
+    margin: 2px !important;
+    color: white;
+    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.958);
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.958);
+    font-weight: bold;
+}
+
+.Button-ContainerReports{
+    padding: 0px;
+    margin: 0px;
+    border: 1px solid;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 2px;
+}
+
+.Button-ContainerReports a:hover{
+    background:darkblue !important;
+    
+}
+
+.Button-ContainerReports a.Close{
+    background: red !important;
+    text-align: center;
+}
+
+.Button-ContainerReports a.Close:hover{
+    background:darkred !important;
+    
+}
