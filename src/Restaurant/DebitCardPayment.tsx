@@ -100,7 +100,7 @@ const DebitCardPaymentEntry: React.FC<DebitCardPaymentData> = ({handleClose,amou
             <h2 style={{ color: '#ffffff', backgroundColor: '#007bff', padding: '10px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
           borderRadius: '5px', margin: '10px',
           fontWeight: 'bold', textAlign: 'center'
-        }}>111 DEBIT CARD</h2>
+        }}>DEBIT CARD</h2>
   
   <div style={{display:'flex',flexDirection:'row'}}>
       <div style={{display:'flex',flexDirection:'row' ,width:'120%' }}>
@@ -130,8 +130,8 @@ const DebitCardPaymentEntry: React.FC<DebitCardPaymentData> = ({handleClose,amou
             </div>
             
             <div>
-            <Button  style={{ width: '48%',margin:'5px 5px 0 0 ',backgroundColor:'blue'}} onClick={handleOk}> OK </Button>
-            <Button  style={{ width: '48%',margin:'5px 5px 0 0',backgroundColor:'red'}} onClick={handleClose}> Close</Button> 
+            <Button  style={{ width: '48%',margin:'5px 5px 0 0 ',backgroundColor:'blue'}} onClick={handleOk}> Confrim </Button>
+            <Button  style={{ width: '48%',margin:'5px 5px 0 0',backgroundColor:'red'}} onClick={handleClose}> Abort</Button> 
 
             </div>
             

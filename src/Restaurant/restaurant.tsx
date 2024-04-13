@@ -68,6 +68,7 @@ import CreditCardPaymentEntry from './CreditCardPayment';
 import DebitCardPaymentEntry from './DebitCardPayment';
 import CreditCardPayment from './CreditCard';
 import DebitCardPayment from './DebitCard';
+import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
 const swalWithBootstrapButtons = Swal.mixin({
   customClass: {
     confirmButton: 'btn btn-success',
@@ -695,6 +696,8 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
           <tbody>
           {Array.isArray(cartitems) && cartitems.length > 0 ? (
            cartitems.map((item, index) => (
+            <>
+         
             <tr key={index} onClick={() => openModaltrans(index)}
             onKeyDown={(e) => handleKeydownTable(e)}
             ref={index === 0 ? focusedRowRef : null}
@@ -720,6 +723,31 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
             <td style={{display:'none'}}  >{item.lineno}</td>
            
     </tr>
+
+        {DiscountType === 'ITEM' && (
+          <>
+            {DiscountData && DiscountData.map((item1: any, index: number) => {
+              if (item.barcode === item1.Barcode) {
+                return (
+                  <tr key={item1.id} style={{ border: 'none', color: 'red', fontWeight: 'bold' }}>
+                    <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}>
+                      {item1.D1}% DISC: {item1.Description}
+                    </td>
+                    <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>
+                      -{parseFloat(item1.ByAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                  </tr>
+                );
+              } else {
+                // Return null (or any placeholder) if the barcode does not exist in SalesOrderListing
+                return null;
+              }
+            })}
+          </>
+
+        )}
+    </>
+
   ))
 ) : (
   <tr>
@@ -1345,6 +1373,7 @@ const Restaurant: React.FC = () => {
     const SettleOrderRef = useRef<HTMLButtonElement>(null)
     const TransferTableRef = useRef<HTMLButtonElement>(null)
     const CloseSelectTransTypeRef = useRef<HTMLButtonElement>(null)
+    const [isTransfertable,setisTransfertable] = useState<boolean>(false)
 
 
   
@@ -1366,6 +1395,7 @@ const Restaurant: React.FC = () => {
   interface TableItem {
     table_count: number;
     Paid: string;
+    Susppend:string
     // Define other properties as needed
   }
 
@@ -1379,7 +1409,7 @@ const Restaurant: React.FC = () => {
   
   
   // Initialize the state variable TableList with an empty array of TableItem type
-  const [TableList, setTableList] = useState<TableItem[]>([]);
+  const [TableList, setTableList] = useState<any>([]);
   const [QueList, setQueList] = useState<QueItem[]>([]);
 
 
@@ -1697,6 +1727,74 @@ const Restaurant: React.FC = () => {
 
 
 
+  // ***************** OTHER COMMAND BUTTON ******************/
+  const [SuspendEntryModal,setSuspendEntryModal] = useState<boolean>(false)
+  const [SuspendModalList,setSuspendModalList] = useState<boolean>(false)
+  const [SuspendCustomerData,setSuspendCustomerData] = useState<any>({
+    Customer :'',
+    CusAddress:'',
+  })
+
+  const suspendCustomerRef = useRef(null)
+  const suspendCustomeraddressRef = useRef(null)
+
+  const SusppendEntry = (e:any)=> {
+    const { name, value } = e.target;
+    setSuspendCustomerData((prevData:any) => ({
+      ...prevData,
+      [name]: value,
+    }));
+
+  }
+
+  const SaveSusppendCustomer = () => {
+    setSuspendEntryModal(false)
+    SusppendTransaction(SuspendCustomerData)
+  }
+
+  const SusppendTransaction =  async(data:any) => {
+    setLoadingPrint(true)
+    console.log('Data received from modal:', data);
+    // setCustomerOrderInfo(data);
+    setCustomerDineInModal(false);
+
+    const CashierID = localStorage.getItem('UserID');
+    const TerminalNo = localStorage.getItem('TerminalNo');
+    // console.log(dictionary)
+   
+    try {
+      const response = await axios.post(`${BASE_URL}/api/susppend-sales-order/`,{data:cartItems,data2:data,TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo});
+      if (response.status === 200) {
+        DeletePosExtendedAll()
+        setCartItems([])
+        setTableNo('')
+        setOrderType('')
+        setOrderTypeModal(true)
+        setisSelected(0)
+        setLoadingPrint(false)
+        setSuspendEntryModal(false)
+        setSuspendCustomerData({
+          Customer :'',
+          CusAddress:'',
+        })
+        setOtherCommandOpenModal(false)
+        showSuccessAlert('Transaction Successfully Suspend')
+
+      }
+    } catch (error: any) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        console.error('Server responded with a non-2xx status:', error.response.data);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+      } else {
+        // Something else happened while setting up the request
+        console.error('Error setting up the request:', error.message);
+      }
+    }
+  }
+
   const CloseLogout = () =>{
     setCloseTerminalModal(false)
     setOrderTypeModal(true)
@@ -1739,8 +1837,6 @@ const Restaurant: React.FC = () => {
         })
 
     };
-
-
 
 
     const CloseTerminal = () => {
@@ -1977,20 +2073,6 @@ const PaymentClickControlS = () => {
     setCustomerOrderInfo(dataFromModal);
     setCustomerDineInModal(false);
   
-   // Update the GuestCount state
-    // const keys = Object.keys(dataFromModal);
-    // const values = Object.values(dataFromModal);
-
-// Create a new dictionary using the keys and values
-    // const dictionary: Record<string, any> = {};
-
-    // keys.forEach((key: string, index: number) => {
-    //   dictionary[key] = values[index];
-    // });
-          
-
-
-
     const CashierID = localStorage.getItem('UserID');
     const TerminalNo = localStorage.getItem('TerminalNo');
     // console.log(dictionary)
@@ -1999,14 +2081,17 @@ const PaymentClickControlS = () => {
       const response = await axios.post(`${BASE_URL}/api/add-sales-order/`,{data:cartItems,data2:dataFromModal,TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo});
       if (response.status === 200) {
         setLoadingPrint(false)
+    
         if (dataFromModal.PaymentType === 'Sales Order')
         setSOCustomer(dataFromModal)
         printReceipt(dataFromModal,response.data.SOdata);
+        setCustomerOrderInfo([])
       } else {
         // Handle other response statuses if needed
         setSOCustomer(dataFromModal)
         printReceipt(dataFromModal,response.data.SOdata);
         setDineIn(false)
+        setCustomerOrderInfo([])
       }
     } catch (error: any) {
       if (error.response) {
@@ -2102,6 +2187,18 @@ customer = CustomerOrderInfo
     doc_type = 'POS SI'
   }else  if (PaymentType === 'CHARGE') {
     doc_type = 'POS CI'
+    let Charge:any = ''
+    const ChargeArrayString = localStorage.getItem('Charge');
+    if (ChargeArrayString) {
+      try {
+        // Parse the JSON string to convert it back to an array
+        Charge = JSON.parse(ChargeArrayString);
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("No data found in localStorage for 'Charge'");
+    }
   }else  if (PaymentType === 'MULTIPLE') {
     doc_type = 'POS SI'
  
@@ -2257,14 +2354,29 @@ customer = CustomerOrderInfo
 
         
         if (PaymentType === 'CHARGE') {
-          const CreditCard:any = localStorage.getItem('CreditCardPayment')
-          const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,customer:customer,
+
+
+          let Charge:any = ''
+          const ChargeArrayString = localStorage.getItem('Charge');
+          console.log('ChargeArrayString',ChargeArrayString)
+          if (ChargeArrayString) {
+            try {
+              // Parse the JSON string to convert it back to an array
+              Charge = JSON.parse(ChargeArrayString);
+            } catch (error) {
+              console.error("Error parsing JSON:", error);
+            }
+          } else {
+            console.error("No data found in localStorage for 'Charge'");
+          }
+
+          const response1 = await axios.post(`${BASE_URL}/api/save-charge-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,customer:customer,
                                                                                         TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
-                                                                                        ,DiscountDataList:DiscountDataList,OrderType:OrderType,CreditCard:CreditCard});
+                                                                                        ,DiscountDataList:DiscountDataList,OrderType:OrderType,Charge:Charge,doctype:doc_type});
           if (response1.status === 200) {
-            localStorage.removeItem('CreditCardPayment')
+            localStorage.removeItem('Charge')
             setLoadingPrint(false)
-            PrintCashPaymentReceipt(response1.data);
+            PrintChargePaymentReceipt(response1.data);
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -2503,6 +2615,9 @@ const settlebillData = async (data:any) => {
   setDiscountData(data.DiscountData.SeniorDiscountData)
   setDiscountType(data.DiscountType)
   setDiscountDataLits(data.DiscountData.SeniorNameList)
+  }else if (DiscountType === 'ITEM'){
+    setDiscountData(data.DiscountData)
+    setDiscountType(data.DiscountType)
   }
 
 
@@ -2549,6 +2664,7 @@ setPaymentType('CHARGE')
 
 const CloseChargeModal = () => {
   setChargeToModal(false)
+  setPaymentOpenModal(true)
   setTimeout(() => {
     if (CashPaymentRef.current){
       CashPaymentRef.current?.focus();
@@ -2559,6 +2675,15 @@ const CloseChargeModal = () => {
 
   }, 50);
 }
+
+const Chargedata = async (data:any) => {
+console.log('charge data',data)
+localStorage.setItem('Charge',JSON.stringify(data))
+setChargeToModal(false)
+setCustomeryPaymentModal(true)
+
+};
+// setPaymentOpenModal(true)
 
 
 
@@ -2723,40 +2848,91 @@ const SaveMultiplePayments = (data:any) => {
     setOrderType('DINE IN')
   };
 
-  const TransferOrdertable = () => 
-  
-  {
+const TransferOrdertable = () => {
+  setisTransfertable(true)
     setSelectTypeOfTransaction(false)
+
+    showSuccessAlert('Select table to transfer to')
   };
 
+
+  const TransfertableSave = async(from:any,to:any) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/api/transfer-table/`,{
+        TableFrom:from,
+        TableTo:to
+      })
+      if (response.status==200){
+        showSuccessAlert('Table Successfully Transfer')
+      }
+
+    }catch{
+      showErrorAlert(' Error while transfering Table')
+    }
+
+  }
    
+
+const GetSusppendData = async (data:any) => {
+try {
+const response = await axios.get(`${BASE_URL}/api/susppend-sales-order/`,{
+  params:{
+    TableNo:data,
+  }
+})
+if (response.status ==200){
+  setCartItems(response.data.listing)
+  setTableOnprocess(data)
+  setTableNo(data)
+}
+}catch{
+  showErrorAlert(`Error While Fetching Susppend Transaction in Table ${data}`)
+}
+}
+
 const SelectTable = (index:any) => {
 
-  if (index.table_count=== TableOnprocess){
-    return;
-
-  }
-  setTableNo(index.table_count);
-  if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
-    const message = {
-      'message': index.table_count,
-      'TableNO':true,
-    };
-    chatSocket.send(JSON.stringify(message));
-  }
-  setQueNo('')
-  if (index.Paid === 'N') {
-    setSelectTypeOfTransaction(true)
-    setTimeout(() => {
-      AddOrderRef.current?.focus();
+  if (index.Susppend === 'YES'){
+  GetSusppendData(index.table_count)
+  setTableNoModal(false)
+  }else{
+    if (isTransfertable) {
+      TransfertableSave(TableOnprocess,index.table_count)
+      setisTransfertable(false)
+      setTableOnprocess(null)
       
-    }, 50);
-  } else {
-    // Handle other cases when index.Paid is not 'N'
-    setisSelected(0)
-    setTableNoModal(false);
-    // Additional logic or function calls related to paid table
+  
+      return;
+    }
+  
+     if (index.table_count === TableOnprocess){
+      return;
+  
+    }
+    setTableNo(index.table_count);
+    if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+      const message = {
+        'message': index.table_count,
+        'TableNO':true,
+      };
+      chatSocket.send(JSON.stringify(message));
+    }
+    setQueNo('')
+    if (index.Paid === 'N') {
+      setSelectTypeOfTransaction(true)
+      setTimeout(() => {
+        AddOrderRef.current?.focus();
+        
+      }, 50);
+    } else {
+      // Handle other cases when index.Paid is not 'N'
+      setisSelected(0)
+      setTableNoModal(false);
+      // Additional logic or function calls related to paid table
+    }
   }
+  
+
 };
 
 const SelectQue = (index:any) => {
@@ -2796,7 +2972,7 @@ const SelectTableOk = (searchItemindex: string) => {
     chatSocket.send(JSON.stringify(message));
   }
     if (parseFloat(searchItemindex) <= TableList.length) {
-      const index = TableList.findIndex(item => item.table_count === parseFloat(searchItemindex) && item.Paid === 'N');
+      const index = TableList.findIndex((item:any)=> item.table_count === parseFloat(searchItemindex) && item.Paid === 'N');
         console.log(index)
       if (index !== -1) {
         setSelectTypeOfTransaction(true)
@@ -2848,6 +3024,8 @@ useEffect(()=> {
   }
 
 },[])
+
+// ********************* OPEN WEBSOCKET CONNECTION ***************************//
 
 useEffect(() => {
   var url = new URL(BASE_URL);
@@ -3029,10 +3207,22 @@ const calculateTotalDue = () => {
           totalDue += parseFloat(amountWithoutCommas);
         }
 
-        if (DiscountData.length !== 0) {
+        if (DiscountData.length !==0) {
           if (DiscountType === 'SC'){
             totalDue = totalDue - (parseFloat(DiscountData.SLess20SCDiscount.replace(',' , '')) + parseFloat(DiscountData.SLessVat12.replace(',' , '')))
 
+          }else if(DiscountType === 'ITEM'){
+             console.log('DiscountData',DiscountData)
+             let totalDisCount:any = 0
+             if (DiscountData){
+              DiscountData.map((item:any) => {
+                console.log(item.ByAmount)
+                totalDisCount += item.ByAmount
+              })
+              console.log('totalDisCount',totalDisCount)
+              totalDue = totalDue - totalDisCount
+             }
+          
           }
                  }
         return totalDue.toFixed(2);
@@ -3594,10 +3784,15 @@ const CloseSeniorCitezenDiscount = () => {
 const SaveSeniorCitezenDiscount = (data:any) => {
 
   console.log(data)
-  setDiscountData(data)
+  setDiscountData(data.SeniorDiscountData)
+  setDiscountType('SC')
+  setDiscountDataLits(data.SeniorNameList)
+  // setDiscountData(data)
   // setDisEntry(data)
-  setDis(true)
+  // setDis(true)
+  calculateTotalDue()
   setOpenSeniorCitezenDiscountModal(false)
+  setPaymentOpenModal(true)
 
 }
 
@@ -3787,6 +3982,79 @@ const SaveTransactionDiscountEntry = (data:any) => {
           receiptContent += `${formattedQuantity}  ${wrappedDescription}@${item.price}${spaces} ${formattedTotal}\n`;
         }
         
+        if (DiscountType === 'ITEM'){
+          if (DiscountData){
+            DiscountData.map((item1:any) => {
+              if (item.barcode === item1.Barcode && item.line_no === item1.LineNo){
+                const disc = parseFloat(item1.D1).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})
+                const itemDescription = `Less: ${disc}% discount`; // Replace with your actual item description
+                const wrappedDescription = wrapDescription(itemDescription, maxLength);
+                maxLength1 = 25
+                let spaces2 = ' '.repeat(5);
+  
+                if (itemDescription.length < 25){
+                 const lengthShort = 25 - itemDescription.length
+                  maxLengthChar =  maxLengthChar + lengthShort
+                }
+  
+                // Format the total amount with a thousand separator and two decimal places
+                const formattedTotal = item1.ByAmount.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })
+  
+                if (formattedTotal.length === 4 ) {
+                  maxLengthChar += 1
+                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                
+                  receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
+                }
+                if (formattedTotal.length === 5 ) {
+                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                
+                  receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
+                }
+        
+                if (formattedTotal.length === 6 ) {
+                   maxLengthChar -= 1;
+                
+                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                  receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
+                }
+        
+                if (formattedTotal.length === 7 ) {
+                  maxLengthChar -= 2;
+          
+                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                  receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
+                }
+                
+                if (formattedTotal.length === 8 ) {
+                  maxLengthChar -= 3;
+               
+                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                  receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
+                }
+        
+                if (formattedTotal.length === 9 ) {
+                  maxLengthChar -= 4;
+               
+                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                  receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
+                }
+        
+                if (formattedTotal.length === 10 ) {
+                  maxLengthChar -= 5;
+               
+                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                  receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
+                }
+              }
+
+
+
+            })
+        }}
 
         // receiptContent += `${item.quantity}  ${wrappedDescription}${spaces} ${item.totalAmount}\n`;
         const amountWithoutSeparator = parseFloat(formattedTotal.replace(/,/g, ''));
@@ -3841,6 +4109,173 @@ const SaveTransactionDiscountEntry = (data:any) => {
       return receiptContent;
     };
    
+
+    const generateReceiptWithOutAmount = () => {
+
+
+      if (!cartItems || cartItems.length === 0) {
+        console.error('Cart items data is empty or invalid');
+        return ''; // Return an empty string if data is empty or invalid
+      }
+      // Create a receipt string based on cartItems
+      let receiptContent = '\n';
+      // Embed an image using the <img> tag
+      // receiptContent += `<img src="${logo}" alt="Logo Image" style={{ maxWidth: '10px' }} />`;
+    let total = 0
+    let totalqty = 0
+
+
+    receiptContent += '<div>------------------------------------------------</div>'
+    receiptContent += '<div>QTY  |              DESCRIPTION       </div>'
+    receiptContent += '<div>------------------------------------------------</div>'
+ 
+    function wrapDescription(description: string, maxLength: number) {
+      if (description.length <= maxLength) {
+        return description;
+      } else {
+        const wrappedDescription = description.substring(0, maxLength);
+        const remainingDescription = description.substring(maxLength);
+        // return wrappedDescription + '\n' + wrapDescription(remainingDescription, maxLength);
+        return wrappedDescription ;
+      }
+    }
+    const maxLength = 35
+     
+    cartItems.forEach((item:any) => {
+      let  maxLength1 = 0
+        let maxLengthChar = 35;
+
+
+        const itemDescription = item.description; // Replace with your actual item description
+        const wrappedDescription = wrapDescription(itemDescription, maxLength);
+    
+        const formattedQuantity = String(parseInt(item.quantity)).padEnd(4, ' ')
+        if (item.description.length < 25){
+         const lengthShort = 25 - item.description.length
+          maxLengthChar =  maxLengthChar + lengthShort
+        }
+
+        const totalAmount = item.price * item.quantity;
+
+        // Format the total amount with a thousand separator and two decimal places
+        const formattedTotal = totalAmount.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })
+
+
+
+//************** Alignment of Description And Amount***************** */
+//#region 
+
+        if (formattedTotal.length === 4 ) {
+          maxLengthChar += 1
+          const spaces = ' '.repeat(maxLengthChar - maxLength1);
+        
+          receiptContent += `${formattedQuantity}  ${wrappedDescription}${spaces} \n`;
+        }
+        if (formattedTotal.length === 5 ) {
+          const spaces = ' '.repeat(maxLengthChar - maxLength1);
+        
+          receiptContent += `${formattedQuantity}  ${wrappedDescription}${spaces} \n`;
+        }
+
+        if (formattedTotal.length === 6 ) {
+           maxLengthChar -= 1;
+        
+          const spaces = ' '.repeat(maxLengthChar - maxLength1);
+          receiptContent += `${formattedQuantity}  ${wrappedDescription}${spaces} \n`;
+        }
+
+        if (formattedTotal.length === 7 ) {
+          maxLengthChar -= 2;
+  
+          const spaces = ' '.repeat(maxLengthChar - maxLength1);
+          receiptContent += `${formattedQuantity}  ${wrappedDescription}${spaces} \n`;
+        }
+        
+        if (formattedTotal.length === 8 ) {
+          maxLengthChar -= 3;
+       
+          const spaces = ' '.repeat(maxLengthChar - maxLength1);
+          receiptContent += `${formattedQuantity}  ${wrappedDescription}${spaces} \n`;
+        }
+
+        if (formattedTotal.length === 9 ) {
+          maxLengthChar -= 4;
+       
+          const spaces = ' '.repeat(maxLengthChar - maxLength1);
+          receiptContent += `${formattedQuantity}  ${wrappedDescription}${spaces} \n`;
+        }
+
+        if (formattedTotal.length === 10 ) {
+          maxLengthChar -= 5;
+       
+          const spaces = ' '.repeat(maxLengthChar - maxLength1);
+          receiptContent += `${formattedQuantity}  ${wrappedDescription}${spaces} \n`;
+        }
+        
+
+        // receiptContent += `${item.quantity}  ${wrappedDescription}${spaces} ${item.totalAmount}\n`;
+        const amountWithoutSeparator = parseFloat(formattedTotal.replace(/,/g, ''));
+        total += amountWithoutSeparator;
+        totalqty += parseFloat(item.quantity); 
+        //#endregion
+   });
+
+      const amountDue = `Total Amount Due: ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      const totalQTY = `Items ${totalqty}`
+
+//**********Alignment of Items and Amount Due */
+
+//#region 
+      if (totalQTY.length < 25){
+        const lengthShort = 25 - totalQTY.length
+
+        const maxLengthChar = 24 + lengthShort
+         let spaces = ''
+
+
+         if (amountDue.length === 23){
+          // spaces = ' '.repeat(maxLengthChar - maxLength);
+        }
+
+        if (amountDue.length === 24){
+          // spaces = ' '.repeat(maxLengthChar - (maxLength + 1));
+        }
+        if (amountDue.length === 25){
+          // spaces = ' '.repeat(maxLengthChar - (maxLength + 2));
+        }
+         if (amountDue.length === 26){
+          //  spaces = ' '.repeat(maxLengthChar - (maxLength + 3));
+         }
+         if (amountDue.length === 27){
+          // spaces = ' '.repeat(maxLengthChar - /(maxLength + 4));
+        }
+        if (amountDue.length === 28){
+          // spaces = ' '.repeat(maxLengthChar - (maxLength + 5));
+        }
+        if (amountDue.length === 29){
+          // spaces = ' '.repeat(maxLengthChar - (maxLength + 6));
+        }
+        if (amountDue.length === 30){
+          // spaces = ' '.repeat(maxLengthChar - (maxLength + 7));
+        }
+
+
+
+
+        const formattedQuantity = String(totalQTY).padEnd(4, ' ')
+
+
+        receiptContent += '<div>================================================</div>'
+
+        receiptContent +=  `${formattedQuantity} ${spaces}`;
+     
+//#endregion
+       }    
+      return receiptContent;
+    };
 
     const triggerPrint = async () => {
       try {
@@ -3949,10 +4384,10 @@ const SaveTransactionDiscountEntry = (data:any) => {
     
     
               //********************************************************* */
-              const waiter = 'WAITER :';
-              const spacesWaiter = ' '.repeat(Math.max(0, 47 -(waiter.length + SOInfo.Waiter.length) ));
-              receiptContent1 = `<div>${waiter} ${spacesWaiter}${SOInfo.Waiter}</div>`;
-              doc.write('<pre>' + receiptContent1 + '</pre>');
+              // const waiter = 'WAITER :';
+              // const spacesWaiter = ' '.repeat(Math.max(0, 47 -(waiter.length + SOInfo.Waiter.length) ));
+              // receiptContent1 = `<div>${waiter} ${spacesWaiter}${SOInfo.Waiter}</div>`;
+              // doc.write('<pre>' + receiptContent1 + '</pre>');
     
     
     
@@ -4030,7 +4465,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
       };
     
       // Example data (replace with actual receipt content and logo source)
-      const receiptContent = generateReceipt();
+      const receiptContent = generateReceiptWithOutAmount();
     // Replace with the actual path to your logo image
 
       const iframe = generateReceiptIframe(receiptContent, {logo});
@@ -4209,10 +4644,10 @@ if (iframe !== null) {
     
 
 
-    description = 'WAITER:';
-    data = dataInfo.WaiterName || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+    // description = 'WAITER:';
+    // data = dataInfo.WaiterName || ''; 
+    // spaces = AlignmentSpace(description, data);
+    // receiptContent1 += `<div>${description}${spaces}${data}</div>`;
 
 
     description = 'TERMINAL# ';
@@ -4544,10 +4979,10 @@ if (iframe !== null) {
     
 
 
-    description = 'WAITER:';
-    data = dataInfo.data.WaiterName || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+    // description = 'WAITER:';
+    // data = dataInfo.data.WaiterName || ''; 
+    // spaces = AlignmentSpace(description, data);
+    // receiptContent1 += `<div>${description}${spaces}${data}</div>`;
 
 
     description = 'TERMINAL# ';
@@ -4954,8 +5389,6 @@ if (iframe !== null) {
 
 
 
-
-
     // description = 'CHANGE:';
     // const changeAmountFormatted = Number(ChangeAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -4975,10 +5408,10 @@ if (iframe !== null) {
     
 
 
-    description = 'WAITER:';
-    data = dataInfo.data.WaiterName || ''; 
-    spaces = AlignmentSpace(description, data);
-    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+    // description = 'WAITER:';
+    // data = dataInfo.data.WaiterName || ''; 
+    // spaces = AlignmentSpace(description, data);
+    // receiptContent1 += `<div>${description}${spaces}${data}</div>`;
 
 
     description = 'TERMINAL# ';
@@ -5083,6 +5516,305 @@ if (iframe !== null) {
     //   document.body.removeChild(iframe);
     // // Reload the page after printing
     // }, 20000); // Adjust timeout as needed for printing to complete
+  } };
+    iframe.src = 'about:blank';
+  return iframe;
+  }};
+
+  // Example data (replace with actual receipt content and logo source)
+  const receiptContent = generateReceipt();
+// Replace with the actual path to your logo image
+
+  const iframe = generateReceiptIframe(receiptContent, {logo});
+};
+
+
+//************ PRINT RECEIPT CHARGE PAYMENT*****************//
+const PrintChargePaymentReceipt = async (dataInfo:any) => {
+  const generateReceiptIframe = (receiptContent: string, logoSrc: { logo: string; }) => {
+
+  const iframe = document.getElementById('myIframe') as HTMLIFrameElement | null;
+
+
+if (iframe !== null) {
+
+  setShowIframe(true)
+  if (iframe) {
+    iframe.style.display = 'block';
+  }
+
+  iframe.onload = () => {
+    const currentDate = new Date();   
+    const timeZone = 'Asia/Manila';  
+   const formattedDateTime = currentDate.toLocaleString('en-US', { timeZone: timeZone });
+    const iframeWindow = iframe.contentWindow;
+
+    if (iframeWindow !== null) {
+      const doc = iframeWindow.document;
+
+      doc.open();
+    // doc.write('<style>body { font-family: "Courier New", Courier, monospace; }</style>');
+    doc.write('<style>body {  font-family: Consolas, monaco, monospace; }</style>');
+
+    doc.write('<div style="width: 200px; margin:none; font-size:8px">');
+    doc.write('<div>'); // Start a container div for content
+
+    // Embed the logo image using an <img> tag
+    doc.write('<div style="text-align: center;">');
+    doc.write(`<img src="${logo}" alt="Logo Image" style="max-width: 50px; display: inline-block;" />`);
+    doc.write('</div>');
+
+
+
+    doc.write('<div style="text-align: center;">');
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+
+  
+
+    doc.write(`<div> ${dataInfo.data.CustomerCompanyName}</div>`);
+
+
+    doc.write(`<div> ${dataInfo.data.CustomerCompanyAddress}</div>`);
+    doc.write(`<div> ${dataInfo.data.TelNo}</div>`);
+    doc.write(`<div> ${dataInfo.data.CustomerTIN}</div>`);
+    doc.write(`<div> ${dataInfo.data.SerialNO}</div>`);
+    doc.write(`<div> ${dataInfo.data.MachineNo}</div>`);
+
+
+    let Charge :any = dataInfo.data.Charge
+
+    doc.write('<p style="font-size:12px">THIS SERVES AS AN CHARGE INVOICE</p>');
+    doc.write('<div style="text-align: start;">');
+      if (Charge){
+        doc.write(`<div>Customer: ${Charge.CustomerName} </div>`);
+      }
+    doc.write(`<div>Table No: ${TableNo}</div>`);
+    doc.write('<pre style="margin: 0; line-height: 1;">================================================</pre>');
+    doc.write('</div>')
+
+    doc.write(`<div> CI# ${parseFloat(dataInfo.data.OR)}</div>`);
+    doc.write(`<div> ${formattedDateTime} </div>`);
+    doc.write('</div>')
+    doc.write('<pre>' + receiptContent + '</pre>');
+
+
+      let receiptContent1 = '';
+
+      const AlignmentSpace = (description: string | any[], data: string | any[]) => {
+        const totalLength = 48; // Total desired length for alignment
+        const contentLength = description.length + data.length; // Calculate the length of the combined content
+        const spacesNeeded = Math.max(0, totalLength - contentLength); // Calculate the required spaces
+      
+        return ' '.repeat(spacesNeeded); // Return the string with required spaces
+      };
+        
+        //********************************************************* */
+        let description = '';
+        let data = ''
+        // Get the value or initialize an empty string if it's null
+        let spaces = null
+            data = dataInfo.data.ServiceCharge || '';
+            description = 'SERVICE CHARGES:'
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 = `<div style="margin-top:-7px; padding: 0;">${description}${spaces}${data}</div>`;
+            // receiptContent1 += '<div style="margin-top:-3px; padding: 0;"></div>'
+           
+            // doc.write('<pre>' + receiptContent1 + '</pre>');
+
+            if (DiscountType === 'SC'){
+              description = `Less: 20% VAT on ${DiscountData.SVatSales}`;
+              data = DiscountData.SLessVat12 || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+
+              description = `Net of VAT:`;
+              data = DiscountData.SNetOfVat || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+              description = `Less: 20%`;
+              data = DiscountData.SLess20SCDiscount || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+              doc.write('<pre style="margin: 0; line-height: 1;">' + receiptContent1 + '</pre>');
+            }
+
+
+            doc.write('<pre style="margin: 0; line-height: 1;">================================================</pre>');
+            description = 'TOTAL DUE:';
+            data = formattedTotalDue || ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 = `<div style="margin-top:-9px; padding: 0;font-weight: bold;">${description}${spaces}${data}</div>`;
+            receiptContent1 += '<div style="margin:-3px; padding: 0;">-------------------------------------------------</div>'
+            doc.write('<pre>' + receiptContent1 + '</pre>');
+
+
+
+            description = 'VATable:';
+            data = dataInfo.data.VATable || ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 = `<div>${description}${spaces}${data}</div>`;
+
+            description = 'VAT Exempt:';
+            data = dataInfo.data.VatExempt || ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+
+            description = 'Non VAT:';
+            data = dataInfo.data.NonVat|| ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+            
+            description = 'VAT Zero Rated: ';
+            data = dataInfo.data.VatZeroRated|| ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+
+            description = 'VAT:';
+            data = dataInfo.data.VAT || ''; 
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+            doc.write('<pre>' + receiptContent1 + '================================================</pre>');
+            //                    doc.write('<div> =====================================================</div>');
+
+            description = 'TOTAL DUE:';
+            data = formattedTotalDue || ''; 
+            setAmountDue(formattedTotalDue)
+            spaces = AlignmentSpace(description, data);
+            receiptContent1 = `<div style="margin-top:-9px; padding: 0;font-weight: bold;">${description}${spaces}${data}</div>`;
+
+            doc.write('<pre>' + receiptContent1 + '</pre>');
+            doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+
+
+
+            if (Charge){
+              description = 'CHARGE TO ACCOUNT:';
+              const amountTenderedFormatted = Charge.Amountdue;
+          
+              data = String(amountTenderedFormatted) || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 = `<div style="font-weight: bold;">${description}${spaces}${amountTenderedFormatted}</div>`;
+              doc.write('<pre>' + receiptContent1 + '</pre>');
+            }
+         
+        
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+
+    
+    description = 'CASHIER:';
+    data = localStorage.getItem('FullName') || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 = `<div>${description}${spaces}${data}</div>`;
+    
+    description = 'TERMINAL# ';
+    data = dataInfo.data.TerminalNo
+    data += '-'
+    data +=  String(parseFloat(dataInfo.data.OR)).padStart(8,'0') || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 += `<div>${spaces}${description}${data}</div>`;
+
+    doc.write('<pre>' + receiptContent1 + '</pre>');
+
+
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+    doc.write('<div style="text-align: center;" >')      
+    doc.write('<input type="text" style="border: none; border-bottom: 1px solid black; margin: 0; line-height: 1;">');
+    doc.write('<label>Approved By</label>');
+
+    doc.write('<input type="text" style="border: none; border-bottom: 1px solid black; margin: 0; line-height: 1;">');
+    doc.write('<div style="display: flex; flex-direction:column" >')    
+    doc.write('<label>Customers Acknowledgement</label>');
+    doc.write('<label>(Signature over printed name)</label>');
+    doc.write('</div>') 
+    doc.write('</div>')  
+
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+    description = 'CUSTOMER NAME:';
+    data = dataInfo.data.CustomerName || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 = `<div>${description}${spaces}${data}</div>`;
+
+    description = 'COMPANY ADDRESS:';
+    data = dataInfo.data.CusAddress || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+    description = 'TIN:';
+    data = dataInfo.data.CusTIN || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+
+    description = 'BUSINESS STYLE:';
+    data = dataInfo.data.CusBusiness || ''; 
+    spaces = AlignmentSpace(description, data);
+    receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+    doc.write('<pre>' + receiptContent1 + '</pre>');
+
+    doc.write('<div style="text-align: center;">');
+
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+    doc.write('<pre style="margin: 0; line-height: 1; font-size: 12px;"> THANK YOU COME AGAIN: </pre>');
+    doc.write('<pre style="margin: 0; line-height: 1;">------------------------------------------------</pre>');
+    
+    doc.write('<div> LEAD SOLUTIONS INC. </div>');
+
+    doc.write('<div> DOOR 1 DWTC BLDG RIZAL EXTENSION </div>');
+    doc.write('<div> DAVAO CITY </div>');
+    doc.write('<div> 274-027-986-000</div>');
+    doc.write('<div> ACCRED # 1132740279862015060320</div>');
+    doc.write('<div> DATE ISSUED: 06-04-2015 </div>');
+    doc.write('<div> VALID UNTIL: 07-31-2025 </div>');
+    doc.write('<div> PTU NO. FP112022-110-0358595-000001 </div>');
+    doc.write('<div> DATE ISSUED: 10-03-2022 </div>');
+
+    doc.write('</div>')
+
+
+
+  
+    const qr = QRCode(0, 'H'); // QR code type and error correction level
+    qr.addData('Your data for QR code'); // Replace with the data you want in the QR code
+    qr.make();
+
+    // Get the generated QR code as a data URI
+    const qrDataURI = qr.createDataURL();
+
+    // Insert the QR code image into the document
+    doc.write('<div style="text-align: center;">');
+    doc.write(`<img src="${qrDataURI}" alt="QR Code"  style="max-width: 120px; display: inline-block;" />`);
+    doc.write('</div>'); // Close the container div
+    doc.close();
+  // Remove the iframe after printing
+
+  DeletePosExtendedAll()
+  // triggerPrint()
+  setTimeout(() => {
+    iframeWindow.print();
+    // window.location.reload(); 
+
+    setOrderType('')
+    setOrderTypeModal(true)
+    setisSelected(0)
+    // setChangeModal(true)
+    setTimeout(() => {
+      DineInRef.current?.focus()
+    }, 50);
+    setShowIframe(false)
+    iframe.style.display = 'none';
+    setCartItems([])
+    setTableNo('')
+    setDiscountData('')
+    setDiscountType('')
+  }, 1000); 
+
   } };
     iframe.src = 'about:blank';
   return iframe;
@@ -5700,7 +6432,6 @@ const ChangeModalClose = () => {
 <div style={overlayStyle} />
 
 <Grid item xs={12} md={2} style={{ height: categoryHide ? '100%': '15%',width:'35%'}}>
-
       <div className="Category">
           <Typography      
             sx={{
@@ -5712,7 +6443,7 @@ const ChangeModalClose = () => {
             justifyContent: 'space-between', // Aligns items at the start and end of the flex container
             alignItems: 'center', // Aligns items at the center of the flex container
             }}>
-         Category Section
+             Category Section
             </Typography>
 
             <div className='Category-container' style={{ overflowY: 'auto', maxHeight: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '2px' }}>
@@ -5738,7 +6469,6 @@ const ChangeModalClose = () => {
           </div>
 
       </div>
-
 </Grid>
 
 
@@ -5984,7 +6714,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 {CustomeryPaymentModal && <CustomerPayment handlemodaldata={CutomerInfoEntryPaymnet} handleClose={CloseCustomerPaymentModal}/>}
 {ReprintTransactionModal && <ReprintTransaction handleClose={CloseReprintTransactionModal} PrintTransactionData={ReprintTransactionReceipt}/>}
 {CashBreakDownModal && <CashBreakDown CashBreakDownDataList ={CashBreakDownDataList} CloseCashBreakDownModal={CloseCashBreakDownModal}/>}
-{ChargeToModal && <ChargeTo handleClose={CloseChargeModal} amountdue={formattedTotalDue}/>}
+{ChargeToModal && <ChargeTo handleClose={CloseChargeModal} amountdue={formattedTotalDue} chargedata={Chargedata} />}
 {CreditCardPaymentModal && <CreditCardPayment handleClose={CloseCreditCardPayment} amountdue={formattedTotalDue} CreditCardPayment ={CreditCardPaymentOk}/>}
 {CreditCardPaymentEntryModal && <CreditCardPaymentEntry handleClose={CloseCreditCardPaymentEntryModal} amountdue={formattedTotalDue} amounttendered={SaveCreditCardPayment} />}
 {DebitCardPaymentModal && <DebitCardPayment handleClose={CloseDebitCardPayment} amountdue={formattedTotalDue} debitcardpayment ={DebitCardPaymentOK}/>}
@@ -6003,9 +6733,6 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 {OrderTypeModal && (
           <div className="modal">
             <div className="modal-content" style={deviceType === 'Desktop' ? { width: '450px' ,display:'flex',flexDirection:'column' } : { width: '320px',display:'flex',flexDirection:'column' }}>
-              {/* <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px', color: 'red' }}>
-                Choose Order Type
-              </h2> */}
 
         <Typography
             align="center"
@@ -6063,9 +6790,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
     {isDesktop ? (        
               <>
-                <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px', color: 'Blue' }}>
-                  {showTable ? `SELECT TABLE ${TableNo}` : 'SELECT QUE NO.'}
-                </h2>
+                <h1>{showTable ? `SELECT TABLE ${TableNo}` : 'SELECT QUE NO.'} </h1>
                 <input
                 type="text"
                 ref={showTable ? TableNoRef : QueNoRef}
@@ -6079,22 +6804,17 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                     if (isNumber.test(value)) {
                       (showTable ? setTableNo(e.target.value) : setQueNo(e.target.value)) } 
                     }}
-              
-                // onChange={(e) => (showTable ? setTableNo(e.target.value) : setQueNo(e.target.value))}
+
                 onKeyDown={(e) => TableNoHandleKeydown(e)}
               />
 
               </>
 
                 ):(
-                    <><h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px', color: 'Blue' }}>
-                   {showTable ? `SELECT TABLE ${TableNo}` : 'SELECT QUE NO.'}
-                    </h2>
-
+                    <><h1>{showTable ? `SELECT TABLE ${TableNo}` : 'SELECT QUE NO.'}</h1>
                     <div style={{margin:'5px',display:'flex',flexDirection:'row'}}>
-
-                    <input type="text" ref={TableNoRef} inputMode="numeric" placeholder="Table No" style={{width:'100%' ,margin:'5px'}} defaultValue={TableNo}  onChange={(e) => setTableNo(e.target.value)}/>
-                    <button className="btn" style={{width:'100%',height:'40px',margin:'5px'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
+                      <input type="text" ref={TableNoRef} inputMode="numeric" placeholder="Table No" style={{width:'100%' ,margin:'5px'}} defaultValue={TableNo}  onChange={(e) => setTableNo(e.target.value)}/>
+                      <button className="btn" style={{width:'100%',height:'40px',margin:'5px'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
                     </div></>
                    
                 )}
@@ -6105,70 +6825,69 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
   {/* <div className='containertable' style={{display:'flex',flexDirection:'row'}}> */}
 
   <Grid container className="CreditCard-Container" spacing={2}>
-      <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
+      <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
         <div style={{overflow:'auto',height: '75%',width:'100%' }}>
 
-  <div style={{ display: 'grid', gridTemplateColumns: isDesktop? 'repeat(3, minmax(100px, 1fr))': 'repeat(3, minmax(33%, 1fr))', gap: '5px' ,margin:'5px',overflow:'auto',height: '550px',
-        border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'10px',borderRadius:'10px' }}>
-  {loading && (
-  <div
-    style={{
-      position: 'absolute',
-      top: '50%',
-      left: '37%',
-      transform: 'translate(-50%, -50%)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: 'rgba(255, 255, 255, 0.7)',
-      zIndex: 999,
-    }}
-  >
-    <ClipLoader color="#4a90e2" loading={loading} size={50} />
-  </div>
-  )}
-  {showTable ? (
-  
-        (TableList &&  TableList.map(item => (
-            <div key={item.table_count} className={item.Paid} onClick={() => SelectTable(item)}
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
-                alignItems: 'center',borderRadius: '10px',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                cursor:TableOnprocess === item.table_count ? 'not-allowed': 'pointer',
-                backgroundColor: TableOnprocess === item.table_count ? 'yellow' : item.Paid  === 'N' ? 'blue' : '', }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isDesktop? 'repeat(5, minmax(98px, 1fr))': 'repeat(5, minmax(33%, 1fr))', gap: '5px' ,margin:'5px',overflow:'auto',height: '550px',
+                border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'10px',borderRadius:'10px' }}>
+          {loading && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '37%',
+              transform: 'translate(-50%, -50%)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              zIndex: 999,
+            }}
+          >
+            <ClipLoader color="#4a90e2" loading={loading} size={50} />
+          </div>
+          )}
+          {showTable ? (
+          
+                (TableList &&  TableList.map((item:any) => (
+                    <div key={item.table_count} className={item.Paid} onClick={() => SelectTable(item)}
+                      style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
+                        alignItems: 'center',borderRadius: '10px',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                        borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                        cursor:TableOnprocess === item.table_count ? 'not-allowed': 'pointer',
+                        backgroundColor: item.Susppend === 'YES' ? 'red' :TableOnprocess === item.table_count ? 'yellow' : item.Paid  === 'N' ? 'blue' : '', }}>
+                        <Typography key={item.table_count} style={{ textShadow: '0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)', transform: 'translateZ(5px)' , 
+                          fontSize: item.Susppend === 'YES' ? '10px' : TableOnprocess === item.table_count ? '10px':'20px'
+                        ,fontWeight:'bold' ,color: item.Susppend === 'YES' ? 'white': TableOnprocess === item.table_count ? 'blue':item.Paid  === 'N' ? 'white':'blue' }}>
+                        { item.Susppend === 'YES' ? `Suspend ${item.table_count}`  :TableOnprocess === item.table_count ? `On going ${item.table_count}` : item.table_count} </Typography>
+                        <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
 
-                <Typography key={item.table_count} style={{ textShadow: '0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)', transform: 'translateZ(5px)' , 
-                  fontSize: TableOnprocess === item.table_count ? '15px':'20px'
-                 ,fontWeight:'bold' ,color: TableOnprocess === item.table_count ? 'blue':item.Paid  === 'N' ? 'white':'blue' }}>
-                {TableOnprocess === item.table_count ? `On going ${item.table_count}` : item.table_count} </Typography>
-                <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    </div>
+                      )))
 
-            </div>
-              )))
+                      ):(
+                      
+                        (QueList && QueList.map(item => (
+                          <div  key={item.q_no} className={item.Paid} onClick={() => SelectQue(item)}
+                            style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
+                              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                              backgroundColor:item.Paid  === 'N' ? 'blue' : '', }}>
+              
+                              <p key={item.q_no} style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'20px' ,fontWeight:'bold' ,color:'white'}}>
+                                      {String(parseInt(item.q_no))}</p>
+                              <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+              
+                          </div>
+                            )))
 
-              ):(
-               
-                (QueList && QueList.map(item => (
-                  <div key={item.q_no} className={item.Paid} onClick={() => SelectQue(item)}
-                    style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
-                      alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                      borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      backgroundColor:item.Paid  === 'N' ? 'blue' : '', }}>
-      
-                      <p key={item.q_no} style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'20px' ,fontWeight:'bold' ,color:'white'}}>
-                              {String(parseInt(item.q_no))}</p>
-                      <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-      
-                  </div>
-                    )))
-
-              )}
-  </div>
+                      )}
+          </div>
         </div>
       </Grid>
 
 
-      <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
+      <Grid item xs={12} md={5} style={{ height: '100%',width:'100%'}}>
       {isDesktop && (
         
         <div className="num-pad" style={{margin:'5px'}}>
@@ -6241,186 +6960,107 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 {PaymentOpenModal && (
         <div className="modal" >
           <div className="modal-content" style={{width:'100%'}}>
-          <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
-                    SELECT PAYMENT</h2>
+          <h1> SELECT PAYMENT</h1>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px' ,margin:'5px'}}>
 
 
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}
+            <div className='PaymentModalButton'
               tabIndex={0}
               onKeyDown={(e)=> PaymentModalHandleKeydown(e,CashPaymentRef,CashPaymentRef,CreditCardPaymentRef,0)}
               onClick={CashPayment} ref={CashPaymentRef}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,height:'70px',fontWeight:'bold' 
-              ,color: isFocus == 0 ? 'White' :'Blue',textAlign:'center'}}>
-               Cash Payment</p>
-              <img src= {cash} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+              <p> Cash Payment</p>
+              <img src= {cash} />
             </div>
               
 
-            <div    
-            
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }} 
+            <div className='PaymentModalButton'   
               tabIndex={1}
               onKeyDown={(e)=> PaymentModalHandleKeydown(e,CashPaymentRef,CreditCardPaymentRef,EPSPaymentRef,1)}
               ref={CreditCardPaymentRef}
               onClick={OpenCreditCardPayment}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold'
-                 ,color: isFocus == 1 ? 'White' :'Blue',textAlign:'center'}}>
-               Credit Sales</p>
-              <img src= {credit} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+              <p>Credit Card</p>
+              <img src= {credit}/>
             </div>
 
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}  
+            <div className='PaymentModalButton'
               tabIndex={2}
               onKeyDown={(e)=> PaymentModalHandleKeydown(e,CreditCardPaymentRef,EPSPaymentRef,MultiplePaymentRef,2)}
               ref={EPSPaymentRef}
               onClick={OpenDebitCardPayment}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' 
-                     ,color: isFocus == 2 ? 'White' :'Blue',textAlign:'center'}}>
-               EPS</p>
-              <img src= {epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+              <p>EPS</p>
+              <img src= {epsCard} />
             </div>
 
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}
+            <div className='PaymentModalButton'    
               onClick={OpenMultiplePayment}
               tabIndex={3}
               onKeyDown={(e)=> PaymentModalHandleKeydown(e,EPSPaymentRef,MultiplePaymentRef,ChargePaymentRef,3)}
               ref={MultiplePaymentRef}
               >
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' 
-               ,color: isFocus == 3 ? 'White' :'Blue',textAlign:'center'}}>
-               Multiple Payment</p>
-              <img src= {Multiple} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+              <p>Multiple Payment</p>
+              <img src= {Multiple}/>
             </div>
               
 
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }} 
+            <div  className='PaymentModalButton'
               tabIndex={4}
               onKeyDown={(e)=> PaymentModalHandleKeydown(e,MultiplePaymentRef,ChargePaymentRef,ClosePaymentRef,4)}
               ref={ChargePaymentRef}
               onClick={OpenChargeModal}>
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' 
-                    ,color: isFocus == 4 ? 'White' :'Blue',textAlign:'center'}}>
-               Charge</p>
+              <p> Charge</p>
               <img src= {ChargeRoom} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
             </div>
 
 
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}
+            <div className='PaymentModalButton'
               tabIndex={5}
               onKeyDown={(e)=> PaymentModalHandleKeydown(e,ChargePaymentRef,ClosePaymentRef,CashPaymentRef,5)}
               ref={ClosePaymentRef}
               onClick={CloseModal} >
 
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' 
-                 ,color: isFocus == 5 ? 'White' :'Blue',textAlign:'center'}}>
-               Close</p>
-              <img src= {CloseImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+              <p> Close</p>
+              <img src= {CloseImage} />
             </div>
 
           </div>
 
+              {(OrderType === 'TAKE OUT' || CustomerOrderInfo.PaymentType === 'Order and Pay') && (
+              <><h1> SELECT DISCOUNT</h1>
+                  <div className='PaymentModalContainer'>
 
-
-      
-
-      
-              {OrderType === 'TAKE OUT' && (
-          <><h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px', color: 'Blue' }}>
-                  SELECT DISCOUNT</h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(100px, 1fr))', gap: '5px', margin: '5px' }}>
-
-                    <div
-                      style={{
-                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
-                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      }}
-                      onClick={(e) => OpenVireficationEntry('Senior')}
-                      >
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
-                        Señior Citezin Discount</p>
-                      <img src={Senior} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    <div className='PaymentModalButton'
+                      onClick={(e) => OpenVireficationEntry('Senior')} >
+                      <p>Señior Citezin Discount</p>
+                      <img src={Senior}/>
                     </div>
 
-                    <div
-                      style={{
-                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
-                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      }}>
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
-                        PWD Discount</p>
-                      <img src={pwdD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    <div className='PaymentModalButton'>
+                      <p> PWD Discount</p>
+                      <img src={pwdD} />
                     </div>
 
-                    <div
-                      style={{
-                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
-                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      }}>
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
-                        Trade Discount</p>
-                      <img src={tradeD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    <div className='PaymentModalButton'>
+                      <p>Trade Discount</p>
+                      <img src={tradeD} />
                     </div>
 
 
-                    <div
-                      style={{
-                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
-                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      }}>
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
-                        Transaction Discount</p>
-                      <img src={transactD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                    <div className='PaymentModalButton'>
+                      <p>Transaction Discount</p>
+                      <img src={transactD}/>
                     </div>
 
 
 
-                    <div
-                      style={{
-                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
-                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      }}
+                    <div className='PaymentModalButton'
                       onClick={CloseModal}>
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
-                        Close</p>
-                      <img src={CloseImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                      <p>Close</p>
+                      <img src={CloseImage}  />
                     </div>
 
                   </div></> 
@@ -6432,108 +7072,58 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
         </div>
       )}
 
- {OtherCommandOpenModal && (
+{OtherCommandOpenModal && (
         <div className="modal" >
-          <div className="modal-content" style={{width:'100%'}}>
-          <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
-                    SELECT TRANSACTION</h2>
+          <div className="modal-content">
+          <h1>  SELECT TRANSACTION</h1>
           <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, minmax(100px, 1fr))': 'repeat(3, minmax(33%, 1fr))' , gap: '5px' ,margin:'5px'}}>
 
-{userRank == 'Cashier' && (
-            <><div
-                    style={{
-                      border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
-                      borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                    }}>
+      {userRank == 'Cashier' && (
+            <>
+                  <div className='otherCommandButton'>
+                    <p> Item Discount</p>
+                    <img src={itemD}/>
+                  </div>
+                  
+                  <div className='otherCommandButton'
+                    onClick={()=>setSuspendEntryModal(true)}>
+                      <p> Suspend Transaction</p>
+                      <img src={credit}/>
+                    </div>
+                    
+                    <div className='otherCommandButton'>
+                      <p> Return</p>
+                      <img src={epsCard}/>
+                    </div>
 
-                    <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', height: '70px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
-                      Item Discount</p>
-                    <img src={itemD} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                  </div><div
-                    style={{
-                      border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
-                      borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                    }}>
+                    <div className='otherCommandButton'>
+                      <p> Cash Count</p>
+                      <img src={epsCard}/>
+                    </div>
+                    
+                    <div className='otherCommandButton'>
 
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', height: '70px', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
-                        Suspend Transaction</p>
-                      <img src={credit} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div><div
-                      style={{
-                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
-                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      }}>
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', height: '70px', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
-                        Return</p>
-                      <img src={epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div><div
-                      style={{
-                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
-                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      }}>
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', height: '70px', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
-                        Cash Count</p>
-                      <img src={epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div><div
-                      style={{
-                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
-                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      }}>
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', height: '70px', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
-                        Cash Pull-Out</p>
-                      <img src={epsCard} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    </div><div
-                      style={{
-                        border: '1px solid #4a90e2', padding: '5px', height: '115px', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', borderRadius: '10px', cursor: 'pointer', boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset', borderStyle: 'solid',
-                        borderWidth: '2px', borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                      }}>
-
-                      <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)', fontSize: '15px', fontWeight: 'bold', color: 'blue', textAlign: 'center' }}>
-                        Lock Terminal</p>
-                      <img src={Multiple} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                      <p> Cash Pull-Out</p>
+                      <img src={epsCard} />
+                    </div>
+                    
+                    <div className='otherCommandButton'>
+                      <p>Lock Terminal</p>
+                      <img src={Multiple}/>
                     </div></>
               ) }
-            <div onClick={CloseTerminal}
-            // <div onClick={logoutClick} 
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}>
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue', textAlign:'center'}}>
-               Close Terminala</p>
-              <img src= {ChargeRoom} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+            <div className='otherCommandButton'
+              onClick={CloseTerminal}>
+              <p>Close Terminala</p>
+              <img src= {ChargeRoom}/>
             </div>
 
-
-            
-            <div     
-              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
-              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-              }}
+            <div className='otherCommandButton'  
               onClick={CloseModal} >
-
-              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Close</p>
-              <img src= {CloseImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+              <p> Close</p>
+              <img src= {CloseImage}/>
             </div>
-
           </div>
-
-
-
-
-          
 
      </div>
         </div>
@@ -6544,9 +7134,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
         <div className="modal" >
              
           <div className="modal-content" style={{width:'100%' ,display:'flex',flexDirection:'column' }}>
-          <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'blue'}}>
-              Select Type of Transaction
-            </h2>
+          <h1>Select Type of Transaction</h1>
             <Button className="button-dine-in" 
               onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,AddOrderRef,SettleOrderRef,0)}
               ref={AddOrderRef}
@@ -6566,10 +7154,10 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
               ref={SettleOrderRef}
               onClick={SettleOrdertable}>
                 <Typography      
-                  sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                  sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '1.8rem' },
                   color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
                   borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
-                  Settle Order
+                 View | Settle Order
                 </Typography>
                 
             </Button>
@@ -6723,9 +7311,6 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
         <div className="modal" >
              
           <div className="modal-content" style={{width:'50%' ,display:'flex',flexDirection:'column' }}>
-          {/* <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px' ,color:'red'}}>
-              Select Type of Transaction
-            </h2> */}
           { userRank =='Cashier' &&(
             <Button className="btn"  style={{backgroundColor:'red'}}
                 onClick={EndShiftHandleClick}>
@@ -6791,8 +7376,42 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
            
           </div>
         </div>
-      )}
+  )}
   
+{SuspendEntryModal && (
+  <div className='modal'>
+      <div className='modal-content'>
+        <h1>Customer Entry</h1>
+        <div className='card'>
+          <div className='susppendEntry'>
+            <div className='form-group'>
+              <label>Customer Name</label>
+              <input ref={suspendCustomerRef} value={SuspendCustomerData.Customer}
+              name="Customer" autoComplete='off'
+              onChange={SusppendEntry}
+              />
+            </div>
+
+            <div className='form-group'>
+            <label>Customer Address</label>
+            <input ref={suspendCustomeraddressRef} value={SuspendCustomerData.CusAddress}
+            name="CusAddress"
+            autoComplete='off'
+            onChange={SusppendEntry}/>
+
+            </div>
+
+            <div className='Button-Container'>
+              <button className='ok' onClick={()=> SaveSusppendCustomer()}>Suspend</button>
+              <button className='cancel' onClick={()=> setSuspendEntryModal(false)}>Cancel</button>
+            </div>
+          </div>
+
+        </div>
+    </div>
+  </div>
+)}
+
 </Grid>
 </>
 );

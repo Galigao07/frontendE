@@ -9,6 +9,7 @@ import axios from 'axios';
 import { isDesktop } from 'react-device-detect';
 import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
 import OnScreenKeyboard from './KeyboardGlobal';
+import showErrorAlert from '../SwalMessage/ShowErrorAlert';
 
 interface VerificationData {
     handleClose:() => void;
@@ -54,9 +55,11 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
                     VeriuserRank:UserRank,
                     VeriFullname:FullName
                 })
-                } }
+                } }else{
+                  showErrorAlert('Wrong username or Password!!')
+                }
         } catch{
-                console.log('error')
+          showErrorAlert('Wrong username or Password!!')
         }
     };
 
@@ -143,7 +146,7 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
 
     const showOnScreenKeybaord = (ref:any) => {
       if (isDesktop){
-        if (isShow){
+     
           if (ref === 'username'){
             setFocusedInput2(username)
           }else{
@@ -151,7 +154,7 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
           }
           setisShowKeyboard(true)
           setFocusedInput(ref)
-        }
+        
       }
 
     }
@@ -210,8 +213,8 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
                         value={username}
                         onChange={handleUsernameChange}
                         onKeyDown={(e)=> HandleKeydown(e,UserRef,PasswordRef)}
-                        onFocus={()=> showOnScreenKeybaord('username')}
-                        onClick={()=> showOnScreenKeybaord('username')}
+                        // onFocus={()=> showOnScreenKeybaord('username')}
+                        onClick={()=> showOnScreenKeybaord('username')}  
                       />
 
                       <div>
@@ -223,7 +226,7 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
                           autoComplete="off"
                           style={{ width: '100%' }}
                           value={password}
-                          onFocus={()=> showOnScreenKeybaord('password')}
+                          // onFocus={()=> showOnScreenKeybaord('password')}
                           onClick={()=> showOnScreenKeybaord('password')}
                           onChange={handlePasswordChange}
                           onKeyDown={(e)=> HandleKeydown(e,PasswordRef,OkRef)}
@@ -251,10 +254,10 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
 
 
               <div className='key-button'>
-                <Button className="btn-show"  type='button'  style={{height:'20px',fontSize:'10px',width:'100%',
+                {/* <Button className="btn-show"  type='button'  style={{height:'20px',fontSize:'10px',width:'100%',
                 backgroundColor:'blue'}}
                   onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
-                </Button>
+                </Button> */}
               </div>
    
 

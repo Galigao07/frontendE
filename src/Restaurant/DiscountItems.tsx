@@ -39,6 +39,22 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
 
     useEffect(() => {
 
+        setItemDiscountEntry({
+            ItemCode:'',
+            LineNo:'',
+            Barcode:'',
+            Description:'',
+            Qty:'',
+            Price:'',
+            TotalAmount:0,
+            DiscountedPrice:0,
+            ByAmount:0,
+            D1:0,
+            D2:0,
+            D3:0,
+            D4:0,
+            D5:0,
+        })
         setItemDiscountEntry({...ItemDiscountEntry, 
             Barcode:SelectedItemDiscount.barcode,
             ItemCode:SelectedItemDiscount.itemcode,
@@ -61,27 +77,55 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
 
         },[])
 
-        const HandleByPercent = (e:any) => {
-
+    const HandleByPercent = (e:any) => {
             const {value } = e.target;
-
-               // Regular expression to match positive integers or decimals
-    const onlyNumbersAndDecimals = /^\d*\.?\d*$/;
-
-    // Check if the input value is a number or decimal
-    if (onlyNumbersAndDecimals.test(value)) {
-        // If it's a number, update the state
-        setByPercent(value)
-    } else {
-        // If it's not a number, you can handle it accordingly
-        console.error('Please enter a valid number.');
-    }
+            const onlyNumbersAndDecimals = /^\d*\.?\d*$/;
+            if (onlyNumbersAndDecimals.test(value)) {
+                setByPercent(value)
+            } else {
+                console.error('Please enter a valid number.');
+            }
         }
+
+    const HandleByAmount = (e:any) => {
+            const {value } = e.target;
+            const onlyNumbersAndDecimals = /^\d*\.?\d*$/;
+            if (onlyNumbersAndDecimals.test(value)) {
+                setItemDiscountEntry({...ItemDiscountEntry,ByAmount: value})
+            } else {
+                console.error('Please enter a valid number.');
+            }
+        }
+
+    const ComputeByPercent = () => {
+        const  discount :any = ((100 - ByPercent)  / 100)
+        if (!Number.isNaN(discount)){
+            setItemDiscountEntry({...ItemDiscountEntry,
+                DiscountedPrice:discount * ItemDiscountEntry.TotalAmount,
+                D1: ByPercent,
+                ByAmount:  ItemDiscountEntry.TotalAmount - ( discount * ItemDiscountEntry.TotalAmount),
+
+            })}
+            return;
+    }
+
+    const ComputeByAmount = () => {
+        const  discount :any = ((ItemDiscountEntry.ByAmount / ItemDiscountEntry.TotalAmount) * 100)
+        if (!Number.isNaN(discount)){
+            setItemDiscountEntry({...ItemDiscountEntry,
+                DiscountedPrice:ItemDiscountEntry.TotalAmount - (ItemDiscountEntry.ByAmount),
+                D1: discount,
+            })}
+            setByPercent(discount)
+            return;
+    }
+
+
 
         const Handlekeydown = (e:any) =>{
 
             if (e.key =='Enter'){
-                if (ItemDiscountEntry.D1==0){
+                // if (ItemDiscountEntry.D1==0){
                     const  discount :any = ((100 - ByPercent)  / 100)
                     if (!Number.isNaN(discount)){
                         setItemDiscountEntry({...ItemDiscountEntry,
@@ -92,59 +136,61 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                         })}
                         setByPercent(0)
                         return;
-                }
+                // }
 
-                if (ItemDiscountEntry.D2==0){
-                    const  discount :any = ((100 - ItemDiscountEntry.D1)  / 100) * ((100 - ByPercent)  / 100)
-                    if (!Number.isNaN(discount)){
-                        setItemDiscountEntry({...ItemDiscountEntry,
-                            DiscountedPrice:discount * ItemDiscountEntry.TotalAmount,
-                            D2:ByPercent,
-                            ByAmount:  ItemDiscountEntry.TotalAmount - ( discount * ItemDiscountEntry.TotalAmount),
-                        })}
-                        setByPercent(0)
-                        return;
-                }
+                // if (ItemDiscountEntry.D2==0){
+                //     const  discount :any = ((100 - ItemDiscountEntry.D1)  / 100) * ((100 - ByPercent)  / 100)
+                //     if (!Number.isNaN(discount)){
+                //         setItemDiscountEntry({...ItemDiscountEntry,
+                //             DiscountedPrice:discount * ItemDiscountEntry.TotalAmount,
+                //             D2:ByPercent,
+                //             ByAmount:  ItemDiscountEntry.TotalAmount - ( discount * ItemDiscountEntry.TotalAmount),
+                //         })}
+                //         setByPercent(0)
+                //         return;
+                // }
 
 
-                if (ItemDiscountEntry.D3==0){
-                    const  discount :any = ((100 - ItemDiscountEntry.D1)  / 100) * ((100 - ItemDiscountEntry.D2)  / 100) * ((100 - ByPercent)  / 100)
-                    if (!Number.isNaN(discount)){
-                        setItemDiscountEntry({...ItemDiscountEntry,
-                            DiscountedPrice:discount * ItemDiscountEntry.TotalAmount,
-                            D3: ByPercent,
-                            ByAmount:  ItemDiscountEntry.TotalAmount - ( discount * ItemDiscountEntry.TotalAmount),
-                        })}
+                // if (ItemDiscountEntry.D3==0){
+                //     const  discount :any = ((100 - ItemDiscountEntry.D1)  / 100) * ((100 - ItemDiscountEntry.D2)  / 100) * ((100 - ByPercent)  / 100)
+                //     if (!Number.isNaN(discount)){
+                //         setItemDiscountEntry({...ItemDiscountEntry,
+                //             DiscountedPrice:discount * ItemDiscountEntry.TotalAmount,
+                //             D3: ByPercent,
+                //             ByAmount:  ItemDiscountEntry.TotalAmount - ( discount * ItemDiscountEntry.TotalAmount),
+                //         })}
 
-                        setByPercent(0)
-                        return;
-                }
+                //         setByPercent(0)
+                //         return;
+                // }
 
-                if (ItemDiscountEntry.D4==0){
-                    const  discount :any = ((100 - ItemDiscountEntry.D1)  / 100) * ((100 - ItemDiscountEntry.D2)  / 100) * ((100 - ItemDiscountEntry.D3)  / 100) * ((100 - ByPercent)  / 100)
-                    if (!Number.isNaN(discount)){
-                        setItemDiscountEntry({...ItemDiscountEntry,
-                            DiscountedPrice:discount * ItemDiscountEntry.TotalAmount,
-                            D4: ByPercent,
-                            ByAmount:  ItemDiscountEntry.TotalAmount - ( discount * ItemDiscountEntry.TotalAmount),
-                        })}
+                // if (ItemDiscountEntry.D4==0){
+                //     const  discount :any = ((100 - ItemDiscountEntry.D1)  / 100) * ((100 - ItemDiscountEntry.D2)  / 100) * ((100 - ItemDiscountEntry.D3)  / 100) * ((100 - ByPercent)  / 100)
+                //     if (!Number.isNaN(discount)){
+                //         setItemDiscountEntry({...ItemDiscountEntry,
+                //             DiscountedPrice:discount * ItemDiscountEntry.TotalAmount,
+                //             D4: ByPercent,
+                //             ByAmount:  ItemDiscountEntry.TotalAmount - ( discount * ItemDiscountEntry.TotalAmount),
+                //         })}
 
-                        setByPercent(0)
-                        return;
-                }
+                //         setByPercent(0)
+                //         return;
+                // }
 
-                if (ItemDiscountEntry.D5==0){
-                    const  discount :any = ((100 - ItemDiscountEntry.D1)  / 100) * ((100 - ItemDiscountEntry.D2)  / 100) * ((100 - ItemDiscountEntry.D3)  / 100) *  ((100 - ItemDiscountEntry.D4)  / 100) *  ((100 - ByPercent)  / 100)
-                    if (!Number.isNaN(discount)){
-                        setItemDiscountEntry({...ItemDiscountEntry,
-                            DiscountedPrice:discount * ItemDiscountEntry.TotalAmount,
-                            D5: ByPercent,
-                            ByAmount:  ItemDiscountEntry.TotalAmount - ( discount * ItemDiscountEntry.TotalAmount),
-                        })}
+                // if (ItemDiscountEntry.D5==0){
+                //     const  discount :any = ((100 - ItemDiscountEntry.D1)  / 100) * ((100 - ItemDiscountEntry.D2)  / 100) * ((100 - ItemDiscountEntry.D3)  / 100) *  ((100 - ItemDiscountEntry.D4)  / 100) *  ((100 - ByPercent)  / 100)
+                //     if (!Number.isNaN(discount)){
+                //         setItemDiscountEntry({...ItemDiscountEntry,
+                //             DiscountedPrice:discount * ItemDiscountEntry.TotalAmount,
+                //             D5: ByPercent,
+                //             ByAmount:  ItemDiscountEntry.TotalAmount - ( discount * ItemDiscountEntry.TotalAmount),
+                //         })}
 
-                        setByPercent(0)
-                        return;
-                } }}
+                //         setByPercent(0)
+                //         return;
+                // }
+            
+            }}
 
 
                 useEffect(() => {
@@ -191,11 +237,11 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                                             overflow: 'auto',width:'40%'}}>Barcode/Item Code</Typography>
                                             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', margin: '0px 0px 0px 0px' }}>
                                                 <input name="text" style={{ width: '49%' }} readOnly
-                                                value={ItemDiscountEntry.Barcode}
+                                                defaultValue={ItemDiscountEntry.Barcode}
                                                 />
 
                                                 <input name="text" style={{ width: '49%' }}  readOnly 
-                                                   value={ItemDiscountEntry.ItemCode}
+                                                   defaultValue={ItemDiscountEntry.ItemCode}
                                                 />
                                             </div>
                                     </div>
@@ -207,7 +253,7 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                                             overflow: 'auto',width:'40%'}}>Description</Typography>
                                         <input name="text" 
                                         readOnly
-                                        value={ItemDiscountEntry.Description}
+                                        defaultValue={ItemDiscountEntry.Description}
                                         />
                                     </div>
 
@@ -218,7 +264,7 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                                             overflow: 'auto',width:'40%'}}>Quantity/Price</Typography>
                                             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', margin: '0px 0px 0px 0px' }}>
                                                 <input name="text" style={{ width: '49%' }} readOnly
-                                                value={ItemDiscountEntry.Qty}
+                                                defaultValue={ItemDiscountEntry.Qty}
                                                 />
                                                 <input name="text" style={{ width: '49%' }} readOnly
                                                 value={parseFloat(ItemDiscountEntry.Price).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -234,8 +280,8 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                                         sx={{
                                             fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                             overflow: 'auto',width:'40%'}}>Total Price</Typography>
-                                        <input name="text" 
-                                                   value={ItemDiscountEntry.TotalAmount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+                                        <input name="text"  readOnly
+                                        value={ItemDiscountEntry.TotalAmount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
                                         />
                                     </div>
 
@@ -244,7 +290,7 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                                         sx={{
                                             fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                             overflow: 'auto',width:'40%'}}>Discounted Price</Typography>
-                                        <input name="text" 
+                                        <input name="text"  readOnly
                                         value={ItemDiscountEntry.DiscountedPrice.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
                                         />
                                     </div>
@@ -254,7 +300,7 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
 
                                 <Grid item xs={12} md={12} style={{ height: '100%',width:'100%',display:'flex',flexDirection:'row'}}>
                                     
-                                    <Grid item xs={12} md={6} style={{display:'flex',flexDirection:'column'}}>
+                                    <Grid item xs={12} md={8} style={{display:'flex',flexDirection:'column'}}>
                                             
                                         <div style={{display:'flex',flexDirection:'row'}}>
                                                 <Typography 
@@ -267,7 +313,10 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                                                 onKeyDown={Handlekeydown}
                                                 placeholder="0.00"
                                                 />
-                                            </div>
+                                                <button style={{margin:'10px',backgroundColor:'Blue'}}
+                                                onClick={()=>ComputeByPercent()}
+                                                >Compute</button>
+                                        </div>
                                                 
                                             <div style={{display:'flex',flexDirection:'row'}}>
                                                 <Typography 
@@ -275,21 +324,26 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                                                     fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                                     overflow: 'auto',width:'40%'}}
                                                     >By Amount:</Typography>
-                                                <input name="text"
-                                                           value={ItemDiscountEntry.ByAmount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+                                                <input name="text" 
+                                                onInput={HandleByAmount}
+                                                value={ItemDiscountEntry.ByAmount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
                                                 />
+                                                <button style={{margin:'10px',backgroundColor:'Blue'}}
+                                                onClick={()=>ComputeByAmount()}
+                                                >Compute</button>
                                             </div>
+
                                     </Grid>
 
 
-                                    <Grid  className="DisCountLevel"  item xs={12} md={6}  style={{display:'flex',flexDirection:'row',margin:'5px'}}>
+                                    <Grid  className="DisCountLevel"  item xs={12} md={6}  style={{display:'none',flexDirection:'row',margin:'5px',}}>
                                         <div style={{display:'flex',flexDirection:'column'}}>
                                             <Typography 
                                                 sx={{
                                                     fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                                     overflow: 'auto',width:'100%',textAlign:'center'}}>1st</Typography>
                                                 <input  name="text"
-                                                         value={ItemDiscountEntry.D1.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+                                                         defaultValue={ItemDiscountEntry.D1.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
                                                 />
                                         </div>
                                         <div style={{display:'flex',flexDirection:'column'}}>
@@ -298,7 +352,7 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                                                     fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                                     overflow: 'auto',width:'100%' ,textAlign:'center'}}>2nd</Typography>
                                             <input  name="text"
-                                                    value={ItemDiscountEntry.D2.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+                                                    defaultValue={ItemDiscountEntry.D2.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
                                             />
                                         </div>
 
@@ -308,7 +362,7 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                                                     fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                                     overflow: 'auto',width:'100%' ,textAlign:'center'}}>3rd</Typography>
                                             <input  name="text"
-                                                    value={ItemDiscountEntry.D3.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+                                                    defaultValue={ItemDiscountEntry.D3.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
                                             />
                                         </div>
 
@@ -318,7 +372,7 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                                                     fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                                     overflow: 'auto',width:'100%',textAlign:'center'}}>4th</Typography>
                                                 <input  name="text" 
-                                                        value={ItemDiscountEntry.D4.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+                                                        defaultValue={ItemDiscountEntry.D4.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
                                                 />
                                         </div>
 
@@ -328,7 +382,7 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
                                                     fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                                     overflow: 'auto',width:'100%',textAlign:'center'}}>5th</Typography>
                                                   <input  name="text" 
-                                                          value={ItemDiscountEntry.D5.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+                                                          defaultValue={ItemDiscountEntry.D5.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
                                                   />
                                         </div>
                                     </Grid>

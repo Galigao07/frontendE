@@ -23,7 +23,7 @@ const MultiplePayments:React.FC<MultiplepaymentsData> = ({handleclose,totalDue,M
   ;
     const [DebitCardPaymentModal, setDebitCardPaymentModal] = useState<boolean>(false);
     const [CreditCardPaymentModal, setCreditCardPaymentModal] = useState<boolean>(false);
-    const [CashAmount, setCashAmount] = useState<any>('')
+    const [CashAmount, setCashAmount] = useState<any>(null)
     const [CurrentCheckAmount, setCurrentCheckAmount] =  useState<any>('0.00')
     const [DebitCardAmount, setDebitCardAmount] = useState<any>('0.00')
     const [CreditCardAmount, setCreditCardAmount] =  useState<any>('0.00')
@@ -48,10 +48,14 @@ const MultiplePayments:React.FC<MultiplepaymentsData> = ({handleclose,totalDue,M
 
 const OpenCreditCardPayment = () => {
   localStorage.removeItem('CreditCardPayment')
-    setCreditCardPaymentModal(true)
+
     const totalDueFloat: number = removeThousandSeparator(totalDue);
     const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
     const remainingAmountDue: number = totalDueFloat - amountTenderedFloat;
+    if (remainingAmountDue === 0){
+      return;
+    }
+    setCreditCardPaymentModal(true)
     setRemainingAmountDue(remainingAmountDue.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
   }
   
@@ -98,6 +102,9 @@ const OpenCreditCardPayment = () => {
     const totalDueFloat: number = removeThousandSeparator(totalDue);
     const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
     const remainingAmountDue: number = totalDueFloat - amountTenderedFloat;
+    if (remainingAmountDue === 0){
+      return;
+    }
     setRemainingAmountDue(remainingAmountDue.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
     setDebitCardPaymentModal(true)
   }
@@ -173,7 +180,7 @@ const OpenCreditCardPayment = () => {
         parseFloat(DebitCardAmount) + parseFloat(CreditCardAmount) + parseFloat(CreditSalesAmount) - parseFloat(totalDue) ))
   
         if(CashAmount === isNaN || CashAmount === ''){
-          setCashAmount(0)
+          setCashAmount(null)
 
         }
         if (CashAmountRef.current){
@@ -240,10 +247,8 @@ const OpenCreditCardPayment = () => {
   
       const showOnScreenKeybaord = (ref:any) => {
         if (isDesktop){
-          if (isShow){
             setisShowKeyboard(true)
-            setFocusedInput(ref)
-          }
+              setFocusedInput(ref) 
         }
       }
   
@@ -260,7 +265,7 @@ const OpenCreditCardPayment = () => {
             if (value){
               setCashAmount(value)
             }else{
-              setCashAmount(0)
+              setCashAmount(null)
             }
           
           }
@@ -288,7 +293,7 @@ const OpenCreditCardPayment = () => {
                     <div className="form-group">
                         <label>Cash</label>
                         <input ref={CashAmountRef} value={(CashAmount)}  placeholder="0.00"
-                        onFocus={()=> showOnScreenKeybaord('Cash')}
+                        onClick={()=> showOnScreenKeybaord('Cash')}
                         onKeyDown={(e) => Handlekeydown(e,CashAmountRef,CashAmountRef,CurrentCheckAmountRef)}
                         onChange={(e) => {
                         const value = e.target.value;
@@ -384,7 +389,7 @@ const OpenCreditCardPayment = () => {
             {DebitCardPaymentEntryModal && <DebitCardPaymentEntry handleClose={CloseDebitCardPaymentEntryModal} amountdue={totalDue} amounttendered={SaveDebitCardPayment} />}
            
         </div>
-        {isShowKeyboard && <OnScreenKeyboardNumeric  handleclose = {closekeyBoard}  currentv = {CashAmount} setvalue={setvalue}/>}
+        {isShowKeyboard && <OnScreenKeyboardNumeric  handleclose = {closekeyBoard}  currentv = {CashAmount ===null ? '':CashAmount} setvalue={setvalue}/>}
         </>
     )
 

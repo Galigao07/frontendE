@@ -105,3 +105,19 @@ export async function GetCurrentDateAndTime() {
 
   return formattedDateTime;
 }
+
+export async function GetSettings(name:any) {
+
+  try{
+    const response = await axios.get(`${BASE_URL}/api/system-settings/`)
+      if (response.status == 200){
+
+        
+
+        return response.data[0][`${name}`]
+                 
+      }
+      }catch{
+      showErrorAlert('Error while Saving')
+    }      
+}

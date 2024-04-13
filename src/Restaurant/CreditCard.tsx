@@ -864,7 +864,7 @@ const onDelete = () => {
        const [isShow, setisShow] = useState<boolean>(false);
        const showOnScreenKeybaord = (ref:any) => {
         if (isDesktop){
-          if (isShow){
+       
             if (ref === 'ExpiryMonth' || ref === 'ExpiryYear' || ref === 'AmountDue') {
               setisShowKeyboardNumeric(true)
             }else if (ref === 'CardNo'){
@@ -876,7 +876,7 @@ const onDelete = () => {
             }
      
             setFocusedInput(ref)
-          }
+          
         }
        }
        const ShowKeyorNot = () => {
@@ -930,15 +930,16 @@ const onDelete = () => {
 
        useEffect(() => {
         if (localStorage.getItem('MULTIPLE') === 'true'){
-          if (CreditCardPaymentData.ApprovalNo !=='') {
-            setviewSave(false);
-        } else {
-          if (CreditCardPaymentList.length !== 0){
-            setviewSave(true);
-          }else{
-            setviewSave(false);
-          }
-        }
+          setviewSave(true);
+        //   if (CreditCardPaymentData.ApprovalNo !=='') {
+        //     setviewSave(false);
+        // } else {
+        //   if (CreditCardPaymentList.length !== 0){
+        //     setviewSave(true);
+        //   }else{
+        //     setviewSave(false);
+        //   }
+        // }
         }else{
           let amount: string = amountdue.toString().replace(',', '');
           if (totalAmountDue === parseFloat(amount) && CreditCardPaymentList.length !== 0){
@@ -1007,7 +1008,7 @@ const onDelete = () => {
                             onKeyDown={(e) => handleKeyDown(e, cardNoRef, acquireBankRef)} 
                             value={CreditCardPaymentData.CardNo}
                             name="CardNo"
-                            onFocus={()=>showOnScreenKeybaord('CardNo')}
+                            // onFocus={()=>showOnScreenKeybaord('CardNo')}
                             onClick={()=>showOnScreenKeybaord('CardNo')}
                             onChange={HandleCreditCardEntry}
                             />
@@ -1136,9 +1137,9 @@ const onDelete = () => {
                                 <Button style={{backgroundColor:'RED'}} onClick={onDelete}>DELETE</Button>
                                 <Button style={{backgroundColor:'red'}} onClick={handleClose}>EXIT</Button>
                                                                 
-                                <button className="btn-show"  type='button' 
+                                {/* <button className="btn-show"  type='button' 
                                       onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
-                                </button>
+                                </button> */}
                             </div>
                         </div>
                         </Grid>
