@@ -187,10 +187,10 @@ const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
 const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
 const [isShow, setisShow] = useState<boolean>(false);
 const showOnScreenKeybaord = (ref:any) => {
-  if (isShow){
+
     setisShowKeyboard(true)
     setFocusedInput(ref)
-  }
+  
 }
 const ShowKeyorNot = () => {
   setisShow(!isShow);
@@ -369,9 +369,9 @@ const handleSpecialButtonClick = (value:any) => {
           style={{backgroundColor:'red',color:'white',margin:'5px',fontWeight:'bold',fontSize:'1.2vw'}}>
             Exit
           </Button>
-          <button className="btn-show"  type='button' 
+          {/* <button className="btn-show"  type='button' 
             onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
-          </button>
+          </button> */}
         </div>
       </div>
       {/* <button className="btn-exit"  type='button'  onClick={ShowKeyorNot}>{isShow ? 'Disable':'Enable'}</button> */}

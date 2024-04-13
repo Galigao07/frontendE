@@ -550,7 +550,7 @@ const onDelete = () => {
 
     const showOnScreenKeybaord = (ref:any) => {
       if (isDesktop){
-        if (isShow){
+     
           if (ref === 'CardNo') {
             setisShowKeyboardNumericForCardNo(true)
           }else if (ref ==='AmountDue'){
@@ -562,7 +562,7 @@ const onDelete = () => {
           }
        
           setFocusedInput(ref)
-        }
+        
       }
 
     }
@@ -674,15 +674,17 @@ const onDelete = () => {
 
   useEffect(() => {
     if (localStorage.getItem('MULTIPLE') === 'true'){
-      if (DebitCardPaymentData.ApprovalNo !=='') {
-        setviewSave(false);
-    } else {
-      if (DebitCardPaymentList.length !== 0){
-        setviewSave(true);
-      }else{
-        setviewSave(false);
-      }
-    }
+      setviewSave(true);
+    //   if (DebitCardPaymentData.ApprovalNo !=='') {
+    //     setviewSave(true);
+    // } 
+    // else {
+    //   if (DebitCardPaymentList.length !== 0){
+    //     setviewSave(true);
+    //   }else{
+    //     setviewSave(false);
+    //   }
+    // }
     }else{
       let amount: string = amountdue.toString().replace(',', '');
       if (totalAmountDue === parseFloat(amount) && DebitCardPaymentList.length !== 0){
@@ -840,9 +842,9 @@ const onDelete = () => {
                             <div style={{ width: '100%', margin:'5px'}}>
                                 <Button style={{backgroundColor:'RED'}} onClick={onDelete}>DELETE</Button>
                                 <Button style={{backgroundColor:'red'}} onClick={handleClose}>EXIT</Button>
-                                <button className="btn-show"  type='button' 
+                                {/* <button className="btn-show"  type='button' 
                                   onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
-                                </button>
+                                </button> */}
                             </div>
                         </div>
                         </Grid>

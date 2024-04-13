@@ -34,6 +34,9 @@ import showErrorAlert from '../SwalMessage/ShowErrorAlert';
 import { Grid, Table, Typography } from '@mui/material';
 import { getWaiterName } from '../global';
 import ViewCancelledSOData from './ViewCancelledSO';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
 // import TradeDiscount from './DiscountTrade';
 
 interface ListOfDineInSalesOrderProps {
@@ -63,6 +66,7 @@ const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handlec
   }
 
   interface SalesOrderListingItem {
+    barcode:string
     so_no: string;
     quantity: number;
     description: string;
@@ -89,10 +93,11 @@ const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handlec
     const [SelectedItemDiscount,setSelectedItemDiscount] = useState(null)
     const [TypeofDisCount,setTypeofDisCount] = useState<any>('')
     const [Dis,setDis] = useState<boolean>(false)
-    const [DisEntry,setDisEntry] = useState<any>('')
+    const [DisEntry,setDisEntry] = useState<any>([])
     const [DiscountType,setDiscountType] = useState<any>('')
     const [SubTotal,setSubTotal] = useState<any>('')
     const [tmpSO,settmpSO] = useState<any>(null)
+    const [isItem,setisItem] = useState<boolean>(false)
 
     const CancelSORef = useRef<HTMLDivElement>(null)
     const ViewCancelSORef = useRef<HTMLDivElement>(null)
@@ -352,12 +357,17 @@ const ShowOrderListing = async (index: number) => {
 };
 
 const ClickShowOrderListing = async (index: number) => {
-  const selectedItem:any = SalesOrderListing[index];
-  setselectedRowIndexListing(index); 
+  if (isItem){
+    const selectedItem:any = SalesOrderListing[index];
+    setselectedRowIndexListing(index); 
+    
+    setSelectedItemDiscount(selectedItem)
   
-  setSelectedItemDiscount(selectedItem)
+    console.log('xx',SelectedItemDiscount)
+  
+    OpenItemDiscountEntry(index);
+  }
 
-  console.log('xx',SelectedItemDiscount)
 }
 
 
@@ -440,7 +450,9 @@ const OKVerification = (data:any) => {
   }
 
   if (TypeofDisCount == 'Item'){
-    OpenItemDiscountEntry();
+    showSuccessAlert('Select Item For Discount')
+  setisItem(true)
+    // OpenItemDiscountEntry();
   }
 
   if (TypeofDisCount == 'Trade'){
@@ -480,18 +492,18 @@ const SaveSeniorCitezenDiscount = (data:any) => {
 
 
 //*************************ITEM DISCOUNT TRANSACTION****************************/
-const OpenItemDiscountEntry = () => {
-  if (selectedRowIndexListing != null){
+const OpenItemDiscountEntry = (index:number) => {
+  if (index != null){
     setOpenItemDiscountModal(true)
     setDiscountType('ITEM')
   }
 
-  else{
-    setisFocusIndex(true)
-    setisFocus(isFocus)
-    showErrorAlert('Please Select Item!')
+  // else{
+  //   setisFocusIndex(true)s
+  //   setisFocus(isFocus)
+  //   showErrorAlert('Please Select Item!')
 
-  }
+  // }
 
 
 }
@@ -504,10 +516,36 @@ const CloseItemDiscountsEntry = () =>{
 }
 const SaveItemDiscountEntry = (data:any) => {
   console.log(data)
+  setDisEntry((prevDisEntry:any)=> [...prevDisEntry, data]);
+  setDis(true)
+
   setOpenItemDiscountModal(false)
   setisFocusIndex(true)
 }
+const onDeleteItem = (index:any) => {
 
+  const selecteddata = DisEntry[index]
+  swalWithBootstrapButtons.fire({
+    title: 'Confirmation',
+    text:`Do you want to Remove Discount on ${selecteddata.Description}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No',
+    reverseButtons: true
+
+    }).then(async (result) => {
+    if (result.isConfirmed) {
+
+  // Create a copy of DisEntry array and remove the item at the specified index
+  const updatedDisEntry = [...DisEntry];
+  updatedDisEntry.splice(index, 1); // Remove 1 element at the specified index
+  setDisEntry(updatedDisEntry);
+    }})
+
+  
+
+};
 
 //*************************TRADE DISCOUNT TRANSACTION****************************/
 
@@ -1064,6 +1102,7 @@ const CloseViewCancelledSO = () => {
 setViewCancelledSOModal(false)
 }
 
+
   return (
     <div>
             <iframe
@@ -1172,7 +1211,9 @@ setViewCancelledSOModal(false)
                       <tbody>
                       {Array.isArray(SalesOrderListing) && SalesOrderListing.length > 0 ? (
                       SalesOrderListing.map((item, index :number) => (
-                          <tr key={index} onDoubleClick={() => OpenButtonModal} onClick={() => ClickShowOrderListing(index)} style={{
+                         <>
+                  
+                        <tr key={index} onDoubleClick={() => OpenButtonModal} onClick={() => ClickShowOrderListing(index)} style={{
                             backgroundColor: selectedRowIndexListing === index ? ' #007bff' : 'transparent',
                           }}> 
                           <td style={{textAlign:'center'}} >{item.so_no}</td>
@@ -1185,16 +1226,43 @@ setViewCancelledSOModal(false)
                                   maximumFractionDigits: 2,
                               })}
                         </td>
+                        </tr>
+                        {DiscountType === 'ITEM' && (
+                            <>
+                              {DisEntry && DisEntry.map((item1: any, index: number) => {
+                                if (item.barcode === item1.Barcode) {
+                                  return (
+                                    <tr key={item1.id} style={{ border: 'none', color: 'red', fontWeight: 'bold' }}>
+                                      <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>
+                                        <FontAwesomeIcon
+                                          icon={faTrash}
+                                          onClick={() => onDeleteItem(index)} // Handle delete action
+                                          style={{ cursor: 'pointer', color: 'red' }}
+                                        />
+                                      </td>
+                                      <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}>
+                                        {item1.D1}% DISC: {item1.Description}
+                                      </td>
+                                      <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>
+                                        -{parseFloat(item1.ByAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                      </td>
+                                    </tr>
+                                  );
+                                } else {
+                                  // Return null (or any placeholder) if the barcode does not exist in SalesOrderListing
+                                  return null;
+                                }
+                              })}
+                            </>
 
-
-                              </tr>
+                          )}
+                        </>
                           ))
                           ) : (
                           <tr>
                               <td colSpan={4}>No items in the transaction</td>
                           </tr>
                       )}
-
 
                         { Dis && (
                           <>
@@ -1214,6 +1282,32 @@ setViewCancelledSOModal(false)
                             </>
 
                           )}
+                          
+                          {/* {DiscountType === 'ITEM' && (
+                            <>
+                              <tr style={{ border: 'none', borderCollapse: 'collapse' }}>
+                                <td colSpan={5}></td>
+                              </tr>
+                              {DisEntry && DisEntry.map((item: any,index:number) => (
+                              <tr key={item.id} style={{ border: 'none', color: 'red', fontWeight: 'bold' }}>
+                                  <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>
+                                    <FontAwesomeIcon
+                                      icon={faTrash}
+                                      onClick={() => onDeleteItem(index)} // Handle delete action
+                                      style={{ cursor: 'pointer', color: 'red' }}
+                                    />
+                                  </td>
+                                <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}>{item.D1}% DISC: {item.Description}</td>
+                                <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>-{parseFloat(item.ByAmount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+
+                              </tr>
+                            ))}
+                            
+                            </>
+
+                          )} */}
+
+
                           </>
                         )}
                       </tbody>
@@ -1372,7 +1466,7 @@ setViewCancelledSOModal(false)
                       >
                       <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,   
                        color: isFocus == 4 ? 'white':'blue',textAlign:'center'}}>
-                      Señior Citezin Discount</p>
+                      Senior Citizen Discount</p>
                       <img src= {Senior} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
                     </div>
 

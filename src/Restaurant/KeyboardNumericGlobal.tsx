@@ -59,7 +59,11 @@ const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalu
     }, [isDragging]);
 
     useEffect(() => {
+
         setinputData(currentv)
+        if (inputRef.current){
+            inputRef.current.focus()
+        }
     },[currentv])
     
     const changeInput = () => {
@@ -138,7 +142,9 @@ const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalu
             <div  ref= {modalRef} className='modal-content-keyboard'
             style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '40%', height: '480px' }} >
                 <div style={{display:'flex',flexDirection:'row'}}>
-                    <input defaultValue={inputData} ref={inputRef} style={{textAlign:'center',fontSize:'20px',width:'80%'}}/>
+                    <input value={inputData}
+                       onChange={(e)=> setinputData(e.target.value)}
+                     ref={inputRef} style={{textAlign:'center',fontSize:'20px',width:'80%'}}/>
                     <button onClick={()=> handleclose()} style={{height:'40px',width:'20%',margin:'0'}}>Close</button>
                 </div>
 

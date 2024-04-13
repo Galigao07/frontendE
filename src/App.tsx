@@ -32,6 +32,7 @@ import TaggingofSaslesCategoryList from './Adminitration/TaggingofSaslesCategory
 import TaggingPerTerminal from './Adminitration/TaggingPerTerminal'
 import ReprintXReadandZRead from './Taskpane/ReprintXReadandZRead'
 import SalesReports from './Taskpane/SalesReports'
+import SystemSettings from './Adminitration/SystemSettings'
 
 
 // import OnlineTestApp from './OnlineTestApp';
@@ -509,7 +510,7 @@ const logoutClick = async () => {
                        </div>
                      </div>
   
-                       <NavLink to="#">System Settings</NavLink>
+                       <NavLink to="/System-Settings">System Settings</NavLink>
                        <NavLink to="#">Clear Login Errors</NavLink>
    
                      <div className="nested10-dropdown" >
@@ -655,6 +656,7 @@ const Content = () => {
       <Route path="/Tagging-per-terminal" element={<TaggingPerTerminal/>} />
       <Route path="/Reprint-Xread-Zread" element={<ReprintXReadandZRead/>} />
       <Route path="/Sales-Reports" element={<SalesReports/>} />
+      <Route path="/System-Settings" element={<SystemSettings/>} />
 
     </Routes>
   );

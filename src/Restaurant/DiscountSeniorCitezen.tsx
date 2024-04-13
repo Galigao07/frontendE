@@ -8,6 +8,8 @@ import Swal from "sweetalert2";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 import { isDesktop } from "react-device-detect";
 import OnScreenKeyboard from "./KeyboardGlobal";
+import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";
+import Verification from "./Verification";
 
 
 interface SeniorCitezenDiscountData{
@@ -33,10 +35,14 @@ const SeniorCitezenDiscount: React.FC<SeniorCitezenDiscountData> = ({handleClose
     const SeniorFulnnameRef = useRef<HTMLInputElement>(null);
     const SeniorTINRef = useRef<HTMLInputElement>(null);
     const SGuestCountRef = useRef<HTMLInputElement>(null);
+    const SCoveredAmountRef = useRef<HTMLInputElement>(null);
     const SaveButtonRef = useRef<HTMLButtonElement>(null)
     const ViewListRef = useRef<HTMLButtonElement>(null)
     const CloseRef = useRef<HTMLButtonElement>(null)
 
+    const [isdisabled,setisdisabled] = useState<boolean>(false)
+    const [isdisabledOveride,setisdisabledOveride] = useState<boolean>(true)
+    const [isShowKeyboardNumeric, setisShowKeyboardNumeric] = useState<boolean>(false);
 
 
 
@@ -77,12 +83,19 @@ useEffect(() => {
     }else{
         gCount = SeniorOrderData[0].guest_count
     }
+    let name :any = ''
+
+    if (SeniorOrderData[0].customer_name === null || SeniorOrderData[0].customer_name === undefined){
+        name = ''
+    }else{
+        name = SeniorOrderData[0].customer_name
+    }
 
      setSeniorDiscountData({ ...SeniorDiscountData,
      SAmountCovered: amountcover ,
      SVatSales:amountcover,
-     SeniorFulnname:SeniorOrderData[0].customer_name,
-     SeniorCount: String(0),
+     SeniorFulnname:name,
+     SeniorCount: '0',
      SGuestCount: String(gCount),
      SLessVat12 : NetSale12.toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3}),
      SNetOfVat: NetSale.toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3}),
@@ -110,7 +123,6 @@ useEffect(() => {
 
 
 const ComputeDisCount = (e:any) => {
-
     if (e){
         const tmp : any =   parseInt(e)  / parseInt(SeniorDiscountData.SGuestCount)
     
@@ -118,10 +130,7 @@ const ComputeDisCount = (e:any) => {
         const NetSale  =  SAmountCoveredTotal / (0.12 + 1 )
         const NetSale12 =  SAmountCoveredTotal - NetSale
         const DisCount  = (SAmountCoveredTotal - NetSale12 ) * 0.2
-    
         const DiscountedPrice :any = NetSale - DisCount
-    
-    
         setSeniorDiscountData({ ...SeniorDiscountData,
             SAmountCovered: SAmountCoveredTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
             SVatSales: SAmountCoveredTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
@@ -131,18 +140,25 @@ const ComputeDisCount = (e:any) => {
             SDiscountedPrice:DiscountedPrice.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
             SLess20SCDiscount:DisCount.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
        
+    })}
+}
+
+const ReComputeDisCount = (e:any) => {
+    if (e){
+        const tmp : any =   parseInt(e)  / parseInt(SeniorDiscountData.SGuestCount)
     
-    })
-    }
-
-
-// if (SaveButtonRef.current){
-//     setTimeout(() => {
-//         SaveButtonRef.current?.focus();
-//     }, 500);
-
-// }
-
+        const SAmountCoveredTotal  =  parseFloat(SeniorDiscountData.SAmountCovered.replace(',','')) * tmp 
+        const NetSale  =  SAmountCoveredTotal / (0.12 + 1 )
+        const NetSale12 =  SAmountCoveredTotal - NetSale
+        const DisCount  = (SAmountCoveredTotal - NetSale12 ) * 0.2
+        const DiscountedPrice :any = NetSale - DisCount
+        setSeniorDiscountData({ ...SeniorDiscountData,
+            SLessVat12 : NetSale12.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
+            SNetOfVat: NetSale.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
+            SDiscountedPrice:DiscountedPrice.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
+            SLess20SCDiscount:DisCount.toLocaleString(undefined,{minimumFractionDigits:4,maximumFractionDigits:4}),
+       
+    })}
 }
 
 const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
@@ -167,9 +183,9 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
     const handleChange = (field:any, value:any) => {
         setSeniorDiscountData({ ...SeniorDiscountData, [field]: value });
 
-        if (field === 'SGuestCount'){
-            ComputeDisCount(value)
-        }
+        // if (field === 'SGuestCount'){
+        //     ComputeDisCount(value)
+        // }
 
     };
 
@@ -202,7 +218,22 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
 
     useEffect(() => {
         ComputeDisCount(SeniorDiscountData.SeniorCount)
+        if (parseInt(SeniorDiscountData.SeniorCount) > 0){
+            if (parseInt(SeniorDiscountData.SeniorCount) === parseInt(SeniorDiscountData.SGuestCount)){
+     
+                    setisdisabled(true)
+                
+                         
+            }else{
+                setisdisabled(false)
+            }
+        }
+   
     },[SeniorDiscountData.SeniorCount])
+
+    useEffect(() => {
+        ReComputeDisCount(SeniorDiscountData.SeniorCount)
+    },[SeniorDiscountData.SAmountCovered])
 
     const AddNewSenior = async (event: any) => {
         if (event.key === 'Enter') {
@@ -232,8 +263,6 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
 
     const SaveNewSenior = (result:string) => {
         if (result === 'YES') {
-
-
             const totals :any = parseInt(SeniorDiscountData.SeniorCount) + 1
             setSeniorDiscountData({ ...SeniorDiscountData,
                 SeniorCount: totals
@@ -247,7 +276,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                 SeniorTIN:''});
 
             SeniorIDRef.current?.focus()
-
+    
             } else {
                 const totals :any = parseInt(SeniorDiscountData.SeniorCount) + 1
                 setSeniorDiscountData({ ...SeniorDiscountData,
@@ -265,7 +294,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
             }
 
             setInfoModal(false)
-         
+      
     }
 
     const AddNewSeniorOnclick =  () => {
@@ -279,6 +308,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                     STIN: SeniorDiscountData.SeniorTIN,
                 }
             ]);
+      
 
             setmessage("Do you want to AddNew Senior?")
             setInfoModal(true)
@@ -286,6 +316,12 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
             showErrorAlert('Total Señior Count Exceeds Guest Count')
         }
     };
+
+ const OverrideAmountCovered = () => {
+    setisdisabledOveride(false)
+    showOnScreenKeybaord('SAmountCovered')
+    
+    }
     
     const HandleSave = () => {
         SeniorData({SeniorDiscountData,SeniorNameList})
@@ -381,10 +417,15 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
       const [isShow, setisShow] = useState<boolean>(false);
       const showOnScreenKeybaord = (ref:any) => {
         if (isDesktop){
-          if (isShow){
+        if (ref === 'SAmountCovered'){
+            setisShowKeyboardNumeric(true)
+            setFocusedInput(ref)
+        }else{
             setisShowKeyboard(true)
             setFocusedInput(ref)
-          }
+        }
+        
+          
         }
       }
       const ShowKeyorNot = () => {
@@ -399,10 +440,34 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
               }));
         }
         setisShowKeyboard(false)
+        // ReComputeDisCount(SeniorDiscountData.SeniorCount)
+        setisShowKeyboardNumeric(false)
       };
+
       const closekeyBoard = () => {
         setisShowKeyboard(false)
+        setisShowKeyboardNumeric(false)
       }
+    const [OpenVireficationModal,setOpenVireficationModal] = useState<boolean>(false)
+    const [TypeofDisCount,setTypeofDisCount] = useState<any>('')
+//*************************VERIFICATION ****************************/
+const OpenVireficationEntry = (type:any) => {
+    setTypeofDisCount(type)
+    setOpenVireficationModal(true)
+  }
+  
+  const CloseVerification = () => {
+    setOpenVireficationModal(false)
+    setTypeofDisCount('')
+  
+  }
+  
+  const OKVerification = (data:any) => {
+    setOpenVireficationModal(false)
+  
+    OverrideAmountCovered()
+  }
+  
       
 
     return (
@@ -411,7 +476,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
             <div className="modal-content-senior" >
             <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2',
                 margin:'5px', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
-                SEÑIOR CITEZEN DISCOUNT</h2>
+                SENIOR CITIZEN DISCOUNT</h2>
                 <div className="senior-Container">
                 <div>
                     <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '5px' }}>
@@ -452,11 +517,19 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                             onClick={()=> showOnScreenKeybaord('SeniorTIN')}
                             // onKeyDown={(e) => handleKeyDown(e, SeniorTINRef, SGuestCountRef)} 
                             onChange={(e) => handleChange('SeniorTIN', e.target.value)} style={{width:'65%'}} />
-                            <button 
-                                onClick={()=> AddNewSeniorOnclick()}
-                                style={{backgroundColor:'blue',position:'relative',bottom:'5px'}}
-                                >Add Señior
-                            </button>
+                        <button
+                            onClick={() => AddNewSeniorOnclick()}
+                            disabled={isdisabled}
+                            style={{
+                                backgroundColor: isdisabled ?  'grey':'blue',
+                                position: 'relative',
+                                bottom: '5px',
+                                cursor:isdisabled ? 'not-allowed':'pointer',
+                            
+                            }}
+                        >
+                            Add Senior
+                        </button>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '5px',justifyContent:'space-evenly' }}>
@@ -483,9 +556,20 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                                 fontSize: { xs: '1rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                 overflow: 'auto', width: '50%',}}> Amount Covered</Typography>
                         <input
-                            type="text" placeholder="0.00" autoComplete="off" readOnly style={{textAlign:'end'}}
+                            type="text" ref={SCoveredAmountRef} placeholder="0.00" autoComplete="off" readOnly={isdisabledOveride} style={{textAlign:'end',width:'65%'}}
                             value={SeniorDiscountData.SAmountCovered} name="SAmountCovered"
                             onChange={(e) => handleChange('SAmountCovered', e.target.value)} />
+
+                        <button
+                            onClick={() => OpenVireficationEntry('Override')}
+            
+                            style={{
+                                backgroundColor: 'blue',
+                                position: 'relative',
+                                bottom: '5px',
+                            }}>
+                            Override
+                        </button>
                     </div>
 
 
@@ -561,10 +645,10 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                         <Button style={{backgroundColor:'red'}}   ref= {CloseRef}  
                                      onKeyDown={(e)=> HandleKeydownButton(e,SaveButtonRef,CloseRef,ViewListRef,2)}
                         tabIndex={2} onClick={handleClose}>EXIT</Button>
-
+{/* 
                         <Button  style={{fontSize:'10px',backgroundColor:'blue'}}
                                     onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
-                        </Button>
+                        </Button> */}
                     </div>
                 </div>
                 </div>
@@ -617,7 +701,8 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                    
                 </div>
             </div>}
-
+            {OpenVireficationModal && <Verification handleClose={CloseVerification} VerificationEntry={OKVerification}/>}
+            {isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard}   currentv={''} setvalue={setvalue}/>}
             {isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard}  currentv = {SeniorDiscountData[focusedInput]} setvalue={setvalue}/>}
         </>
    

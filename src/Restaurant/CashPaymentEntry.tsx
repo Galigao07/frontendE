@@ -7,6 +7,7 @@ import './css/CashPaymentEntry.css'
 // import { faBackspace, faBackward, faFastBackward, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import Swal from "sweetalert2";
 import { Grid, Typography } from '@mui/material';
+import BASE_URL from '../config';
 
 interface CashData {
   handleClose: () => void;
@@ -111,7 +112,7 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
   
 
   const clearInput = () => {
-    setAmountReceived(0);
+    setAmountReceived('');
   };
 
   // const AmountReceiveF = () => {
@@ -183,15 +184,31 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
 
   // };
 
+  const handleAmountReceivedChange = (value:any) => {
+    // Remove commas from the input value
+    const tmp = value.replace(',', '');
 
-  const handleAmountReceivedChange = (value: string) => {
+    // Sanitize the value to keep only digits and decimal point
+    const sanitizedValue = tmp.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
 
-    const sanitizedValue = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+    // Format the sanitized value with thousand separators
+    const formattedValue = parseFloat(sanitizedValue).toLocaleString();
 
-    // Handle the sanitized value
-    setAmountReceived(sanitizedValue);
-    // setAmountReceived(parseFloat(value));
-  };
+    // Handle the formatted value
+    setAmountReceived(formattedValue);
+};
+
+  // const handleAmountReceivedChange = (value: string) => {
+  //   const tmp = value.replace(',','')
+  //   // const sanitizedValue :any = parseFloat(tmp).toFixed(2)
+
+  //   const sanitizedValue = tmp.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+
+  //   // Handle the sanitized value
+  //   setAmountReceived(sanitizedValue);
+  //   // setAmountReceived(parseFloat(value));
+  // };
+
 
 
   // const handleClick = (ref) => {
@@ -237,13 +254,63 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
   }, []);
 
 
-
+  const [chatSocket, setChatSocket] = useState<WebSocket | null>(null);
   useEffect(() => {
 
     const amountWithoutCommas = amountdue.replace(/,/g, '')
-    const change = amountReceived - amountWithoutCommas;
+
+    const change = amountReceived.replace(/,/g, '') - amountWithoutCommas;
+
+    if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+      const message = {
+        'AmountTendered': amountReceived.replace(/,/g, ''),
+        'AmountDue':amountWithoutCommas,
+        'Open':'True',
+      };
+      chatSocket.send(JSON.stringify(message));
+    }
+    
+
     setChangeDue(change >= 0 ? change : 0);
   }, [amountReceived, amountdue]);
+
+
+// ********************* OPEN WEBSOCKET CONNECTION ***************************//
+
+useEffect(() => {
+  var url = new URL(BASE_URL);
+  // Reconstruct the URL without the port
+  var urlWithoutPort = url.hostname;
+// var urlWithoutPort = url.protocol + "//" + url.hostname + url.pathname + url.search + url.hash;
+
+  const socket = new WebSocket(`ws://${urlWithoutPort}:8001/ws/change/`);
+
+  socket.onopen = () => {
+    console.log('WebSocket connection established.');
+    const message = {
+      'message': 'Hello, world im back!'
+    };
+    socket.send(JSON.stringify(message));
+  };
+
+  socket.onmessage = async (event) => {
+    const data = JSON.parse(event.data);
+    console.log('Received data:', data);
+
+  };
+  socket.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
+
+  setChatSocket(socket)
+  return () => {
+    // Clean up WebSocket connection on component unmount
+    socket.close();
+  };
+}, []); 
+
+
+
 
   return (
     <div>

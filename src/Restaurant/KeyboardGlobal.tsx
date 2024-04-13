@@ -60,6 +60,13 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,currentv,setvalue}) => 
 
     useEffect(() => {
         setinputData(currentv)
+
+        setTimeout(() => {
+            if (inputRef.current){
+                inputRef.current.focus()
+            }
+        }, 100);
+
     },[currentv])
 
     const changeInput = () => {
@@ -95,9 +102,7 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,currentv,setvalue}) => 
       
     // },[])
 
-    // useEffect(() => {
-    //     setvalue(inputData);
-    // }, [inputData, setvalue]);
+
 
 
     const SendData = () => {
@@ -111,6 +116,7 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,currentv,setvalue}) => 
         } else if (value === 'Clear') {
             // Clear input data
             setinputData('');
+ 
         }  else if (value === 'Caps Lock') {
             // Clear input data
             setCapsLock(!capsLock);
@@ -141,7 +147,9 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,currentv,setvalue}) => 
                             // onMouseUp={handleMouseUp}
                             style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '92%', height: '400px' }} >
              <div style={{display:'flex',flexDirection:'row'}}>
-                <input defaultValue={inputData} ref={inputRef} style={{textAlign:'center',fontSize:'20px',width:'75%',border:'1px solid'}}/>
+                <input  value={inputData} ref={inputRef} 
+                onChange={(e)=> setinputData(e.target.value)}
+                style={{textAlign:'center',fontSize:'20px',width:'75%',border:'1px solid'}}/>
                 <button onClick={()=> handleclose()} style={{height:'40px',width:'23%'}}>Close</button>
                 </div>
             

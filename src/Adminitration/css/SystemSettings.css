@@ -1,0 +1,22 @@
+.settings{
+    margin: 5px;
+}
+.card{
+    margin: 10px;
+    width: 98%;
+}
+
+.settings .form-group {
+    display: flex;
+    flex-direction: row;
+}
+
+.settings .form-group label{
+  width: fit-content;
+}
+
+.settings .form-group input{
+  max-width: 20px;
+  font-size: 40px;
+  margin-top: 5px;
+}
