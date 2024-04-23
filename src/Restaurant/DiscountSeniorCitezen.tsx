@@ -252,7 +252,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                 setmessage("Do you want to AddNew Senior?")
                 setInfoModal(true)
             }else{
-                showErrorAlert('Total Señior Count Exceeds Guest Count')
+                showErrorAlert('Total Senior Count Exceeds Guest Count')
             }
 
          }
@@ -313,7 +313,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
             setmessage("Do you want to AddNew Senior?")
             setInfoModal(true)
         }  else{
-            showErrorAlert('Total Señior Count Exceeds Guest Count')
+            showErrorAlert('Total Senior Count Exceeds Guest Count')
         }
     };
 
@@ -662,7 +662,7 @@ const OpenVireficationEntry = (type:any) => {
 
             <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2',
                 margin:'5px', borderRadius: '10px', padding: '10px' ,color:'Blue'}}>
-                SEÑIOR CITEZEN LIST</h2>
+                SENIOR CITEZEN LIST</h2>
             <Table>
                 <thead>
                 <tr>

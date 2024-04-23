@@ -9,10 +9,12 @@ import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 interface CashBreakDownData{
     CashBreakDownDataList:any;
     CloseCashBreakDownModal:() => void;
+    type:any;
 
 }
 
-const CashBreakDown: React.FC<CashBreakDownData> = ({CashBreakDownDataList,CloseCashBreakDownModal}) =>{
+const CashBreakDown: React.FC<CashBreakDownData> = ({CashBreakDownDataList,CloseCashBreakDownModal,type}) =>{
+    const [HeaderType,setHeaderType] = useState<any>('Cash Breakdown')
     const [denominations, setDenominations] = useState<any>({
         // Initialize the state for denominations here if needed
         // For example:
@@ -208,7 +210,12 @@ const handleSaveCashBreakDown = () => {
    
 }
 
+
 useEffect(() => {
+    if (type === 'CASH PULL OUT'){
+        setHeaderType('Cash Pull-Out')
+    }
+    
     setTimeout(() => {
         if (OneThousandRef.current) {
             OneThousandRef.current.focus();
@@ -237,7 +244,7 @@ useEffect(() => {
               border:'1px solid',
               padding: '10px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
               borderRadius: '5px',margin: '10px',
-              fontWeight: 'bold', textAlign: 'center',}}> Cash BreakDown
+              fontWeight: 'bold', textAlign: 'center',}}>{HeaderType}
           </Typography>
           <div className="Cashbreakdown-container">
 

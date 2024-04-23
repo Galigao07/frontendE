@@ -75,3 +75,8 @@
 
 .card .card-header .close:hover {color: red;} */
 
+thead tr th {
+    background-color: blue;
+    color: white;
+}
+

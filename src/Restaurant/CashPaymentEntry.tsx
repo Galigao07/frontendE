@@ -61,44 +61,61 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
   // };
 
 
-  const handleInput = (value: string | number): void => {
-    setAmountReceived((prevValue: string | number) => {
+  const handleInput = (value:any): void => {
+    if (value === '.') {
+      const dotCount = amountReceived.split('.').length - 1;
+      if (dotCount === 1) {
+        return
+      }
+    }
+
+    setAmountReceived((prevValue: any) => {
       // Remove leading zero if the input value is '0'
-      if (typeof value === 'number' && value === 0 && parseFloat(prevValue as string) === 0) {
+      if (typeof value === 'number' && value === 0 && parseFloat((prevValue.replace(',','')) as string) === 0) {
         return value.toString();
       } else {
         // Check if the value is a decimal point
         if (value === '.') {
-          const res = parseFloat(prevValue as string) + value;
+          const res = prevValue as string + value;
+
           return res.toString();
         }
   
-        const stringValue = prevValue.toString();
+        const stringValue = (prevValue.replace(',','')).toString();
         
         // Check if the previous value already contains a decimal point
         if (stringValue.includes('.') && typeof value === 'number') {
-          const res = parseFloat(prevValue as string) + value;
-          return res.toString();
+          const res:any = parseFloat((prevValue.replace(',','')) as string) + value;
+          const formattedValue = parseFloat(res).toLocaleString();
+          return formattedValue.toString();
         }
   
         // Perform addition based on the input value
         if (typeof prevValue === 'number' && prevValue === 0 && typeof value === 'number') {
-          return value.toString();
+          const res:any = value
+          const formattedValue = parseFloat(res).toLocaleString();
+          return formattedValue.toString();
+          // return value.toString();
         }
   
         if (typeof prevValue === 'number' && typeof value === 'number') {
-          const res = prevValue + value;
-          return res.toString();
+          const res:any = prevValue + value;
+          const formattedValue = parseFloat(res).toLocaleString();
+          return formattedValue.toString();
         }
         else {
           if (prevValue === 0) {
-            const res =value;
-            return res.toString();
+            const res:any =value;
+            const formattedValue = parseFloat(res).toLocaleString();
+            return formattedValue.toString();
           }
           else{
-            const res = prevValue as string  + value;
+            
+            const sanitizedValue = prevValue.replace(/[^0-9.]/g, '');
+            const res:any = sanitizedValue as string  + value;
           
-            return res.toString();
+            const Amount = parseFloat(res).toLocaleString()
+            return Amount.toString();
           }
 
         }
@@ -152,8 +169,9 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
     
 
     const due = amountdue.replace(/,/g, '')
+    const ReceiveAmount = amountReceived.replace(/,/g, '')
 
-    if (parseFloat(due) > (amountReceived !== '' ? parseFloat(amountReceived) : 0)) {
+    if (parseFloat(due) > (ReceiveAmount !== '' ? parseFloat(ReceiveAmount) : 0)) {
       // Handle the condition where amount due is greater than amount received
       // For example, display an error message, prevent action, etc.
       Swal.fire({
@@ -167,7 +185,7 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
     } else {
       // Execute the 'amounttendered' function if the condition is met (amount due is less than or equal to amount received)
       amounttendered({
-        amounttendered: amountReceived,
+        amounttendered: ReceiveAmount,
         change: changeDue,
       });
     }
@@ -186,16 +204,30 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
 
   const handleAmountReceivedChange = (value:any) => {
     // Remove commas from the input value
+    const dotCount = value.split('.').length - 1;
+    if (dotCount === 2 ) {
+      return
+    }
+    if (value === '') {
+      if (typeof amountReceived !== 'string' || amountReceived.length === 0) return;
+  
+    setAmountReceived((prevAmountReceived: string) => prevAmountReceived.slice(0, -1));
+      return
+    }
     const tmp = value.replace(',', '');
 
-    // Sanitize the value to keep only digits and decimal point
-    const sanitizedValue = tmp.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+    const sanitizedValue = tmp.replace(/[^0-9.]/g, '');
+    if (sanitizedValue.charAt(sanitizedValue.length - 1) === '.') {
+      setAmountReceived((prevValue: any) => {
+        const res = prevValue as string + '.';
+        return res.toString();
+      });
+    } else {
+      // Format the sanitized value as a number with locale-specific formatting
+      const formattedValue = parseFloat(sanitizedValue).toLocaleString();
+      setAmountReceived(formattedValue);
+    }
 
-    // Format the sanitized value with thousand separators
-    const formattedValue = parseFloat(sanitizedValue).toLocaleString();
-
-    // Handle the formatted value
-    setAmountReceived(formattedValue);
 };
 
   // const handleAmountReceivedChange = (value: string) => {
@@ -308,8 +340,6 @@ useEffect(() => {
     socket.close();
   };
 }, []); 
-
-
 
 
   return (

@@ -137,15 +137,25 @@ const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalu
         }
     };
 
+const HandleKeyDown = (e:any) => {
+    if (e.key === 'Enter'){
+        SendData()
+    }
+}
+
     return (
         <div className='modal-key'>
             <div  ref= {modalRef} className='modal-content-keyboard'
             style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '40%', height: '480px' }} >
                 <div style={{display:'flex',flexDirection:'row'}}>
                     <input value={inputData}
+                      onKeyDown={(e)=> HandleKeyDown(e)}
                        onChange={(e)=> setinputData(e.target.value)}
                      ref={inputRef} style={{textAlign:'center',fontSize:'20px',width:'80%'}}/>
-                    <button onClick={()=> handleclose()} style={{height:'40px',width:'20%',margin:'0'}}>Close</button>
+                    <button onClick={()=> handleclose()} style={{height:'40px',width:'20%',margin:'0'}}
+                  
+                    
+                    >Close</button>
                 </div>
 
             <div className='container-key'>

@@ -143,3 +143,14 @@ width: 49%;
     border: none;
     }
 
+
+.Bank-Container{
+  display: flex;
+  flex-direction: row;
+}
+
+.Bank-Container .table-Bank{
+  margin: 5px;
+  height: fit-content;
+}
+

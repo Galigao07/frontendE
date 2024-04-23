@@ -45,6 +45,8 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
     const [CardSearch,setCardSearch] = useState<string>('')
     const [CardList,setCardList] = useState<any>([])
     const [BankList,setBankList] = useState<any>([])
+    const [BankList1,setBankList1] = useState<any>([])
+    const [BankList2,setBankList2] = useState<any>([])
     // totalAmountDue
     const [totalAmountDue,settotalAmountDue] = useState<any>(0)
 
@@ -497,8 +499,9 @@ const validateDataAndAddToList = () => {
 
         return;
         }   
-        
-    if (parseFloat(amount) < (totalAmountDue + CreditCardPaymentData.AmountDue)){
+      
+     const total:any = CreditCardPaymentData.AmountDue 
+    if (parseFloat(amount) < (totalAmountDue + parseFloat(total))){
             seterrorView(true)  
             seterrorData('Total Amount Tendered more than Amount Due..')
             setTimeout(() => {
@@ -508,7 +511,8 @@ const validateDataAndAddToList = () => {
     
             return;
             } 
-            
+      
+   
             const currentYear = new Date().getFullYear();
             const currentMonth = new Date().getMonth() + 1; // Note: Month is zero-based
           
@@ -537,8 +541,14 @@ if (validateDataAndAddToList()) {
       ApprovalNo: '',
       ExpiryMonth: '',
       ExpiryYear: '',
-      AmountDue: 0,
+      AmountDue: totalAmountDue,
     });
+setTimeout(() => {
+  if (cardNoRef.current){
+    cardNoRef.current.focus()
+  }
+}, 100);
+
   }
   }
 
@@ -570,6 +580,7 @@ if (validateDataAndAddToList()) {
           setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:parseFloat(amountD) - parseFloat(x)})
         }else{
           settotalAmountDue(parseFloat(amountD) - parseFloat(y))
+        
         }
       }else{
         settotalAmountDue(parseFloat(amountD) - CreditCardPaymentData.AmountDue);
@@ -724,7 +735,18 @@ const onDelete = () => {
   }, []);   
 
 
+///*********************** DIVIDE BANK LIST*********************************/
 
+useEffect(()=>{
+
+  const mid = Math.ceil(BankList.length / 2)
+
+  setBankList1(BankList.slice(0,mid))
+  console.log('setBankList1',BankList.slice(0,mid))
+  console.log('setBankList2',BankList.slice(mid))
+  setBankList2(BankList.slice(mid))
+
+},[BankList])
 
   const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
     try {
@@ -761,7 +783,7 @@ const onDelete = () => {
   
     const ClickBankList = (index: number) => {
     setBankModal(false)
-    const selectedItem = BankList[index];
+    const selectedItem = BankList1[index];
     setCreditCardPaymentData({...CreditCardPaymentData, AcquireBank: selectedItem.company_description})
 
       setTimeout(() => {
@@ -771,6 +793,19 @@ const onDelete = () => {
       }, 100);
 
      }
+
+     const ClickBankList2 = (index: number) => {
+      setBankModal(false)
+      const selectedItem = BankList2[index];
+      setCreditCardPaymentData({...CreditCardPaymentData, AcquireBank: selectedItem.company_description})
+  
+        setTimeout(() => {
+          if (cardIssuerRef.current) {
+            cardIssuerRef.current.focus();
+          }
+        }, 100);
+  
+       }
   
      const handleKeys2 = (event:any, category:any) => {
       if (category=='Bank'){
@@ -1220,8 +1255,6 @@ const onDelete = () => {
   {BankModal && (
                        <div className='modal'>
                          <div className='modal-content-waiter'>
-                   
-                           <div className='card'>
                              <h1>Select Bank</h1>
                            <div className='Waiterlist-Container'>
                            <input
@@ -1233,15 +1266,17 @@ const onDelete = () => {
                                onKeyDown={(e) => handleKeys2(e, 'Bank')}
                                
                              />
-                             <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Bank')} ref={BankListRef}>
+                             <div className='Bank-Container'  style={{display:'flex',flexDirection:'row'}}>
+                        
+                             <Table id="table-list" className='table-Bank' onKeyDown={(event) => handleKeys2(event, 'Bank')} ref={BankListRef}>
                                <thead>
                                  <tr>
-                                   <th>Bank Code</th>
+                                  {/* <th>Bank Code</th> */}
                                    <th>Bank Name</th>
                                  </tr>
                                </thead>
                                <tbody>
-                                 {BankList && BankList.map((result:any, index:any) => (
+                                 {BankList1 && BankList1.map((result:any, index:any) => (
                                    <tr
                                      key={index}
                                      className={selectedItemIndex === index ? 'selected' : ''}
@@ -1251,15 +1286,41 @@ const onDelete = () => {
                                      style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
                                    color:selectedItemIndex === index ? 'white':'black',height:'50px'}}
                                    >
-                                     <td>{result.id_code.padStart(4,'0')}</td>
+                                     {/* <td>{result.id_code.padStart(4,'0')}</td> */}
                                      <td>{result.company_description}</td>
                                    </tr>
                                  ))}
                                </tbody>
                              </Table>
 
+
+                             <Table id="table-list" className='table-Bank' onKeyDown={(event) => handleKeys2(event, 'Bank')} ref={BankListRef}>
+                               <thead>
+                                 <tr>
+                                  {/* <th>Bank Code</th> */}
+                                   <th>Bank Name</th>
+                                 </tr>
+                               </thead>
+                               <tbody>
+                                 {BankList2 && BankList2.map((result:any, index:any) => (
+                                   <tr
+                                     key={index}
+                                     className={selectedItemIndex === index ? 'selected' : ''}
+                                     onClick={() => ClickBankList2(index)}
+                                     tabIndex={0}
+                   
+                                     style={{backgroundColor:selectedItemIndex === index ? 'blue':'white',
+                                      color:selectedItemIndex === index ? 'white':'black',height:'50px'}}
+                                   >
+                                     {/* <td>{result.id_code.padStart(4,'0')}</td> */}
+                                     <td>{result.company_description}</td>
+                                   </tr>
+                                 ))}
+                               </tbody>
+                             </Table>
+                             </div>
                                </div>
-                           </div>
+                   
                            <div className='Button-Container'>
                                 <button onClick={() => setBankModal(false)}>Close</button>
                             </div>

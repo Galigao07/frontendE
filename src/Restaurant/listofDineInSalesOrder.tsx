@@ -37,6 +37,7 @@ import ViewCancelledSOData from './ViewCancelledSO';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
+import showInfoAlert from '../SwalMessage/ShowInfoAlert';
 // import TradeDiscount from './DiscountTrade';
 
 interface ListOfDineInSalesOrderProps {
@@ -450,8 +451,8 @@ const OKVerification = (data:any) => {
   }
 
   if (TypeofDisCount == 'Item'){
-    showSuccessAlert('Select Item For Discount')
-  setisItem(true)
+    showInfoAlert('Select Item For Discount')
+    setisItem(true)
     // OpenItemDiscountEntry();
   }
 
@@ -569,6 +570,8 @@ const SaveTradessDiscountEntry = (data:any) => {
 
 
 //*************************TRANSACTION DISCOUNT TRANSACTION****************************/
+const [TransactionAmountD,setTransactionAmountD] = useState<any>(null)
+const [TransactionAmountRate,setTransactionAmountRate] = useState<any>(null)
 
 const OpenTransactionDiscountEntry = () => {
   setOpenTransactionDiscountModal(true)
@@ -583,6 +586,24 @@ const CloseTransactionDiscountsEntry = () =>{
 }
 const SaveTransactionDiscountEntry = (data:any) => {
   console.log('Transaction discount',data)
+  setDisEntry(data)
+  setDis(true)
+  let amountD :any = 0
+  let rate :any = 0
+
+  data.map((item:any) => {
+    amountD = parseFloat(amountD) + parseFloat(item.Discount)
+    rate = parseFloat(item.desc_rate)
+    // Access other properties as needed...
+});
+setDiscountType('TRANSACTION')
+
+  
+
+
+  setTransactionAmountD(parseFloat(amountD).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
+  setTransactionAmountRate(parseFloat(rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
+  
   setOpenTransactionDiscountModal(false)
   setisFocusIndex(true)
 }
@@ -1282,6 +1303,18 @@ setViewCancelledSOModal(false)
                             </>
 
                           )}
+                            { DiscountType === 'TRANSACTION' && (
+                            <>
+                              <tr style={{ border: 'none', borderCollapse: 'collapse' }}>
+                                <td colSpan={5}></td>
+                              </tr>
+                              <tr style={{ border: 'none',color:'red',fontWeight:'bold' }}>
+                                <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}> Transaction Discount {TransactionAmountRate}%</td>
+                                <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}>-{TransactionAmountD}</td>
+                              </tr>
+                              </>
+
+                          )}
                           
                           {/* {DiscountType === 'ITEM' && (
                             <>
@@ -1655,7 +1688,7 @@ setViewCancelledSOModal(false)
               borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
               }}>
               <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
-               Señior Citezin Discount</p>
+               Senior Citezin Discount</p>
               <img src= {Senior} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
             </div>
 

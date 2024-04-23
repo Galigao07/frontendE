@@ -32,6 +32,7 @@ interface User {
 
 const UserProfile: React.FC = () => {
     const [OpenEmployeeModal,setOpenEmployeeModal] = useState<boolean>(false)
+    const [OpenSelectEmployeeModal,setOpenSelectEmployeeModal] = useState<boolean>(false)
     const [OpenaddUsermodal,setOpenaddUsermodal] = useState<boolean>(false)
     const [users, setUsers] = useState<any[]>([]);
     const [Employee, setEmployee] = useState<any[]>([]);
@@ -356,9 +357,7 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
             if (result) {
                 setOpenEmployeeModal(true);
                 setEmployee(result.data.EmployeeList);
-            
             }}
-
             
           }  catch (error) {
               console.error(error);
@@ -368,7 +367,6 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
     return (
         <>
         <Grid container style={{justifyContent:'start',}}>
-        
             <Grid item xs={12} sm={8} md={6} lg={6} style={{margin:'10px',padding: '5px',
                 alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                 borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
@@ -393,44 +391,39 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
                 <FontAwesomeIcon icon={faPlus} style={{fontSize:'25px',marginRight:'20px',color:'blue'}} onClick={AddUser}></FontAwesomeIcon>
                 <FontAwesomeIcon icon={faPrint} style={{fontSize:'25px',marginRight:'20px',color:'blue'}} onClick={AddUser}></FontAwesomeIcon>
             </div>
-            </div>
-            <div className="Transaction" style={{ overflow: 'auto' ,height:'250px',width:'100%', border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '1px' }}>
+                    </div>
 
-            <Table className="Userlist" sx={{
-    fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
-    overflow: 'auto'
-}}>
-                    <thead>
+                <div className="Transaction" style={{ overflow: 'auto' ,height:'250px',width:'100%', border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '1px' }}>
+                    <Table className="Userlist" sx={{
+                                fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
+                                overflow: 'auto'
+                        }}>
+                            <thead>
                                 <tr>
-                                <th>ID Code</th>
-                                <th>FullName</th>
-                                <th>Username</th>
-                                <th>Rank</th>
+                                    <th>ID Code</th>
+                                    <th>FullName</th>
+                                    <th>Username</th>
+                                    <th>Rank</th>
                                 </tr>
-                    
-
                             </thead>
                             <tbody>
-                            {Array.isArray(users) && users.length > 0 ? (
-            users.map((item, index) => (
-                <tr key={index} onClick={() => handleRetrieveUserData(index)} > 
-                <td style={{textAlign:'center'}}>{item.id_code}</td>
-                <td title={item.fullname}>{item.fullname}</td>
-                <td style={{textAlign:'start'}}>{item.user_name}</td>
-                <td style={{textAlign:'start'}}>{item.user_rank}</td>
-            
-        </tr>
-    ))
-    ) : (
-    <tr>
-        <td colSpan={4}>No items in the transaction</td>
-    </tr>
-    )}
-                
-
+                                {Array.isArray(users) && users.length > 0 ? (
+                                users.map((item, index) => (
+                                    <tr key={index} onClick={() => handleRetrieveUserData(index)} > 
+                                        <td style={{textAlign:'center'}}>{item.id_code}</td>
+                                        <td title={item.fullname}>{item.fullname}</td>
+                                        <td style={{textAlign:'start'}}>{item.user_name}</td>
+                                        <td style={{textAlign:'start'}}>{item.user_rank}</td>
+                                    </tr>
+                                        ))
+                                        ) : (
+                                        <tr>
+                                            <td colSpan={4}>No items in the transaction</td>
+                                        </tr>
+                                        )}
                             </tbody>
-                        </Table>
-            </div>
+                    </Table>
+                </div>
             </Grid>
 
 
@@ -474,19 +467,6 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
                                             marginBottom: '10px',
                                         }}
                                     />
-
-                    {OpenEmployeeModal && (
-                       <div className='Employee-Container' style={{ height: '25%', position: isDesktop ? 'absolute' : 'unset' ,zIndex:'1',overflow:'auto'}}>
-                        <ul id="list" className='ul-list Employee' onKeyDown={(event) => handleKeys(event, 'Employee')}  ref={EmployeeRef}>
-                          {Employee.map((result,index) => (
-                            <li tabIndex={0} key={index} className={selectedItemIndex === index ? 'selected' : ''}
-                            onKeyDown={(event) => handleKeys(event, 'Employee')} 
-                            onClick={() => ClickEmployeeList(index)}
-                            >{result.id_code} - {result.first_name} {result.middle_name} {result.last_name}</li>
-                                ))}
-                              </ul>
-                              </div>
-              )}
             
                                     </div>
                                
@@ -522,20 +502,6 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
                                             marginBottom: '10px',
                                         }}
                                     />
-                                    {/* <InputBase
-                                        ref={rankRef}
-                                        placeholder="Rank"
-                                        value={user.rank}
-                                        onChange={(e) => handleInputChange(e, 'rank')}
-                                        fullWidth
-                                        style={{
-                        
-                                            border: '1px solid #ccc',
-                                            borderRadius: '4px',
-                                            fontSize: '16px',
-                                            marginBottom: '10px',
-                                        }}
-                                    /> */}
 
                                                     <Select
                                                      
@@ -582,9 +548,50 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
                         </Grid>
                         </div>
                         </div>
-            )}
-               
-        </Grid></>
+            )} 
+        </Grid>
+        
+        {OpenEmployeeModal && (
+            <><div className='modal'>
+                    <div className='modal-content'>
+                        <Table>
+                            <thead>
+                                <tr>
+                                    <th>Employee ID</th>
+                                    <th>Fullname</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {Employee && Employee.map((result, index) => (
+                                <tr key={index}  className={selectedItemIndex === index ? 'selected' : ''}
+                                onKeyDown={(event) => handleKeys(event, 'Employee')}
+                                onClick={() => ClickEmployeeList(index)}
+                                >
+                                    <td>{result.id_code}</td>
+                                    <td>{result.first_name} {result.middle_name} {result.last_name}</td>
+                                </tr>
+
+                            ))}
+                            </tbody>
+                        </Table>
+                    </div>
+                </div>
+                
+                {/* <div className='Employee-Container' style={{ height: '25%', position: isDesktop ? 'absolute' : 'unset', zIndex: '1', overflow: 'auto' }}>
+                        <ul id="list" className='ul-list Employee' onKeyDown={(event) => handleKeys(event, 'Employee')} ref={EmployeeRef}>
+                            {Employee.map((result, index) => (
+                                <li tabIndex={0} key={index} className={selectedItemIndex === index ? 'selected' : ''}
+                                    onKeyDown={(event) => handleKeys(event, 'Employee')}
+                                    onClick={() => ClickEmployeeList(index)}
+                                >{result.id_code} - {result.first_name} {result.middle_name} {result.last_name}</li>
+                            ))}
+                        </ul>
+                    </div> */}
+                    
+                    </>
+              )}
+        
+        </>
     );
     
 };
