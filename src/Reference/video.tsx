@@ -69,41 +69,42 @@ const VideoUpload = () => {
         }
 
     };
-    const [downloadProgress, setDownloadProgress] = useState<number>(0);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response: AxiosResponse = await axios.get(`${BASE_URL}/api/video-upload/`, {
-                    responseType: 'blob',  // Set response type to blob for downloading binary data
-                    onDownloadProgress: progressEvent => {
-                        if (progressEvent.total) {
-                            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                            setDownloadProgress(percentCompleted);
-                        }
-                    }
-                });
-                setDownloadProgress(100); // Set progress to 100% when download is complete
-                const reader = new FileReader();
-                    reader.onloadend = () => {
-                        const base64Data = reader.result?.toString;
-                        if (base64Data) {
-                            setVideoUrl2(base64Data);
-                        } 
-                    };
-                    reader.readAsDataURL(response.data);
+    // const [downloadProgress, setDownloadProgress] = useState<number>(0);
 
-                // Assuming response.data is a Blob object
-                // const videoBlob = response.data;
-                // const videoUrl = URL.createObjectURL(videoBlob);
-                // setVideoUrl2(videoUrl);
-            } catch (error) {
-                console.error('Error fetching video URL:', error);
-            }
-        };
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             const response: AxiosResponse = await axios.get(`${BASE_URL}/api/video-upload/`, {
+    //                 responseType: 'blob',  // Set response type to blob for downloading binary data
+    //                 onDownloadProgress: progressEvent => {
+    //                     if (progressEvent.total) {
+    //                         const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+    //                         setDownloadProgress(percentCompleted);
+    //                     }
+    //                 }
+    //             });
+    //             setDownloadProgress(100); // Set progress to 100% when download is complete
+    //             const reader = new FileReader();
+    //                 reader.onloadend = () => {
+    //                     const base64Data = reader.result?.toString;
+    //                     if (base64Data) {
+    //                         setVideoUrl2(base64Data);
+    //                     } 
+    //                 };
+    //                 reader.readAsDataURL(response.data);
 
-        fetchData();
-    }, []);
+    //             // Assuming response.data is a Blob object
+    //             // const videoBlob = response.data;
+    //             // const videoUrl = URL.createObjectURL(videoBlob);
+    //             // setVideoUrl2(videoUrl);
+    //         } catch (error) {
+    //             console.error('Error fetching video URL:', error);
+    //         }
+    //     };
+
+    //     fetchData();
+    // }, []);
 
     const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
         let binary = '';
@@ -166,9 +167,9 @@ const VideoUpload = () => {
             )}
             </Grid>
       <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
-            {downloadProgress > 0 && downloadProgress < 100 && (
+            {/* {downloadProgress > 0 && downloadProgress < 100 && (
                 <div>Downloading: {downloadProgress}%</div>
-            )}
+            )} */}
 
             { videoUrl2 && (
                 <div>

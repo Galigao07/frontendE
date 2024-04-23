@@ -55,6 +55,7 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
                     VeriuserRank:UserRank,
                     VeriFullname:FullName
                 })
+                localStorage.setItem('Discounted_by',FullName)
                 } }else{
                   showErrorAlert('Wrong username or Password!!')
                 }

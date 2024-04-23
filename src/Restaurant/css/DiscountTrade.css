@@ -61,3 +61,16 @@
     width: 100%;
     margin: 5px 5px 0 0;
   }
+  .transactionD-entry{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+  }
+  .transactionD-entry input{
+    width: 100%;
+
+  }
+
+  .transactionD-entry label{
+    width: 50%;
+  }

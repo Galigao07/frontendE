@@ -154,13 +154,21 @@ const OnScreenKeyboardNumericForCardNo :React.FC <value> = ({handleclose,current
           setinputData(formattedValue);
         }
     }, [inputData]);
+
+    const HandleKeyDown = (e:any) => {
+        if (e.key === 'Enter'){
+            SendData()
+        }
+    }
+    
     return (
         <div className='modal-key'>
             <div  ref= {modalRef} className='modal-content-keyboard'
             style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '40%', height: '480px' }} >
                 <div style={{display:'flex',flexDirection:'row'}}>
                     <input value={inputData} 
-                       onChange={(e)=> setinputData(e.target.value)}
+                    onKeyDown={(e)=> HandleKeyDown(e)}
+                    onChange={(e)=> setinputData(e.target.value)}
                     ref={inputRef} style={{textAlign:'center',fontSize:'20px',width:'80%'}}/>
                     <button onClick={()=> handleclose()} style={{height:'40px',width:'20%',margin:'5px'}}>Close</button>
                 </div>

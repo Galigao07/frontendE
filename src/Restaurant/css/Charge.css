@@ -29,14 +29,37 @@
   padding: 20px;
   border-radius: 10px;
   width: 500px;
-  height: 80%;
+  height: 85%;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
-.modal-content-category .card{
-  height: 80%;
+.modal-content-Customer{
+  background-color: #fefefe;
+  padding: 20px;
+  border-radius: 10px;
+  width: 500px;
+  height: 85%;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content-Customer .card{
+  height: 70%;
   overflow: auto;
 }
+.modal-content-Customer .customer-search{
+margin: 5px;
+}
+
+
+.modal-content-category .card{
+  height: 70%;
+  overflow: auto;
+}
+
+.table-Customer{
+  height: 200px;
+}
+
 
 
 

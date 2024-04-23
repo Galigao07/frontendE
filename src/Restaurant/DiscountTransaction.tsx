@@ -46,36 +46,37 @@ const onUpdateToCart = () => {
       updatedItems.forEach(item => {
 
         if (item.isDisCount){
-
+            let total_dis = 0
             totalPrice = (item.quantity * item.price) + totalPrice;
             const tmp = TotalAmountDue * (PercentDiscount / 100)
-
             if (!isNaN(TotalAmountDiscount) && Number(TotalAmountDiscount) !== 0) {
                 const  Discount :any = ((TradeDiscountEntry.D1)  / 100)
-
-                const TotalDiscount :any = ((item.quantity * item.price) * TotalAmountDiscount) / TotalAmountDue; 
-                const NetofDiscount :any = (item.quantity * item.price) - TotalDiscount; 
-                item.Discount =  TotalDiscount
-                item.NetofDiscount = NetofDiscount; 
-
-            }
-            else {
-
-
-
                 const TotalDiscount :any = ((item.quantity * item.price) * tmp) / TotalAmountDue; 
                 const NetofDiscount :any = (item.quantity * item.price) - TotalDiscount; 
                 item.Discount =  TotalDiscount
                 item.NetofDiscount = NetofDiscount; 
 
+                let x :any = TradeDiscountEntry.D1
+                let Due : any = item.quantity * item.price
+                if (parseFloat(x) === 0){
+                    const rate:any = ((Due - TotalDiscount) / (Due)) * 100
+                    item.desc_rate = 100 - rate
+
+                }else{
+                    item.desc_rate = TradeDiscountEntry.D1
+                }
             }
+            else {
 
+                const TotalDiscount :any = ((item.quantity * item.price) * tmp) / TotalAmountDue; 
+                const NetofDiscount :any = (item.quantity * item.price) - TotalDiscount; 
 
-
-            setTotalAmountDiscount(item.Discount + item.Discount)
-
+                item.Discount =  TotalDiscount
+                item.NetofDiscount = NetofDiscount;
+                total_dis =  total_dis + TotalDiscount
+            }
             netOfDisCount = item.NetofDiscount + netOfDisCount
-            setPercentDiscount(((item.Discount + item.Discount) / totalPrice) * 100 )
+
         }else{
             item.Discount ='0.00';
             item.NetofDiscount = '0.00'; 
@@ -91,6 +92,63 @@ const onUpdateToCart = () => {
 
   };
 
+
+  const onUpdateToCartAmount = () => {
+    setPercentDiscount((prev: any) => ({ ...prev, PercentDiscount: 0 }));
+    setTransactionDiscountEntryList((prevData: any) => {
+      const updatedItems = [...prevData]; // Create a copy of the array
+  
+        let totalPrice  = 0
+        let netOfDisCount = 0
+      updatedItems.forEach(item => {
+
+        if (item.isDisCount){
+            let total_dis = 0
+            totalPrice = (item.quantity * item.price) + totalPrice;
+            const tmp = TotalAmountDue * (PercentDiscount / 100)
+            if (!isNaN(TotalAmountDiscount) && Number(TotalAmountDiscount) !== 0) {
+                const  Discount :any = ((TradeDiscountEntry.D1)  / 100)
+                const TotalDiscount :any = ((item.quantity * item.price) * TotalAmountDiscount) / TotalAmountDue; 
+                const NetofDiscount :any = (item.quantity * item.price) - TotalDiscount; 
+                item.Discount =  TotalDiscount
+                item.NetofDiscount = NetofDiscount; 
+
+                let x :any = TradeDiscountEntry.D1
+                let Due : any = item.quantity * item.price
+                if (parseFloat(x) === 0){
+                    const rate:any = ((Due - TotalDiscount) / (Due)) * 100
+                    item.desc_rate = 100 - rate
+                }else{
+                    item.desc_rate = TradeDiscountEntry.D1
+                }
+            }
+            else {
+
+                const TotalDiscount :any = ((item.quantity * item.price) * tmp) / TotalAmountDue; 
+                const NetofDiscount :any = (item.quantity * item.price) - TotalDiscount; 
+
+                item.Discount =  TotalDiscount
+                item.NetofDiscount = NetofDiscount;
+                total_dis =  total_dis + TotalDiscount
+            }
+            netOfDisCount = item.NetofDiscount + netOfDisCount
+
+        }else{
+            item.Discount ='0.00';
+            item.NetofDiscount = '0.00'; 
+        }
+
+      });
+      settotalNetofDiscount(netOfDisCount)
+
+
+      return updatedItems; // Update the state with the modified array
+    });
+
+
+  };
+
+
     useEffect(() => {
         setTransactionDiscountEntryList(SalesOrderListings);
 
@@ -101,6 +159,7 @@ const onUpdateToCart = () => {
             updatedItems.forEach(item => {
                 item.isDisCount = true
                 item.Discount = '0.00'
+                item.desc_rate = '0.00'
                 item.NetofDiscount = '0.00'
                 TotalD =(item.quantity * item.price) + TotalD
             });
@@ -124,12 +183,34 @@ const onUpdateToCart = () => {
       }, [SalesOrderListings]); // Make sure to include SalesOrderListing in the dependency array
     
 
+    //   useEffect(() => {
+    //     setTradeDiscountEntry({...TradeDiscountEntry,D1:PercentDiscount})
+    //   },[PercentDiscount])
+
       useEffect(() => {
-        setTradeDiscountEntry({...TradeDiscountEntry,D1:PercentDiscount})
-      },[PercentDiscount])
+        let amount :any = 0
+        let Rate :any = 0
+        TransactionDiscountEntryList.map((item:any)=>{
+          amount = parseFloat(amount) + parseFloat(item.Discount)
+          Rate = parseFloat(item.desc_rate)
+        
+        })
+        if (amount !==0){
+            setTotalAmountDiscount(amount)
+        }
+
+        if (Rate !==0){
+            setPercentDiscount(Rate)
+        }
+      
+
+
+      },[TransactionDiscountEntryList])
+
+
 
     const HandleClickSave = () => {
-        TransactionData({...TransactionDiscountEntryList})
+        TransactionData(TransactionDiscountEntryList)
 
     }
 
@@ -140,10 +221,6 @@ const onUpdateToCart = () => {
 
     }
 
-    useEffect(()=> {
-
-
-    },[TradeDiscountEntry])
 
     
 
@@ -208,7 +285,24 @@ const handleCheckboxChange = (index: number) => {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, []);   
+  }, []); 
+  
+  
+  const ComputeTransaction = () => {
+
+    // setTotalAmountDiscount((prev:any) => ({ ...prev, TotalAmountDiscount: 0 }));
+
+
+    onUpdateToCart()
+
+    // setTradeDiscountEntry({
+    //     D1:PercentDiscount,
+    //     D2:0,
+    //     D3:0,
+    //     D4:0,
+    //     D5:0,
+    // })
+  }
 
     return (
 
@@ -222,19 +316,30 @@ const handleCheckboxChange = (index: number) => {
                         <div className="TradeDiscount-Container">
                         <Grid item xs={12} style={{ height: '100%',width:'100%' }}>
                                 <div style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
-                                <input type="text"   style={{textAlign:'end'}}
-                                ref={TotalAmountDiscountRef}
-                                onInput={(e) => setTotalAmountDiscount((e.target as HTMLInputElement).value)}
-                                onKeyDown={(e) => handleKeyDown(e, TotalAmountDiscountRef, PercentDiscountRef)} 
-                                value={TotalAmountDiscount} />
-
-
-                                <input type="text"   style={{textAlign:'end'}}
-                                   onInput={(e) => setPercentDiscount((e.target as HTMLInputElement).value)}
-                                   onKeyDown={(e) => handleKeyDown(e, PercentDiscountRef, PercentDiscountRef)} 
-                                ref={PercentDiscountRef}
-                                value={PercentDiscount}
-                                     />
+                                    <div className="transactionD-entry">
+                                        <label>Amount</label>
+                                        <input type="text" style={{textAlign:'end'}}
+                                        ref={TotalAmountDiscountRef}
+                                        onInput={(e) => setTotalAmountDiscount((e.target as HTMLInputElement).value)}
+                                        onKeyDown={(e) => handleKeyDown(e, TotalAmountDiscountRef, PercentDiscountRef)} 
+                                        value={TotalAmountDiscount} />
+                                    </div>
+                                    <div className="transactionD-button">
+                                        <button style={{backgroundColor:'blue',margin:'10px',cursor:'pointer'}} onClick={()=>onUpdateToCartAmount()}>Compute</button>
+                                    </div>
+                                    <div className="transactionD-entry">
+                                        <label>Percent</label>
+                                        <input type="text"   style={{textAlign:'end'}}
+                                        onInput={(e) => setPercentDiscount((e.target as HTMLInputElement).value)}
+                                        onKeyDown={(e) => handleKeyDown(e, PercentDiscountRef, PercentDiscountRef)} 
+                                        ref={PercentDiscountRef}
+                                        value={PercentDiscount}
+                                            />
+                                    </div>
+                                    <div className="transactionD-button">
+                                        <button style={{backgroundColor:'blue',margin:'10px',cursor:'pointer'}} onClick={()=>ComputeTransaction()}>Compute</button>
+                                    </div>
+                                    
                                 </div>
 
                             </Grid>
@@ -338,7 +443,7 @@ const handleCheckboxChange = (index: number) => {
     
                         </Grid>
 
-                        <Grid  className="DisCountLevel"  item xs={12} md={6}  style={{display:'flex',flexDirection:'row',margin:'5px'}}>
+                        <Grid  className="DisCountLevel"  item xs={12} md={6}  style={{display:'none',flexDirection:'row',margin:'5px'}}>
                                         <div style={{display:'flex',flexDirection:'column'}}>
                                             <Typography 
                                                 sx={{
@@ -405,7 +510,7 @@ const handleCheckboxChange = (index: number) => {
                                                         onKeyDown={(e) => handleKeyDown(e, d5Ref, d5Ref)} 
                                                   />
                                         </div>
-                                    </Grid>
+                        </Grid>
 
 
                 <div className="TradeDiscount-button">

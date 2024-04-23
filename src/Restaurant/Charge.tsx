@@ -12,6 +12,9 @@ import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 import Swal from 'sweetalert2';
 import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
 import { GetSettings } from "../global";
+import AcctTileSLName from "../Adminitration/AcctTileGlobal";
+import OnScreenKeyboard from "./KeyboardGlobal";
+import { isDesktop } from "react-device-detect";
 
 const swalWithBootstrapButtons = Swal.mixin({
     customClass: {
@@ -45,8 +48,8 @@ const ChargeTo: React.FC<ChargeToTrans> = ({handleClose,amountdue,chargedata}) =
           if (withHotel === 'False'){
             OpenChargeCustomer()
             setTimeout(() => {
-              if(CategoryRef.current){
-                CategoryRef.current.focus()
+              if(CustomerIDRef.current){
+                CustomerIDRef.current.focus()
               }
             }, 100);
           }
@@ -164,10 +167,13 @@ const CustomerIDRef = useRef<HTMLInputElement>(null);
 const CustomerNameRef = useRef<HTMLInputElement>(null);
 const TermsRef = useRef<HTMLInputElement>(null);
 const CreditLimitRef = useRef<HTMLInputElement>(null);
+const CustomerSearchRef = useRef<HTMLInputElement>(null)
 const [OpenCategoryModal,setOpenCategoryModal] = useState<boolean>(false)
 const [categoryList,setcategoryList] = useState<any>([])
 const [CustomerList,setCustomerList] = useState<any>([])
 const [OpenCustomerModal,setOpenCustomerModal] = useState<boolean>(false)
+const [CustomerSearch,setCustomerSearch] = useState<any>('')
+
 
 const SaveChargeToCustomer =() => {
     swalWithBootstrapButtons.fire({
@@ -208,10 +214,10 @@ if (response.status == 200){
   }
 }
 
-const fetchCustomerwithCategory = async()=> {
+const fetchCustomerwithCategory = async(name:any)=> {
   try{
 const response = await axios.get(`${BASE_URL}/api/customer-with-category/`,{params: {
-  category:ChargeCustomerAccount.Category
+  name:name
 }})
 if (response.status == 200){
 
@@ -223,6 +229,8 @@ if (response.status == 200){
     showErrorAlert('Error While Fetching Customer List')
   }
 }
+
+
 
 const selectCategory = (index:any) => {
 const selected = categoryList[index]
@@ -387,10 +395,31 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
           [name]: value,
         })); 
 }
-   
-    
-  
 
+const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+const showOnScreenKeybaord = () => {
+  if (isDesktop){
+    if (ChargeToCustomerAccountModal){
+      fetchCustomerwithCategory('')
+    }
+      setisShowKeyboard(true)
+
+}}
+
+const setvalue = (value: any) => {
+  if (ChargeToCustomerAccountModal){
+    setCustomerSearch(value);
+    setisShowKeyboard(false)
+    fetchCustomerwithCategory(value)
+    
+  }
+
+};
+
+const closekeyBoard = () => {
+  setisShowKeyboard(false)
+
+}
     return (
     <div>
         
@@ -534,7 +563,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
             CHARGE SALES</h2>
 
             <div className="credit-Container">
-                <div style={{display:'flex',flexDirection:'column'}}>
+                {/* <div style={{display:'flex',flexDirection:'column'}}>
                     <label>Category</label>
                     <input type="text" placeholder="Category"  autoComplete="off" ref={CategoryRef}
                     onKeyDown={(e) => handleKeyDown(e, CategoryRef, CustomerIDRef)} 
@@ -542,14 +571,14 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                     onChange={HandleEntryCustomerAccount}
                     onClick={()=>{ setOpenCategoryModal(true);fetchCategory()}}
                     />
-                </div>
+                </div> */}
                 <div style={{display:'flex',flexDirection:'column'}}>
                     <label>Customer ID</label>
                     <input type="text" placeholder="Customer ID"  autoComplete="off" ref={CustomerIDRef}
                     onKeyDown={(e) => handleKeyDown(e, CustomerIDRef, CustomerNameRef)} 
                     value={ChargeCustomerAccount.CustomerID}
                     onChange={HandleEntryCustomerAccount}
-                    onClick={()=>{setOpenCustomerModal(true);fetchCustomerwithCategory()}}
+                    onClick={()=>{setOpenCustomerModal(true); fetchCustomerwithCategory('')}}
                     />
                 </div>
                 <div style={{display:'flex',flexDirection:'column'}}>
@@ -558,6 +587,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
                     onKeyDown={(e) => handleKeyDown(e, CustomerNameRef, TermsRef)} 
                     value={ChargeCustomerAccount.CustomerName}
                     onChange={HandleEntryCustomerAccount}
+                    onClick={()=>{setOpenCustomerModal(true);fetchCustomerwithCategory('')}}
                     />
                 </div>
                 <div style={{display:'flex',flexDirection:'column'}}>
@@ -685,10 +715,18 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
 
 {OpenCustomerModal && (
   <div className="modal">
-    <div className="modal-content-category">
+    <div className="modal-content-Customer">
       <h1>Select Customer</h1>
+      <input className="customer-search"
+        ref={CustomerSearchRef}
+        value={CustomerSearch}
+        placeholder="Search.."
+        onChange={(e) => {setCustomerSearch(e.target.value)}}
+        onClick={()=>showOnScreenKeybaord()}
+        // onKeyDown={(e) => handleKeys2(e)}
+      />
       <div className="card">
-        <Table className="table-category">
+        <Table className="table-Customer">
           <thead>
             <tr>
               <th>Code</th>
@@ -698,7 +736,7 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
           <tbody>
 
         {CustomerList && CustomerList.map((item: any, index: number) => (
-            <tr key={index} style={{fontSize:'30px'}}  onClick={()=>selectCustomer(index)}>
+            <tr key={index} style={{height:'50px'}}  onClick={()=>selectCustomer(index)}>
                 <td>{item.id_code}</td>
                 <td>{item.trade_name}</td>
             </tr>
@@ -763,8 +801,8 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
   </div>
 }
 
-
-
+{isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard}  currentv = {CustomerSearch} setvalue={setvalue}/>}
+{/* {showAcctTitleModal && <AcctTileSLName handleClose = {handleclose} Transaction ={SLorAcct} currentvalue={selectedData} DataSend = {DataSend} />} */}
 </div>
 )}
 

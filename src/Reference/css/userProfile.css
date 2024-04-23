@@ -9,6 +9,12 @@
 
 } */
 
+.Userlist thead tr th {
+  width: 400px;
+  text-align: center;
+  background-color:blue;
+}
+
   .Userlist th {
     width: 400px;
     text-align: center;
@@ -34,3 +40,6 @@
     text-overflow: ellipsis;
   } 
   
+ .ul-list.Employee {
+  z-index: 99;
+ }

@@ -1,0 +1,53 @@
+.modal-content-cancell {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 1000px;
+    max-height: 600px;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+.CancellTrans-Container{
+    height: 300px;
+    overflow: auto;
+
+  }
+
+.Search-Container{
+display: flex;
+flex-direction: row;
+margin: 5px;
+}
+
+.Search-Container .form-group{
+    margin: 5px;
+
+}
+thead th {
+    background-color: blue;
+    color: white;
+    position: sticky;
+    top: 0;
+}
+.Search-Container .SearchD{
+    padding: 10px;
+    border: none;
+    background-color: blue;
+    color: white;
+    height: fit-content;
+    position: relative;
+    top:25px;
+    cursor: pointer;
+    border-radius: 5px;
+    
+}
+
+.Search-Container .SearchD:hover{
+    background-color: darkblue;
+    
+}
+
+.Button-Container button{
+    background-color: blue;
+}

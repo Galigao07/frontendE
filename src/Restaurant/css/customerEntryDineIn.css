@@ -46,6 +46,11 @@ input[type="radio"] {
     margin-right: 5px; /* Optional: Add some space between radio button and label */
   }
 
+  .table-list.Waiter thead tr th {
+    background-color: blue;
+    color: white;
+  }
+  
 /* 
   .num-pad {
     display: flex;

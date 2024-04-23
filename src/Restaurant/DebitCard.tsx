@@ -296,8 +296,8 @@ const validateDataAndAddToList = () => {
 
         return;
         }   
-        
-    if (parseFloat(amount) < (totalAmountDue + DebitCardPaymentData.AmountDue)){
+        const total:any = DebitCardPaymentData.AmountDue 
+    if (parseFloat(amount) < (totalAmountDue + parseFloat(total))){
             seterrorView(true)  
             seterrorData('Total Amount Tendered more than Amount Due..')
             setTimeout(() => {
@@ -316,7 +316,7 @@ if (validateDataAndAddToList()) {
       AcquireBank: '',
       CardHolder: '',
       ApprovalNo: '',
-      AmountDue: 0,
+      AmountDue: totalAmountDue,
     });
   }
   }

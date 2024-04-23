@@ -29,6 +29,14 @@ import ReprintImage from '../assets/ReprintImage.jpeg';
 import ChangeOderTypeImage from '../assets/ChangeOrder.jpg';
 import CloseImage from '../assets/close.png';
 import RefreshImage from '../assets/RefreshImage.png';
+import ReturnImage from '../assets/retrun.png'
+import LockTerImage from '../assets/Lock.png'
+import CashCountImage from '../assets/CashCount.jpg'
+import CashPullOutImage from '../assets/CashPullOut.jpg'
+import SuspendImage from '../assets/Susppend.png'
+import VoidTransImage from '../assets/Void.png'
+import CancelTransImage from '../assets/CancelledTransaction.png'
+
 import logo from '../assets/logo.png'
 import './css/restaurant.css';
 import CustomerDineIn from './customerEntryDineIn';
@@ -69,6 +77,10 @@ import DebitCardPaymentEntry from './DebitCardPayment';
 import CreditCardPayment from './CreditCard';
 import DebitCardPayment from './DebitCard';
 import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
+import showInfoAlert from '../SwalMessage/ShowInfoAlert';
+import ListOfTransaction from './ListofTransaction';
+
+
 const swalWithBootstrapButtons = Swal.mixin({
   customClass: {
     confirmButton: 'btn btn-success',
@@ -359,7 +371,7 @@ useEffect(() => {
 
   return (
 
-      <div id = "product-id" style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fit, minmax(15%, 1fr))' :'repeat(auto-fit, minmax(140px, 1fr))', gap: '5px' ,margin:'10px'}}>
+      <div id = "product-id" style={{ display: 'grid', gridTemplateColumns: isDesktop ? products.length < 6 ? 'repeat(auto-fit, minmax(15%, 150px))' : 'repeat(auto-fit, minmax(15%, 1fr))' :'repeat(auto-fit, minmax(140px, 1fr))', gap: '5px' ,margin:'10px'}}>
           {products.map((product:any,index) => (
               <div key={index}
               tabIndex={index}
@@ -378,18 +390,19 @@ useEffect(() => {
                 borderWidth: '2px',
                 borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
                 backgroundColor: isSelectedIndex == index ? 'blue':'white',
-                height:'100%',
+                height:'200px',
+                // width: products.length < 5 ? '80%' : '100%'
               }}
               onKeyDown={(e) => Handlekeydown(e,index)}
              onClick={() => handleproductclick(product,index)}> 
              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Typography sx={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none',  color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', marginBottom: '10px', flex: '1 1 100%',height:'40px',
+            <Typography sx={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none',  color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', marginBottom: '10px', flex: '1 1 100%',height:'40px',
                  fontSize: { xs: '1.2rem', sm: '0.4rem', md: '.6rem', lg: '.8rem', xl: '0.9rem',
                 },  fontFamily:'Times New Roman'}}>
                 {product.long_desc}
               </Typography>
               
-              <img src={image} style={{ maxWidth: '80%', maxHeight: '80%', marginBottom: '10px', flex: '0 0 auto' }} />
+              <img src={image} style={{ maxWidth: '100px', maxHeight: '100px', marginBottom: '10px', flex: '0 0 auto' }} />
               <Typography sx={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none', color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%',
                  fontSize: { xs: '1.2rem', sm: '0.4rem', md: '.6rem', lg: '.8rem', xl: '0.9rem' } , fontFamily:'Times New Roman'}}
                 >Price: {parseFloat(product.reg_price).toFixed(2)}
@@ -671,6 +684,22 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
           }
         }
 
+  const [TransactionAmountD,setTransactionAmountD] = useState<any>(null)
+  const [TransactionAmountRate,setTransactionAmountRate] = useState<any>(null)
+    useEffect(()=>{
+      let amountD :any = 0
+      let rate :any = 0
+    if (DiscountType==='TRANSACTION'){
+      DiscountData.map((item:any) => {
+        amountD = parseFloat(amountD) + parseFloat(item.Discount)
+        rate = parseFloat(item.desc_rate)
+    });
+      setTransactionAmountD(parseFloat(amountD).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
+      setTransactionAmountRate(parseFloat(rate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
+    }
+ 
+    },[DiscountData])
+
 
     return (
       <div className="Transaction" style={{ overflowY: 'auto', maxHeight: '55%' ,
@@ -775,6 +804,19 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
                           )}
                         </>
                       )}
+
+                      { DiscountType === 'TRANSACTION' && (
+                            <>
+                              <tr style={{ border: 'none', borderCollapse: 'collapse' }}>
+                                <td colSpan={5}></td>
+                              </tr>
+                              <tr style={{ border: 'none',color:'red',fontWeight:'bold' }}>
+                                <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}> Transaction Discount {TransactionAmountRate}%</td>
+                                <td colSpan={2} style={{ textAlign: 'center', border: 'none'}}>-{TransactionAmountD}</td>
+                              </tr>
+                              </>
+
+                          )}        
           </tbody>
         </Table>
       
@@ -1328,7 +1370,8 @@ const Restaurant: React.FC = () => {
   const [ReceiptOpenModal, setReceiptOpenModal] = useState<boolean>(false);
   const [CashPaymentEntryModal,setCashPaymentEntryModal] = useState<boolean>(false);
   const [ReprintTransactionModal,setReprintTransactionModal] = useState<boolean>(false);
-
+  const [OpenlistOfTransactionModal,setOpenlistOfTransactionModal] = useState<boolean>(false);
+  const [OpenLockModal,setOpenLockModal]= useState<boolean>(false)
   const [PrintReceiptModal,setPrintReceiptModal] = useState<boolean>(false);
 
   const [OpenVireficationModal,setOpenVireficationModal] = useState<boolean>(false)
@@ -1738,6 +1781,12 @@ const Restaurant: React.FC = () => {
   const suspendCustomerRef = useRef(null)
   const suspendCustomeraddressRef = useRef(null)
 
+  const [LockUsername,setLockUsername] = useState<any>('')
+  const [LockPassword,setLockPassword] = useState<any>('')
+
+  const LockUsernameRef = useRef(null)
+  const LockPasswordRef = useRef<HTMLInputElement>(null)
+
   const SusppendEntry = (e:any)=> {
     const { name, value } = e.target;
     setSuspendCustomerData((prevData:any) => ({
@@ -1770,7 +1819,7 @@ const Restaurant: React.FC = () => {
         setTableNo('')
         setOrderType('')
         setOrderTypeModal(true)
-        setisSelected(0)
+        setisSelected(null)
         setLoadingPrint(false)
         setSuspendEntryModal(false)
         setSuspendCustomerData({
@@ -1795,11 +1844,81 @@ const Restaurant: React.FC = () => {
     }
   }
 
+const ShowCancellTransaction = () => {
+  setOrderTypeModal(false)
+  setOpenlistOfTransactionModal(true)
+  setOtherCommandOpenModal(false)
+}
+
+  const CloseCancellTransactionModal = () => {
+    setOpenlistOfTransactionModal(false)
+    setOtherCommandOpenModal(false)
+    setOrderTypeModal(true)
+  }
+
+  const SaveCancellTransaction = (data:any) => {
+    console.log('data',data)
+    setOpenlistOfTransactionModal(false)
+    setOrderTypeModal(true)
+    setOrderTypeModal(true)
+
+  }
+
+
+
+const Lockterminal = () => {
+  setOpenLockModal(true)
+  setLockUsername(localStorage.getItem('UserName'))
+
+  setTimeout(() => {
+    if (LockPasswordRef.current){
+      LockPasswordRef.current.focus()
+    }
+  }, 100);
+
+}
+
+const unLockterminal = async() => {
+  try {
+    const Username = localStorage.getItem('UserName')
+
+    if (Username === LockUsername && localStorage.getItem('UserRank') === 'Cashier'){
+      const response = await axios.get(`${BASE_URL}/api/unlock-terminal/`, {
+        params:{
+        username : LockUsername,
+        password : LockPassword,
+        }
+      });
+  
+      if (response.status === 200) {
+        setOpenLockModal(false)
+        setOtherCommandOpenModal(false)
+        setLockPassword('')
+        setLockUsername('')
+  
+      }
+    }else{
+      showErrorAlert('Username Is not Registered in This Terminal')
+    }
+
+  
+  }catch{
+      showErrorAlert('Error while Unlocking Terminal')
+    }
+
+}
+
+  const CashPullout = () => {
+    setcashBreakDownType('CASH PULL OUT')
+    setCashBreakDownModal(true)
+    setOtherCommandOpenModal(false)
+    setOrderTypeModal(false)
+  }
+
   const CloseLogout = () =>{
     setCloseTerminalModal(false)
     setOrderTypeModal(true)
-    setisSelected(0)
-    setisSelected(0)
+    setisSelected(null)
     setTimeout(() => {
       DineInRef.current?.focus()
     }, 50);
@@ -1850,10 +1969,13 @@ const Restaurant: React.FC = () => {
     }
 
     /// ************************* CASH BREAK DOWN *************************************** //
-
+    const [cashBreakDownType, setcashBreakDownType] = useState<any>(null);
     const EndShiftHandleClick = () => {
+    setcashBreakDownType('END SHIFT')
     setCashBreakDownModal(true)
     setCloseTerminalModal(false)
+    setOrderTypeModal(false)
+    setOtherCommandOpenModal(false)
     }
 
     const endShitf =  async () => {
@@ -1876,7 +1998,7 @@ const Restaurant: React.FC = () => {
     const CloseCashBreakDownModal = () => {
       setCashBreakDownModal(false)
       setOrderTypeModal(true)
-      setisSelected(0)
+      setisSelected(null)
       setTimeout(() => {
         DineInRef.current?.focus()
       }, 50);
@@ -1886,8 +2008,10 @@ const Restaurant: React.FC = () => {
 
 const CashBreakDownDataList = async (data:any) => {
   try {
-
-    const response = await axios.post(`${BASE_URL}/api/cash-breakdown/`,{data:data,TransID:localStorage.getItem('TransID')});
+    const CashierID = localStorage.getItem('UserID')
+    const FullName = localStorage.getItem('FullName')
+    const response = await axios.post(`${BASE_URL}/api/cash-breakdown/`,{data:data,TransID:localStorage.getItem('TransID'),Type:cashBreakDownType,
+                                                                        CashierID:CashierID,FullName:FullName});
     if (response.status==200){
   
       const response1 = await axios.get(`${BASE_URL}/api/company-details/`)
@@ -1896,6 +2020,9 @@ const CashBreakDownDataList = async (data:any) => {
         setCashBreakDownModal(false)
         PrintCashBreakDown(data,response1.data.DataInfo)
 
+        if (cashBreakDownType ==='END SHIFT'){
+          endShitf();
+        }
       }
     }
 
@@ -1958,7 +2085,7 @@ const BacktoHome = () => {
 
   if (cartItems.length === 0){
     setOrderTypeModal(true)
-    setisSelected(0)
+    setisSelected(null)
     setTimeout(() => {
       DineInRef.current?.focus()
     }, 50);
@@ -1999,7 +2126,7 @@ const BacktoHome = () => {
         setTableNoModal(false);
       }else{
         setOrderTypeModal(true)
-        setisSelected(0)
+        setisSelected(null)
         setOrderType('')
         setTableNoModal(false);
   
@@ -2178,6 +2305,14 @@ customer = CustomerOrderInfo
   const CashierID = localStorage.getItem('UserID');
   const CashierName = localStorage.getItem('FullName');
   const TerminalNo = localStorage.getItem('TerminalNo');
+  let Discounted_by:any = ''
+  
+  if (localStorage.getItem('Discounted_by')){
+    Discounted_by = localStorage.getItem('Discounted_by')
+  }
+
+
+
   let doc_type:string = ''
   if (PaymentType === 'CASH') {
     doc_type = 'POS SI'
@@ -2265,11 +2400,13 @@ customer = CustomerOrderInfo
           const response1 = await axios.post(`${BASE_URL}/api/save-cash-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,
                                                                                     TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,customer:customer,
                                                                                     AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,
-                                                                                    DiscountData:DiscountData,DiscountType:DiscountType,DiscountDataList:DiscountDataList,QueNo:QueNo,doctype:doc_type});
+                                                                                    DiscountData:DiscountData,DiscountType:DiscountType,DiscountDataList:DiscountDataList,QueNo:QueNo,doctype:doc_type,
+                                                                                    Discounted_by:Discounted_by});
           if (response1.status === 200) {
       
             setLoadingPrint(false)
             PrintCashPaymentReceipt(response1.data);
+            localStorage.removeItem('Discounted_by')
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -2505,7 +2642,7 @@ const CloseCustomerPaymentModal = async () => {
         setCartItems('')
         setTableNo('')
         setOrderTypeModal(true)
-        setisSelected(0)
+        setisSelected(null)
         DeletePosExtendedAll()
         setTimeout(() => {
           DineInRef.current?.focus()
@@ -2549,7 +2686,7 @@ const CloseModal = async () => {
           setCartItems('')
           setTableNo('')
           setOrderTypeModal(true)
-          setisSelected(0)
+          setisSelected(null)
           DeletePosExtendedAll()
           setTimeout(() => {
             DineInRef.current?.focus()
@@ -2618,8 +2755,10 @@ const settlebillData = async (data:any) => {
   }else if (DiscountType === 'ITEM'){
     setDiscountData(data.DiscountData)
     setDiscountType(data.DiscountType)
+  }else if (DiscountType === 'TRANSACTION'){
+    setDiscountData(data.DiscountData)
+    setDiscountType(data.DiscountType)
   }
-
 
   setTimeout(() => {
     if (CashPaymentRef.current){
@@ -2852,7 +2991,7 @@ const TransferOrdertable = () => {
   setisTransfertable(true)
     setSelectTypeOfTransaction(false)
 
-    showSuccessAlert('Select table to transfer to')
+    showInfoAlert('Select new table to transfer to')
   };
 
 
@@ -2897,20 +3036,40 @@ const SelectTable = (index:any) => {
   setTableNoModal(false)
   }else{
     if (isTransfertable) {
-      TransfertableSave(TableOnprocess,index.table_count)
-      setisTransfertable(false)
-      setTableOnprocess(null)
-      
-  
-      return;
+      if (index.Paid === 'N'){
+        swalWithBootstrapButtons.fire({
+          title: 'Confirmation',
+          text: `Do you want merge table No. ${TableOnprocess} to table No. ${index.table_count}`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Yes',
+          cancelButtonText: 'No',
+          reverseButtons: true
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+
+            TransfertableSave(TableOnprocess,index.table_count)
+            setisTransfertable(false)
+            setTableOnprocess(null)
+          }})
+
+ 
+      }else{
+        TransfertableSave(TableOnprocess,index.table_count)
+        setisTransfertable(false)
+        setTableOnprocess(null)
+        return;
+
+      }
+    
     }
   
-     if (index.table_count === TableOnprocess){
+      if (index.table_count === TableOnprocess){
       return;
   
     }
     setTableNo(index.table_count);
-    if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+   if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
       const message = {
         'message': index.table_count,
         'TableNO':true,
@@ -2918,13 +3077,13 @@ const SelectTable = (index:any) => {
       chatSocket.send(JSON.stringify(message));
     }
     setQueNo('')
-    if (index.Paid === 'N') {
+   if (index.Paid === 'N' && isTransfertable === false) {
       setSelectTypeOfTransaction(true)
       setTimeout(() => {
         AddOrderRef.current?.focus();
         
       }, 50);
-    } else {
+    } else if (isTransfertable === false) {
       // Handle other cases when index.Paid is not 'N'
       setisSelected(0)
       setTableNoModal(false);
@@ -2947,7 +3106,7 @@ const SelectQue = (index:any) => {
         
       }, 50);
     } else {
-      setisSelected(0)
+      setisSelected(null)
       // Handle other cases when index.Paid is not 'N'
       setTableNoModal(false);
       // Additional logic or function calls related to paid table
@@ -3223,8 +3382,18 @@ const calculateTotalDue = () => {
               totalDue = totalDue - totalDisCount
              }
           
+          }else if(DiscountType === 'TRANSACTION'){
+            if (DiscountData){
+              let totalDisCount:any = 0
+              DiscountData.map((item:any) => {
+                console.log(item.Discount)
+                totalDisCount += item.Discount
+              })
+              console.log('totalDisCount',totalDisCount)
+              totalDue = totalDue - totalDisCount
+             }
           }
-                 }
+        }
         return totalDue.toFixed(2);
 };
       
@@ -3414,7 +3583,7 @@ useEffect(() => {
           }else{
             setTableNoModal(false)
             setOrderTypeModal(true)
-            setisSelected(0)
+            setisSelected(null)
             setTimeout(() => {
               DineInRef.current?.focus()
             }, 500);
@@ -3457,7 +3626,7 @@ useEffect(() => {
       }else{
         setTableNoModal(false)
         setOrderTypeModal(true)
-        setisSelected(0)
+        setisSelected(null)
         setTimeout(() => {
           DineInRef.current?.focus()
         }, 500);
@@ -3673,7 +3842,7 @@ useEffect(() => {
   localStorage.removeItem('cartData');
   setOrderType('')
   setOrderTypeModal(true)
-  setisSelected(0)
+  setisSelected(null)
   setTimeout(() => {
     DineInRef.current?.focus()
   }, 50);
@@ -3715,21 +3884,30 @@ const OpenVireficationEntry = (type:any) => {
     setPaymentOpenModal(false)
   }else if ((type === 'Delete Order')){
     setEditOrderModal(false)
+  }else if (type === 'Cancell Transaction'){
+    setOtherCommandOpenModal(false)
+    setOrderTypeModal(false)
   }
+
 
   setVeryficationType(type)
 }
 
 const CloseVerification = () => {
   setOpenVireficationModal(false)
+  if (VeryficationType == 'Cancell Transaction'){
+    setOrderTypeModal(true)
+  }
+
 }
 
 const OKVerification = (data:any) => {
   setOpenVireficationModal(false)
+  console.log(data)
   
   if (VeryficationType=='Delete Order'){
     onDelete()
-    setisSelected(0)
+    setisSelected(null)
   } else if (VeryficationType ==='Reprint'){
     ReprintList()
   }
@@ -3750,6 +3928,9 @@ const OKVerification = (data:any) => {
 
   if (VeryficationType == 'Refresh'){
     RefreshModule();
+  }
+  if (VeryficationType == 'Cancell Transaction'){
+    ShowCancellTransaction()
   }
 
 
@@ -4435,7 +4616,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
               if (SOInfo.PaymentType ==='Sales Order'){
                 setOrderType('')
                 setOrderTypeModal(true)
-                setisSelected(0)
+                setisSelected(null)
                 setTimeout(() => {
                   DineInRef.current?.focus()
                 }, 50);
@@ -4736,7 +4917,7 @@ if (iframe !== null) {
     localStorage.removeItem('cartData');
     setOrderType('')
     setOrderTypeModal(true)
-    setisSelected(0)
+    setisSelected(null)
     setTimeout(() => {
       DineInRef.current?.focus()
     }, 50);
@@ -4855,14 +5036,15 @@ if (iframe !== null) {
             // doc.write('<pre>' + receiptContent1 + '</pre>');
 
             if (DiscountType === 'SC'){
-              description = `Less: 20% VAT on ${DiscountData.SVatSales}`;
+              description = `Less: 20% VAT on ${DiscountData.SAmountCovered}`;
               data = DiscountData.SLessVat12 || ''; 
               spaces = AlignmentSpace(description, data);
               receiptContent1 += `<div>${description}${spaces}${data}</div>`;
 
-
+              const netOfVat: any = parseFloat(DiscountData.SVatSales) - parseFloat(DiscountData.SLessVat12);
+              
               description = `Net of VAT:`;
-              data = DiscountData.SNetOfVat || ''; 
+              data = String(parseFloat(netOfVat)) || ''; 
               spaces = AlignmentSpace(description, data);
               receiptContent1 += `<div>${description}${spaces}${data}</div>`;
 
@@ -4873,6 +5055,38 @@ if (iframe !== null) {
 
               doc.write('<pre style="margin: 0; line-height: 1;">' + receiptContent1 + '</pre>');
             }
+
+       
+            if (DiscountType === 'TRANSACTION'){
+              let totalDisCount:any = 0
+              let totalDue :any = 0
+              let desc_rate :any = 0
+
+              DiscountData.map((item:any) => {
+                const total = parseFloat(item.price) * parseFloat(item.quantity) -  item.Discount
+                totalDue += total
+                totalDisCount += item.Discount
+                desc_rate = item.desc_rate
+              })
+             
+
+
+              description = `Less: Discount ${desc_rate}%`;
+              data = String(parseFloat(totalDisCount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})) || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+              
+
+              description = `Amount Due:`;
+              data = String(parseFloat(totalDue).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})) || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+              doc.write('<pre style="margin: 0; line-height: 1;">' + receiptContent1 + '</pre>');
+            }
+
+
+
 
 
             doc.write('<pre style="margin: 0; line-height: 1;">================================================</pre>');
@@ -4890,8 +5104,15 @@ if (iframe !== null) {
             spaces = AlignmentSpace(description, data);
             receiptContent1 = `<div>${description}${spaces}${data}</div>`;
 
+
+            let tmp :any = "0.00"
+            let vat_exempt:any = "0.00"
+            if (DiscountType === 'SC'){
+              tmp = parseFloat(DiscountData.SLess20SCDiscount) + parseFloat(DiscountData.SLessVat12);
+              vat_exempt  = parseFloat(DiscountData.SAmountCovered) - parseFloat(tmp)
+            }
             description = 'VAT Exempt:';
-            data = dataInfo.data.VatExempt || ''; 
+            data = String(parseFloat(vat_exempt).toFixed(2)) || ''; 
             spaces = AlignmentSpace(description, data);
             receiptContent1 += `<div>${description}${spaces}${data}</div>`;
 
@@ -5067,7 +5288,7 @@ if (iframe !== null) {
 
     setOrderType('')
     setOrderTypeModal(true)
-    setisSelected(0)
+    setisSelected(null)
     // setChangeModal(true)
     setTimeout(() => {
       DineInRef.current?.focus()
@@ -5496,7 +5717,7 @@ if (iframe !== null) {
 
     setOrderType('')
     setOrderTypeModal(true)
-    setisSelected(0)
+    setisSelected(null)
     // setChangeModal(true)
     setTimeout(() => {
       DineInRef.current?.focus()
@@ -5802,7 +6023,7 @@ if (iframe !== null) {
 
     setOrderType('')
     setOrderTypeModal(true)
-    setisSelected(0)
+    setisSelected(null)
     // setChangeModal(true)
     setTimeout(() => {
       DineInRef.current?.focus()
@@ -5986,7 +6207,17 @@ if (currentHours > 12) {
 
 
     doc.write('<div style="text-align: center;">');
-    doc.write('<p style="font-size:12px">CASH COUNT</p>');
+
+    
+    if (cashBreakDownType ==='END SHIFT'){
+      doc.write('<p style="font-size:12px">CASH COUNT</p>');
+    }else{
+      doc.write('<p style="font-size:12px">CASH PULL-OUT</p>');
+    }
+
+ 
+
+
     doc.write('</div>')
 
     
@@ -6140,10 +6371,10 @@ if (currentHours > 12) {
   setTimeout(() => {
     iframeWindow.print();
     // window.location.reload(); 
-    endShitf();
+  
     setOrderType('')
     setOrderTypeModal(true)
-    setisSelected(0)
+    setisSelected(null)
     setTimeout(() => {
       DineInRef.current?.focus()
     }, 50);
@@ -6396,6 +6627,7 @@ const ChangeModalClose = () => {
 
 
 
+const otherCommandButton = `otherCommandButton ${OrderTypeModal ? 'pointerCursor enablePointerEvents' : 'notAllowedCursor disablePointerEvents'}`;
 
   return (
     <>
@@ -6617,7 +6849,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                           style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
                             display: 'flex',flexDirection: 'column',alignItems: 'center',
                             borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                            borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
+                            borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',zIndex: OrderTypeModal ? '9999':'0'}}
                           onClick={OtherCommand}
                           fullWidth >
                           <Typography
@@ -6713,7 +6945,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 {CashPaymentEntryModal && <CashPaymentEntry handleClose={closeCashPayment} amountdue={formattedTotalDue} amounttendered={SaveCashPayment}/>}
 {CustomeryPaymentModal && <CustomerPayment handlemodaldata={CutomerInfoEntryPaymnet} handleClose={CloseCustomerPaymentModal}/>}
 {ReprintTransactionModal && <ReprintTransaction handleClose={CloseReprintTransactionModal} PrintTransactionData={ReprintTransactionReceipt}/>}
-{CashBreakDownModal && <CashBreakDown CashBreakDownDataList ={CashBreakDownDataList} CloseCashBreakDownModal={CloseCashBreakDownModal}/>}
+{CashBreakDownModal && <CashBreakDown CashBreakDownDataList ={CashBreakDownDataList} CloseCashBreakDownModal={CloseCashBreakDownModal} type={cashBreakDownType}/>}
 {ChargeToModal && <ChargeTo handleClose={CloseChargeModal} amountdue={formattedTotalDue} chargedata={Chargedata} />}
 {CreditCardPaymentModal && <CreditCardPayment handleClose={CloseCreditCardPayment} amountdue={formattedTotalDue} CreditCardPayment ={CreditCardPaymentOk}/>}
 {CreditCardPaymentEntryModal && <CreditCardPaymentEntry handleClose={CloseCreditCardPaymentEntryModal} amountdue={formattedTotalDue} amounttendered={SaveCreditCardPayment} />}
@@ -6727,11 +6959,14 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
 {OpenTradeDiscountModal && <TradeDiscountList handleClose={CloseTradeDiscountsEntry} SalesOrderListings ={cartItems} TradeData={SaveTradessDiscountEntry}/>}
 {OpenTransactionDiscountModal && <TransactionDiscount handleClose={CloseTransactionDiscountsEntry} SalesOrderListings ={cartItems} TransactionData={SaveTransactionDiscountEntry}/>}
+{OpenlistOfTransactionModal && <ListOfTransaction handleclose = {CloseCancellTransactionModal} data={SaveCancellTransaction}/>}
+
 {/* if (CustomerDineInModal || SalesOrderListOpenModal || CashPaymentEntryModal || CustomeryPaymentModal) */}
 
 
+
 {OrderTypeModal && (
-          <div className="modal">
+          <div className="modal-order">
             <div className="modal-content" style={deviceType === 'Desktop' ? { width: '450px' ,display:'flex',flexDirection:'column' } : { width: '320px',display:'flex',flexDirection:'column' }}>
 
         <Typography
@@ -7035,7 +7270,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
                     <div className='PaymentModalButton'
                       onClick={(e) => OpenVireficationEntry('Senior')} >
-                      <p>Señior Citezin Discount</p>
+                      <p>Senior Citezin Discount</p>
                       <img src={Senior}/>
                     </div>
 
@@ -7070,7 +7305,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
             
         </div>
         </div>
-      )}
+)}
 
 {OtherCommandOpenModal && (
         <div className="modal" >
@@ -7080,39 +7315,52 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
       {userRank == 'Cashier' && (
             <>
-                  <div className='otherCommandButton'>
+                  {/* <div className='otherCommandButton'>
                     <p> Item Discount</p>
                     <img src={itemD}/>
-                  </div>
-                  
-                  <div className='otherCommandButton'
-                    onClick={()=>setSuspendEntryModal(true)}>
-                      <p> Suspend Transaction</p>
-                      <img src={credit}/>
+                  </div> */}
+                
+                    {OrderTypeModal === false &&
+                    <div className='otherCommandButton' style={{pointerEvents: cartItems.length === 0 ? 'none':'auto'}}
+                      onClick={()=>setSuspendEntryModal(true)}>
+                        <p> Suspend Transaction</p>
+                        <img src={SuspendImage}/>
                     </div>
-                    
-                    <div className='otherCommandButton'>
+                    }
+
+                    <div className={otherCommandButton}>                      
                       <p> Return</p>
-                      <img src={epsCard}/>
+                      <img src={ReturnImage}/>
                     </div>
 
-                    <div className='otherCommandButton'>
+                    <div className={otherCommandButton}
+                    onClick={()=>ShowCancellTransaction()}
+                    >                      
+                      <p>Cancel Transaction</p>
+                      <img src={CancelTransImage}/>
+                    </div>
+
+
+                    <div className={otherCommandButton}
+                    onClick={()=>EndShiftHandleClick()}
+                    >
                       <p> Cash Count</p>
-                      <img src={epsCard}/>
+                      <img src={CashCountImage}/>
                     </div>
                     
-                    <div className='otherCommandButton'>
-
+                    <div className={otherCommandButton}
+                      onClick={()=>CashPullout()}>
                       <p> Cash Pull-Out</p>
-                      <img src={epsCard} />
+                      <img src={CashPullOutImage} />
                     </div>
                     
-                    <div className='otherCommandButton'>
+                    <div className={otherCommandButton}
+                    onClick={()=>Lockterminal()}>
                       <p>Lock Terminal</p>
-                      <img src={Multiple}/>
+                      <img src={LockTerImage}/>
                     </div></>
               ) }
-            <div className='otherCommandButton'
+            <div className={otherCommandButton}
               onClick={CloseTerminal}>
               <p>Close Terminala</p>
               <img src= {ChargeRoom}/>
@@ -7127,7 +7375,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
      </div>
         </div>
-      )}
+)}
 
 
 {SelectTypeOfTransaction && (
@@ -7192,7 +7440,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
              </Button>
           </div>
         </div>
-      )}
+)}
 
 {AddOrderModal && (
   
@@ -7249,7 +7497,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 </div>
 
 
-  )}
+)}
 
 {EditOrderModal && (
             <div className="modal">
@@ -7257,9 +7505,6 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
               
             <h1 className="threeDText">{selectedItemIndexData?.selectedItem.description}</h1>
             <img src={image} style={{ maxWidth: '200px', maxHeight: '150px', marginBottom: '10px' }} />
-
-
-    
             <Typography      
               sx={{
               fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
@@ -7304,7 +7549,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
             </div>
             </div>
         </div>
-        )}
+)}
 
 
 {CloseTerminalModal && (
@@ -7348,7 +7593,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
               </Button>
           </div>
         </div>
-      )}
+)}
 
 {ChangeModal && (
         <div className="modal" > 
@@ -7376,7 +7621,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
            
           </div>
         </div>
-  )}
+)}
   
 {SuspendEntryModal && (
   <div className='modal'>
@@ -7409,6 +7654,29 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
         </div>
     </div>
+  </div>
+)}
+
+{OpenLockModal && (
+  <div className='modal'>
+    <div className='modal-content'>
+      <h1>Unlock Terminal</h1>
+        <div className='Lock-Container'>
+          <div className='form-group'>
+            <label>Username</label>
+            <input type='text' ref={LockUsernameRef} value={LockUsername} onChange={(e)=>setLockUsername(e.target.value)} readOnly disabled/>
+          </div>
+          <div className='form-group'>
+            <label>Password</label>
+            <input type='password'  ref={LockPasswordRef} value={LockPassword} onChange={(e)=>setLockPassword(e.target.value)}/>
+          </div>
+          <div className='Button-Container'>
+            <button onClick={()=>unLockterminal()}>Unlock</button>
+          </div>
+        </div>
+    </div>
+
+
   </div>
 )}
 
