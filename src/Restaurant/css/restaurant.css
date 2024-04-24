@@ -39,10 +39,14 @@
 
   
 .OrderList thead tr th {
-  background-color: blue;
+  background-color: darkblue;
   color: white;
+  border: solid 1px white;
 }
 
+.OrderList tbody {
+  border-top: #fff;
+}
   
   /* .OrderList th,
   .OrderList td {

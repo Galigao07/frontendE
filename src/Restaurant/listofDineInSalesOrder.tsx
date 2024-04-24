@@ -72,6 +72,8 @@ const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handlec
     quantity: number;
     description: string;
     price: number;
+    line_no:any;
+    lineno :any;
     // Add other properties as needed
   }
     const [cartItems, setCartItems] = useState<any>([]);
@@ -361,11 +363,8 @@ const ClickShowOrderListing = async (index: number) => {
   if (isItem){
     const selectedItem:any = SalesOrderListing[index];
     setselectedRowIndexListing(index); 
-    
     setSelectedItemDiscount(selectedItem)
-  
     console.log('xx',SelectedItemDiscount)
-  
     OpenItemDiscountEntry(index);
   }
 
@@ -1251,7 +1250,14 @@ setViewCancelledSOModal(false)
                         {DiscountType === 'ITEM' && (
                             <>
                               {DisEntry && DisEntry.map((item1: any, index: number) => {
-                                if (item.barcode === item1.Barcode) {
+                                    let line_no = 0
+                                    if (item.line_no === undefined){
+                                      line_no = item.lineno
+                                    }else{
+                                      line_no = item.line_no
+                                    }
+
+                                  if (item.barcode === item1.Barcode && line_no === item1.LineNo) {
                                   return (
                                     <tr key={item1.id} style={{ border: 'none', color: 'red', fontWeight: 'bold' }}>
                                       <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>

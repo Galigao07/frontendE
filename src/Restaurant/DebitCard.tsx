@@ -112,7 +112,7 @@ const DebitCardPayment: React.FC<DebitCardPaymentTrans> = ({handleClose,amountdu
           event.preventDefault();
 
           if (currentRef.current.name ==='CardNo'){
-            if (DebitCardPaymentData.CardNo.length !== 16){
+            if (DebitCardPaymentData.CardNo.length < 19){
               showErrorAlert('Please Provide Correct Card No..!')
               return;
             }

@@ -915,6 +915,9 @@ const setvalue = (value: any) => {
   }else if (focusedInput ==='GuestCount'){
     setGuestCount(value);
    
+    if (WaiterRef.current){
+      WaiterRef.current.focus()
+    }
 
   }
   setisShowKeyboard(false)

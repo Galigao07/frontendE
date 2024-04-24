@@ -118,6 +118,6 @@ export async function GetSettings(name:any) {
                  
       }
       }catch{
-      showErrorAlert('Error while Saving')
+      showErrorAlert(`Error while Fetching ${name}`)
     }      
 }

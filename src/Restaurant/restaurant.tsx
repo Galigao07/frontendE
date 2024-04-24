@@ -390,21 +390,23 @@ useEffect(() => {
                 borderWidth: '2px',
                 borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
                 backgroundColor: isSelectedIndex == index ? 'blue':'white',
-                height:'200px',
+                height:'100%',
                 // width: products.length < 5 ? '80%' : '100%'
               }}
               onKeyDown={(e) => Handlekeydown(e,index)}
              onClick={() => handleproductclick(product,index)}> 
              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Typography sx={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none',  color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', marginBottom: '10px', flex: '1 1 100%',height:'40px',
-                 fontSize: { xs: '1.2rem', sm: '0.4rem', md: '.6rem', lg: '.8rem', xl: '0.9rem',
+            <Typography sx={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none',  color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', 
+              textAlign: 'center', marginBottom: '2%', flex: '1 1 100%',height:'40px',
+                 fontSize: { xs: '0.6rem', sm: '0.8rem', md: '.6rem', lg: '.8rem', xl: '0.9rem',
                 },  fontFamily:'Times New Roman'}}>
                 {product.long_desc}
               </Typography>
               
-              <img src={image} style={{ maxWidth: '100px', maxHeight: '100px', marginBottom: '10px', flex: '0 0 auto' }} />
-              <Typography sx={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none', color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%',
-                 fontSize: { xs: '1.2rem', sm: '0.4rem', md: '.6rem', lg: '.8rem', xl: '0.9rem' } , fontFamily:'Times New Roman'}}
+              <img src={image} style={{width: '80%', height: '50%', marginBottom: '1%', flex: '0 0 auto' }} />
+              <Typography sx={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none', 
+              color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%',
+                 fontSize: { xs: '.6rem', sm: '0.8rem', md: '.6rem', lg: '.8rem', xl: '0.9rem' } , fontFamily:'Times New Roman'}}
                 >Price: {parseFloat(product.reg_price).toFixed(2)}
               </Typography>
             </div>
@@ -686,6 +688,7 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
 
   const [TransactionAmountD,setTransactionAmountD] = useState<any>(null)
   const [TransactionAmountRate,setTransactionAmountRate] = useState<any>(null)
+
     useEffect(()=>{
       let amountD :any = 0
       let rate :any = 0
@@ -707,11 +710,9 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
         boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '2px' }}>
         <Table 
             tabIndex={0} // Make the table focusable
-        className="OrderList" sx={{
-                            fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
-                            overflow: 'auto'}} 
-                            
-                            >
+            className="OrderList" sx={{
+              fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
+              overflow: 'auto'}} >
           <thead>
             <tr>
               <th>Qty</th>
@@ -737,7 +738,6 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
             height:'50px',
             whiteSpace: 'pre-wrap', /* or 'wrap' if you want to break on word boundaries */
             wordWrap: 'break-word',
-
           
           }} // Add focus style
 
@@ -756,7 +756,13 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
         {DiscountType === 'ITEM' && (
           <>
             {DiscountData && DiscountData.map((item1: any, index: number) => {
-              if (item.barcode === item1.Barcode) {
+              let line_no = 0
+              if (item.line_no === undefined){
+                line_no = item.lineno
+              }else{
+                line_no = item.line_no
+              }
+              if (item.barcode === item1.Barcode && line_no=== item1.LineNo) {
                 return (
                   <tr key={item1.id} style={{ border: 'none', color: 'red', fontWeight: 'bold' }}>
                     <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}>
@@ -1652,17 +1658,26 @@ const Restaurant: React.FC = () => {
     };
 
     const EditOrderList = (data:any) => {
-      setSelectedItemIndex(data.index)
-      setSelectedItemIndexData(data)
-      setQuantity(data.selectedItem.quantity)
-      setPrice(data.selectedItem.price)
-      // calculateTotal()
-      setEditOrderModal(true)
-      setTimeout(() => {
-        inputRef.current?.focus()
-        inputRef.current?.select()
-      }, 50);
-   
+
+      if (isItemDis){
+        const selectedItem:any = cartItems[data.index];
+        setSelectedItemDiscount(selectedItem)
+        setOpenItemDiscountModal(true)
+     
+      }else{
+        setSelectedItemIndex(data.index)
+        setSelectedItemIndexData(data)
+        setQuantity(data.selectedItem.quantity)
+        setPrice(data.selectedItem.price)
+        // calculateTotal()
+        setEditOrderModal(true)
+        setTimeout(() => {
+          inputRef.current?.focus()
+          inputRef.current?.select()
+        }, 50);
+     
+      }
+
       
     }
 
@@ -2241,6 +2256,7 @@ const CashPayment = () => {
   setPaymentOpenModal(false)
   setCashPaymentEntryModal(true)
   setPaymentType('CASH')
+  setisItemDis(false)
 
 }
 
@@ -2437,7 +2453,9 @@ customer = CustomerOrderInfo
           // console.log(CreditCardJson);
           const response1 = await axios.post(`${BASE_URL}/api/save-credit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,customer:customer,
                                                                                         TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
-                                                                                        ,DiscountDataList:DiscountDataList,OrderType:OrderType,CreditCard:CreditCard,doctype:doc_type});
+                                                                                        ,DiscountDataList:DiscountDataList,OrderType:OrderType,CreditCard:CreditCard,doctype:doc_type, 
+                                                                                        DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
+                                                                                        Discounted_by:Discounted_by});
           if (response1.status === 200) {
             localStorage.removeItem('CreditCardPayment')
             setLoadingPrint(false)
@@ -2474,7 +2492,9 @@ customer = CustomerOrderInfo
 
           const response1 = await axios.post(`${BASE_URL}/api/save-debit-card-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,customer:customer,
                                                                                         TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
-                                                                                        ,DiscountDataList:DiscountDataList,OrderType:OrderType,DebitCard:DebitCard,doctype:doc_type});
+                                                                                        ,DiscountDataList:DiscountDataList,OrderType:OrderType,DebitCard:DebitCard,doctype:doc_type,
+                                                                                        DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
+                                                                                        Discounted_by:Discounted_by});
           if (response1.status === 200) {
             localStorage.removeItem('DebitCardPayment')
             setLoadingPrint(false)
@@ -2509,7 +2529,9 @@ customer = CustomerOrderInfo
 
           const response1 = await axios.post(`${BASE_URL}/api/save-charge-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,customer:customer,
                                                                                         TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
-                                                                                        ,DiscountDataList:DiscountDataList,OrderType:OrderType,Charge:Charge,doctype:doc_type});
+                                                                                        ,DiscountDataList:DiscountDataList,OrderType:OrderType,Charge:Charge,doctype:doc_type,
+                                                                                        DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
+                                                                                        Discounted_by:Discounted_by});
           if (response1.status === 200) {
             localStorage.removeItem('Charge')
             setLoadingPrint(false)
@@ -2562,7 +2584,9 @@ customer = CustomerOrderInfo
 
           const response1 = await axios.post(`${BASE_URL}/api/save-multiple-payment/`,{data:response.data.data,AmountTendered:AmountTendered,CustomerPaymentData:data,customer:customer,
                                                                                     TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,
-                                                                                    DiscountDataList:DiscountDataList,CreditCard:CreditCard,DebitCard:DebitCard,CashAmount:CashAmount,doctype:doc_type});
+                                                                                    DiscountDataList:DiscountDataList,CreditCard:CreditCard,DebitCard:DebitCard,CashAmount:CashAmount,doctype:doc_type,
+                                                                                    DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
+                                                                                    Discounted_by:Discounted_by});
           if (response1.status === 200) {
             localStorage.removeItem('CreditCardPayment')
             localStorage.removeItem('DebitCardPayment')
@@ -3877,14 +3901,19 @@ useEffect(() => {
 //*************************VERIFICATION ****************************/
 
 const [VeryficationType,setVeryficationType] = useState<string>('')
+const [isItemDis,setisItemDis] = useState<boolean>(false)
+
 const OpenVireficationEntry = (type:any) => {
   setOpenVireficationModal(true)
 
-  if (type === 'Senior'){
+  if (type === 'Senior' || type === 'Item' || type === 'Trade' || type === 'Transaction'){
     setPaymentOpenModal(false)
   }else if ((type === 'Delete Order')){
     setEditOrderModal(false)
   }else if (type === 'Cancell Transaction'){
+    setOtherCommandOpenModal(false)
+    setOrderTypeModal(false)
+  }else if (type === 'Reprint'){
     setOtherCommandOpenModal(false)
     setOrderTypeModal(false)
   }
@@ -3897,6 +3926,10 @@ const CloseVerification = () => {
   setOpenVireficationModal(false)
   if (VeryficationType == 'Cancell Transaction'){
     setOrderTypeModal(true)
+  }else if (VeryficationType === 'Reprint'){
+    setOrderTypeModal(true)
+  }else{
+    setPaymentOpenModal(true)
   }
 
 }
@@ -3916,7 +3949,8 @@ const OKVerification = (data:any) => {
   }
 
   if (VeryficationType == 'Item'){
-    OpenItemDiscountEntry();
+  setisItemDis(true)
+  showInfoAlert('Select Item For Discount')
   }
 
   if (VeryficationType == 'Trade'){
@@ -4005,7 +4039,8 @@ const CloseItemDiscountsEntry = () =>{
 const SaveItemDiscountEntry = (data:any) => {
   console.log(data)
   setOpenItemDiscountModal(false)
-
+  setDiscountData((prevDisEntry:any)=> [...prevDisEntry, data]);
+  setDiscountType('ITEM')
 }
 
 
@@ -4025,6 +4060,13 @@ const CloseTradeDiscountsEntry = () =>{
 const SaveTradessDiscountEntry = (data:any) => {
   console.log('trade discount',data)
   setOpenTradeDiscountModal(false)
+
+  console.log(data)
+  setDiscountData(data)
+  setDiscountType('Trade')
+  setDiscountDataLits(data)
+  calculateTotalDue()
+  setPaymentOpenModal(true)
 
 }
 
@@ -4046,6 +4088,11 @@ const CloseTransactionDiscountsEntry = () =>{
 const SaveTransactionDiscountEntry = (data:any) => {
   console.log('Transaction discount',data)
   setOpenTransactionDiscountModal(false)
+  console.log(data)
+  setDiscountData(data)
+  setDiscountType('TRANSACTION')
+  calculateTotalDue()
+  setPaymentOpenModal(true)
 
 }
 
@@ -4087,8 +4134,16 @@ const SaveTransactionDiscountEntry = (data:any) => {
     const maxLength = 25 
      
     cartItems.forEach((item:any) => {
-      let  maxLength1 = 0
+        let  maxLength1 = 0
         let maxLengthChar = 35;
+        let line_no = 0
+
+        if (item.line_no === undefined){
+          line_no = item.lineno
+        }else{
+          line_no = item.line_no
+        }
+
         if (item && item.price !== undefined) {
           const priceString = String(item.price); // Convert item.price to a string
            maxLength1 = 25 + priceString.length;
@@ -4165,69 +4220,75 @@ const SaveTransactionDiscountEntry = (data:any) => {
         
         if (DiscountType === 'ITEM'){
           if (DiscountData){
+            let maxLengthChar = 35;
             DiscountData.map((item1:any) => {
-              if (item.barcode === item1.Barcode && item.line_no === item1.LineNo){
+              if (item.barcode === item1.Barcode && line_no=== parseInt(item1.LineNo)){
                 const disc = parseFloat(item1.D1).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})
                 const itemDescription = `Less: ${disc}% discount`; // Replace with your actual item description
                 const wrappedDescription = wrapDescription(itemDescription, maxLength);
-                maxLength1 = 25
+
                 let spaces2 = ' '.repeat(5);
   
                 if (itemDescription.length < 25){
-                 const lengthShort = 25 - itemDescription.length
+                 const lengthShort = 30 - itemDescription.length
                   maxLengthChar =  maxLengthChar + lengthShort
                 }
   
-                // Format the total amount with a thousand separator and two decimal places
                 const formattedTotal = item1.ByAmount.toLocaleString('en-US', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2
                 })
+
+                if (formattedTotal !== undefined) {
+                  const priceString = String(formattedTotal); // Convert item.price to a string
+                   maxLength1 = 25 + priceString.length;
+                }
+
+                if (formattedTotal.length === 3 ) {
+
+                  const spaces = ' '.repeat(maxLengthChar - (maxLength1));
+                
+                  receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
+                }
   
                 if (formattedTotal.length === 4 ) {
-                  maxLengthChar += 1
+
                   const spaces = ' '.repeat(maxLengthChar - maxLength1);
                 
                   receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
                 }
                 if (formattedTotal.length === 5 ) {
-                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                  const spaces = ' '.repeat(maxLengthChar - (maxLength1));
                 
                   receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
                 }
         
                 if (formattedTotal.length === 6 ) {
-                   maxLengthChar -= 1;
                 
-                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                  const spaces = ' '.repeat(maxLengthChar - (maxLength1));
                   receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
                 }
         
                 if (formattedTotal.length === 7 ) {
-                  maxLengthChar -= 2;
           
-                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                  const spaces = ' '.repeat(maxLengthChar - (maxLength1));
                   receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
                 }
                 
                 if (formattedTotal.length === 8 ) {
-                  maxLengthChar -= 3;
                
-                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                  const spaces = ' '.repeat(maxLengthChar - (maxLength1));
                   receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
                 }
         
                 if (formattedTotal.length === 9 ) {
-                  maxLengthChar -= 4;
                
-                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                  const spaces = ' '.repeat(maxLengthChar - (maxLength1));
                   receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
                 }
         
                 if (formattedTotal.length === 10 ) {
-                  maxLengthChar -= 5;
-               
-                  const spaces = ' '.repeat(maxLengthChar - maxLength1);
+                  const spaces = ' '.repeat(maxLengthChar - (maxLength1));
                   receiptContent += `${spaces2} ${wrappedDescription}${spaces} -${formattedTotal}\n`;
                 }
               }
@@ -4256,8 +4317,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
         const maxLengthChar = 24 + lengthShort
          let spaces = ''
 
-
-         if (amountDue.length === 23){
+      if (amountDue.length === 23){
           spaces = ' '.repeat(maxLengthChar - maxLength);
         }
 
@@ -5423,6 +5483,34 @@ if (iframe !== null) {
 
               doc.write('<pre style="margin: 0; line-height: 1;">' + receiptContent1 + '</pre>');
             }
+                   
+            if (DiscountType === 'TRANSACTION'){
+              let totalDisCount:any = 0
+              let totalDue :any = 0
+              let desc_rate :any = 0
+
+              DiscountData.map((item:any) => {
+                const total = parseFloat(item.price) * parseFloat(item.quantity) -  item.Discount
+                totalDue += total
+                totalDisCount += item.Discount
+                desc_rate = item.desc_rate
+              })
+             
+
+
+              description = `Less: Discount ${desc_rate}%`;
+              data = String(parseFloat(totalDisCount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})) || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+              
+
+              description = `Amount Due:`;
+              data = String(parseFloat(totalDue).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})) || ''; 
+              spaces = AlignmentSpace(description, data);
+              receiptContent1 += `<div>${description}${spaces}${data}</div>`;
+
+              doc.write('<pre style="margin: 0; line-height: 1;">' + receiptContent1 + '</pre>');
+            }
 
 
             doc.write('<pre style="margin: 0; line-height: 1;">================================================</pre>');
@@ -5434,14 +5522,23 @@ if (iframe !== null) {
             doc.write('<pre>' + receiptContent1 + '</pre>');
 
 
+            
 
             description = 'VATable:';
             data = dataInfo.data.VATable || ''; 
             spaces = AlignmentSpace(description, data);
             receiptContent1 = `<div>${description}${spaces}${data}</div>`;
 
+
+            let tmp :any = "0.00"
+            let vat_exempt:any = "0.00"
+            if (DiscountType === 'SC'){
+              tmp = parseFloat(DiscountData.SLess20SCDiscount) + parseFloat(DiscountData.SLessVat12);
+              vat_exempt  = parseFloat(DiscountData.SAmountCovered) - parseFloat(tmp)
+            }
+
             description = 'VAT Exempt:';
-            data = dataInfo.data.VatExempt || ''; 
+            data = String(parseFloat(vat_exempt).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})) || ''; 
             spaces = AlignmentSpace(description, data);
             receiptContent1 += `<div>${description}${spaces}${data}</div>`;
 
@@ -6849,7 +6946,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                           style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
                             display: 'flex',flexDirection: 'column',alignItems: 'center',
                             borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                            borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',zIndex: OrderTypeModal ? '9999':'0'}}
+                            borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',zIndex: OrderTypeModal ? '1':'0'}}
                           onClick={OtherCommand}
                           fullWidth >
                           <Typography
@@ -6895,7 +6992,8 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                       style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
                         display: 'flex',flexDirection: 'column',alignItems: 'center',
                         borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                        borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',}}
+                        borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',
+                        zIndex: OrderTypeModal ? '1':'0'}}
                       onClick={(e) => OpenVireficationEntry('Reprint')}
                       fullWidth >
                       <Typography
@@ -7279,16 +7377,25 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                       <img src={pwdD} />
                     </div>
 
-                    <div className='PaymentModalButton'>
+                    <div className='PaymentModalButton'
+                        onClick={(e) => OpenVireficationEntry('Trade')}>
                       <p>Trade Discount</p>
                       <img src={tradeD} />
                     </div>
 
 
-                    <div className='PaymentModalButton'>
+                    <div className='PaymentModalButton'
+                     onClick={(e) => OpenVireficationEntry('Transaction')}>
                       <p>Transaction Discount</p>
                       <img src={transactD}/>
                     </div>
+
+                    <div className='PaymentModalButton'
+                     onClick={(e) => OpenVireficationEntry('Item')}>
+                      <p>Item Discount</p>
+                      <img src={itemD}/>
+                    </div>
+
 
 
 
