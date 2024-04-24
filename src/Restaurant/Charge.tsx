@@ -736,13 +736,13 @@ const closekeyBoard = () => {
           <tbody>
 
         {CustomerList && CustomerList.map((item: any, index: number) => (
-            <tr key={index} style={{height:'50px'}}  onClick={()=>selectCustomer(index)}>
-                <td>{item.id_code}</td>
-                <td>{item.trade_name}</td>
+            <tr className="customer-row" key={index} onClick={()=>selectCustomer(index)}
+            style={{height :'10px'}}
+            >
+                <td style={{height :'10px'}}>{item.id_code}</td>
+                <td style={{height :'10px'}}>{item.trade_name}</td>
             </tr>
         ))}
-
-
           </tbody>
         </Table>
       

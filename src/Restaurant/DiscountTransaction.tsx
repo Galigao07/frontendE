@@ -60,10 +60,10 @@ const onUpdateToCart = () => {
                 let Due : any = item.quantity * item.price
                 if (parseFloat(x) === 0){
                     const rate:any = ((Due - TotalDiscount) / (Due)) * 100
-                    item.desc_rate = 100 - rate
+                    item.desc_rate = PercentDiscount
 
                 }else{
-                    item.desc_rate = TradeDiscountEntry.D1
+                    item.desc_rate = PercentDiscount
                 }
             }
             else {
@@ -74,6 +74,7 @@ const onUpdateToCart = () => {
                 item.Discount =  TotalDiscount
                 item.NetofDiscount = NetofDiscount;
                 total_dis =  total_dis + TotalDiscount
+                item.desc_rate = PercentDiscount
             }
             netOfDisCount = item.NetofDiscount + netOfDisCount
 

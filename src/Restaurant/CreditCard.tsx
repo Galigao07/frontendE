@@ -209,7 +209,7 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
           event.preventDefault();
 
           if (currentRef.current.name ==='CardNo'){
-            if (CreditCardPaymentData.CardNo.length !== 16){
+            if (CreditCardPaymentData.CardNo.length < 19){
               showErrorAlert('Please Provide Correct Card No..!')
               return;
             }

@@ -116,18 +116,18 @@ const VideoUpload = () => {
         return btoa(binary);
     };
 
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         try {
-    //             const response = await axios.get(`${BASE_URL}/api/video-upload/`);
-    //             setVideoUrl2(response.data.data); // Assuming response.data is the video URL
-    //         } catch (error) {
-    //             console.error('Error fetching video URL:', error);
-    //         }
-    //     };
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(`${BASE_URL}/api/video-upload/`);
+                setVideoUrl2(response.data.data); // Assuming response.data is the video URL
+            } catch (error) {
+                console.error('Error fetching video URL:', error);
+            }
+        };
 
-    //     fetchData();
-    // }, []);
+        fetchData();
+    }, []);
 
     return (
         <div style={{margin:'2% 2%'}}>

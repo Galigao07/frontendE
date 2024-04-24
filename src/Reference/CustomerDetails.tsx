@@ -207,7 +207,12 @@ import BASE_URL from '../config';
                 if (result.isConfirmed) {
 
                 const formData = new FormData();
-                formData.append('ID_Code', ID_Code);
+                if (isNaN(ID_Code)){
+                    formData.append('ID_Code', '2');
+                }else{
+                    formData.append('ID_Code', ID_Code);
+                }
+             
                 formData.append('Tradename', Tradename);
                 formData.append('Fname', Fname);
                 formData.append('Lname', Lname);
@@ -1055,3 +1060,5 @@ return <section className="content" onKeyDown={handleEscape}>
 }
 
 export default CustomerDetails
+
+

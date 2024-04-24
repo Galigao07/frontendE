@@ -55,6 +55,16 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
             D4:0,
             D5:0,
         })
+
+        let lineNo:any = 0
+
+        if (SelectedItemDiscount.line_no === undefined){
+            lineNo = SelectedItemDiscount.lineno
+        }else{
+            lineNo = SelectedItemDiscount.line_no
+        }
+
+    
         setItemDiscountEntry({...ItemDiscountEntry, 
             Barcode:SelectedItemDiscount.barcode,
             ItemCode:SelectedItemDiscount.itemcode,
@@ -63,7 +73,7 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
             Price:SelectedItemDiscount.price,
             TotalAmount:SelectedItemDiscount.price * SelectedItemDiscount.quantity ,
             DiscountedPrice:SelectedItemDiscount.price * SelectedItemDiscount.quantity ,
-            LineNo:SelectedItemDiscount.line_no,
+            LineNo:lineNo,
 
         })
 
