@@ -202,12 +202,21 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
 
 const  sendDataToMain = () => {
   if (customer === '' || guestCount === '' || waiter === '' || waiterID === '') {
-        Swal.fire({
-          title: 'Fields Required',
-          text: 'Please fill up the fields',
-          icon: 'info',
-          confirmButtonText: 'OK'
-        });
+    if (guestCount === ''){
+      Swal.fire({
+        title: 'Fields Required',
+        text: 'Please add guest count..!',
+        icon: 'info',
+        confirmButtonText: 'OK'
+      });
+    }else{
+      Swal.fire({
+        title: 'Fields Required',
+        text: 'Please fill up the fields or Select Waiter..!',
+        icon: 'info',
+        confirmButtonText: 'OK'
+      });
+    }
       
         // Delay focus after the Swal dialog is displayed
         setTimeout(() => {
@@ -230,7 +239,7 @@ const  sendDataToMain = () => {
           Customer: customer,
           GuestCount: guestCount,
           Waiter: waiter,
-          PaymentType:'Sales Order Take Out',
+          PaymentType:'Order And Pay',
           waiterID:waiterID,
           QueNO:QueNo,
         });
@@ -247,13 +256,24 @@ const  sendDataToMain = () => {
   
   const sendDataToMainOrderAndPay = () => {
 
-    if (customer === '' && guestCount === '' && waiter === ''|| waiterID === '') {
+    if (customer === '' || waiter === ''|| waiterID === '' ||  guestCount === '' ) {
+
+      if (guestCount === ''){
         Swal.fire({
           title: 'Fields Required',
-          text: 'Please fill up the fields or Select Waiter',
+          text: 'Please add guest count..!',
           icon: 'info',
           confirmButtonText: 'OK'
         });
+      }else{
+        Swal.fire({
+          title: 'Fields Required',
+          text: 'Please fill up the fields or Select Waiter..!',
+          icon: 'info',
+          confirmButtonText: 'OK'
+        });
+      }
+
       
         // Delay focus after the Swal dialog is displayed
         setTimeout(() => {
@@ -1058,17 +1078,13 @@ const closekeyBoard = () => {
                     >Save Order</button>
                   
                   </div>
-                  <div style={{display:'flex',flexDirection:'row',margin:'5px'}} >
+                 
                     <button tabIndex={2} type="button" className ='button-cancel' ref={CloseBtnRef}
-                         style={{margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}
+                        // style={{margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}
                       onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,CloseBtnRef,PaymentSaveBtnRef,2) } 
                       onClick={handleclose}>Exit</button>
 
-                      <button className ='button-ok' type='button' 
-                      style={{margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}
-                      onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
-                    </button>
-                  </div>
+                   
 
               </div>
             </Grid>

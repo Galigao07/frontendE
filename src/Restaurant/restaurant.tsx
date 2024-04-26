@@ -79,6 +79,8 @@ import DebitCardPayment from './DebitCard';
 import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
 import showInfoAlert from '../SwalMessage/ShowInfoAlert';
 import ListOfTransaction from './ListofTransaction';
+import OnScreenKeyboard from './KeyboardGlobal';
+import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
 
 
 const swalWithBootstrapButtons = Swal.mixin({
@@ -1411,6 +1413,8 @@ const Restaurant: React.FC = () => {
   const MultiplePaymentRef = useRef<HTMLDivElement>(null)
   const ChargePaymentRef = useRef<HTMLDivElement>(null)
   const ClosePaymentRef = useRef<HTMLDivElement>(null)
+
+
   
     //**********ORDER TYPE REF********* */
     const TakeOutRef = useRef<HTMLButtonElement>(null)
@@ -1421,8 +1425,12 @@ const Restaurant: React.FC = () => {
     const AddOrderRef = useRef<HTMLButtonElement>(null)
     const SettleOrderRef = useRef<HTMLButtonElement>(null)
     const TransferTableRef = useRef<HTMLButtonElement>(null)
+    const ClearTableRef = useRef<HTMLButtonElement>(null)
     const CloseSelectTransTypeRef = useRef<HTMLButtonElement>(null)
+
     const [isTransfertable,setisTransfertable] = useState<boolean>(false)
+
+    const [DineInOrderAndPay,setDineInOrderAndPay] = useState<boolean>(false)
 
 
   
@@ -1609,6 +1617,20 @@ const Restaurant: React.FC = () => {
   //   }
 
   // }
+
+
+  const setQuantityEntry = (qty:any) => {
+
+
+    if (quantity === 0){
+      const x = parseInt(qty)
+      setQuantity((prev) => prev + x);
+    }else{
+      setQuantity((prev) => prev + qty);
+    }
+    // Update quantity using functional update to ensure correct previous state usage
+
+  };
 
 
     interface selecteditemData {
@@ -1814,6 +1836,11 @@ const Restaurant: React.FC = () => {
   const SaveSusppendCustomer = () => {
     setSuspendEntryModal(false)
     SusppendTransaction(SuspendCustomerData)
+
+    setSuspendCustomerData({
+      Customer :'',
+      CusAddress:'',
+    })
   }
 
   const SusppendTransaction =  async(data:any) => {
@@ -2419,10 +2446,11 @@ customer = CustomerOrderInfo
                                                                                     DiscountData:DiscountData,DiscountType:DiscountType,DiscountDataList:DiscountDataList,QueNo:QueNo,doctype:doc_type,
                                                                                     Discounted_by:Discounted_by});
           if (response1.status === 200) {
-      
             setLoadingPrint(false)
             PrintCashPaymentReceipt(response1.data);
             localStorage.removeItem('Discounted_by')
+            setDiscountDataLits('')
+            setDiscountData('')
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -2459,7 +2487,10 @@ customer = CustomerOrderInfo
           if (response1.status === 200) {
             localStorage.removeItem('CreditCardPayment')
             setLoadingPrint(false)
+
             PrintCreditCardPaymentReceipt(response1.data);
+            setDiscountDataLits('')
+            setDiscountData('')
       
           } else {
             // Handle other response statuses if needed
@@ -2498,7 +2529,10 @@ customer = CustomerOrderInfo
           if (response1.status === 200) {
             localStorage.removeItem('DebitCardPayment')
             setLoadingPrint(false)
+   
             PrintCreditCardPaymentReceipt(response1.data);
+            setDiscountDataLits('')
+            setDiscountData('')
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -2533,9 +2567,13 @@ customer = CustomerOrderInfo
                                                                                         DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
                                                                                         Discounted_by:Discounted_by});
           if (response1.status === 200) {
-            localStorage.removeItem('Charge')
+
+
             setLoadingPrint(false)
             PrintChargePaymentReceipt(response1.data);
+            setDiscountDataLits('')
+            setDiscountData('')
+            localStorage.removeItem('Charge')
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -2588,11 +2626,14 @@ customer = CustomerOrderInfo
                                                                                     DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
                                                                                     Discounted_by:Discounted_by});
           if (response1.status === 200) {
+
+            PrintCreditCardPaymentReceipt(response1.data);
             localStorage.removeItem('CreditCardPayment')
             localStorage.removeItem('DebitCardPayment')
             localStorage.removeItem('CashAmount')
+            setDiscountDataLits('')
+            setDiscountData('')
             setLoadingPrint(false)
-            PrintCreditCardPaymentReceipt(response1.data);
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -2963,6 +3004,9 @@ const CloseDebitCardPaymentEntryModal = () => {
 //////******************************** END HERE **********************************/////
 
 
+
+//////******************************** MULTIPLE PAYMENT **********************************/////
+
 const OpenMultiplePayment = () => {
   setMultiplePamentEntryModal(true)
   setPaymentOpenModal(false)
@@ -2993,6 +3037,15 @@ const SaveMultiplePayments = (data:any) => {
 }
 
 
+
+//////******************************** END HERE **********************************/////
+
+
+
+
+//////******************************** select Transaction Type When Selecting Table **********************************/////
+
+
   const AddOrdertable = () => 
   {
     setisSelected(0)
@@ -3017,6 +3070,40 @@ const TransferOrdertable = () => {
 
     showInfoAlert('Select new table to transfer to')
   };
+
+
+  const Cleartable =  () => {
+    swalWithBootstrapButtons.fire({
+      title: 'Confirmation',
+      text: `Do you want to clear table no ${TableOnprocess}`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      reverseButtons: true
+    }).then(async(result) => {
+      if (result.isConfirmed) {
+
+        try{
+
+          const response = await axios.post(`${BASE_URL}/api/cleared-table/`,{TableNo:TableOnprocess})
+          if (response.status == 200){
+            showSuccessAlert(`Table no ${TableOnprocess} successfully cleared`)
+            setTableOnprocess(null)
+            setTableNo('')
+            setDineInOrderAndPay(false)
+          }
+
+        }catch{
+          showErrorAlert(`Error while Clearing table no ${TableOnprocess}`)
+        }
+  
+        setSelectTypeOfTransaction(false)
+
+      }})
+
+    };
+  
 
 
   const TransfertableSave = async(from:any,to:any) => {
@@ -3058,7 +3145,7 @@ const SelectTable = (index:any) => {
   if (index.Susppend === 'YES'){
   GetSusppendData(index.table_count)
   setTableNoModal(false)
-  }else{
+}else{
     if (isTransfertable) {
       if (index.Paid === 'N'){
         swalWithBootstrapButtons.fire({
@@ -3101,7 +3188,13 @@ const SelectTable = (index:any) => {
       chatSocket.send(JSON.stringify(message));
     }
     setQueNo('')
-   if (index.Paid === 'N' && isTransfertable === false) {
+   if (index.Paid === 'N' && isTransfertable === false ||  index.dinein_order_and_pay === 'Y') {
+       if (index.dinein_order_and_pay === 'Y'){
+        setDineInOrderAndPay(true)
+       }else{
+        setDineInOrderAndPay(false)
+       }
+   
       setSelectTypeOfTransaction(true)
       setTimeout(() => {
         AddOrderRef.current?.focus();
@@ -3117,6 +3210,10 @@ const SelectTable = (index:any) => {
   
 
 };
+
+
+
+//////******************************** select Transaction Type When Selecting Table **********************************/////
 
 const SelectQue = (index:any) => {
 
@@ -6645,13 +6742,16 @@ if (event.key == 'Enter'){
    if (index == 0){
       AddOrdertable();
    }
-   if (index == 1){
+   else if (index == 1){
     SettleOrdertable()
    }
-   if (index == 2){
+   else if (index == 2){
     TransferOrdertable()
    }
-   if (index == 3){
+   else if (index == 3){
+    Cleartable()
+   }
+   else if (index == 4){
     CloseModal()
    }
 }
@@ -6724,7 +6824,58 @@ const ChangeModalClose = () => {
 
 
 
+
+const [focusedInput, setFocusedInput] = useState<any>('');
+const [focusedValue, setfocusedValue] = useState<any>('');
+const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
+const [isShowKeyboardNumeric, setisShowKeyboardNumeric] = useState<boolean>(false);
+const [isShowKeyboardNumericForCardNo, setisShowKeyboardNumericForCardNo] = useState<boolean>(false);
+const [isShow, setisShow] = useState<boolean>(false);
+const showOnScreenKeybaord = (ref:any) => {
+ if (isDesktop){
+
+  if (ref==='SuspendCustomer'){
+    setfocusedValue(SuspendCustomerData.Customer)
+  } else if (ref==='SuspendAddress'){
+    setfocusedValue(SuspendCustomerData.CusAddress)
+  }else if (ref==='LockPassword'){
+    setfocusedValue(LockPassword)
+  }
+
+
+     setisShowKeyboard(true)
+     setFocusedInput(ref)
+ }
+}
+const ShowKeyorNot = () => {
+  setisShow(!isShow);
+}
+
+const setvalue = (value: any) => {
+  if (focusedInput) {
+   if (focusedInput==='SuspendCustomer'){
+    setSuspendCustomerData((prev:any) => ({...prev,Customer:value}))
+  } else if (focusedInput==='SuspendAddress'){
+    setSuspendCustomerData((prev:any) => ({...prev,CusAddress:value}))
+  }else if (focusedInput==='LockPassword'){
+    setLockPassword(value)
+  }
+  setisShowKeyboard(false)
+  setisShowKeyboardNumeric(false)
+  setisShowKeyboardNumericForCardNo(false)
+}
+}
+const closekeyBoard = () => {
+  setisShowKeyboard(false)
+  setisShowKeyboardNumeric(false)
+  setisShowKeyboardNumericForCardNo(false)
+}
+
+
 const otherCommandButton = `otherCommandButton ${OrderTypeModal ? 'pointerCursor enablePointerEvents' : 'notAllowedCursor disablePointerEvents'}`;
+
+
+
 
   return (
     <>
@@ -6946,7 +7097,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                           style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
                             display: 'flex',flexDirection: 'column',alignItems: 'center',
                             borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                            borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',zIndex: OrderTypeModal ? '1':'0'}}
+                            borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',zIndex: OrderTypeModal ? OpenLockModal ? '0': '1':'0'}}
                           onClick={OtherCommand}
                           fullWidth >
                           <Typography
@@ -6993,7 +7144,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                         display: 'flex',flexDirection: 'column',alignItems: 'center',
                         borderRadius: '10px', cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
                         borderStyle: 'solid',borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2', maxWidth: '100%',
-                        zIndex: OrderTypeModal ? '1':'0'}}
+                        zIndex: OrderTypeModal ? OpenLockModal ? '0': '1':'0'}}
                       onClick={(e) => OpenVireficationEntry('Reprint')}
                       fullWidth >
                       <Typography
@@ -7159,10 +7310,11 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
   <Grid container className="CreditCard-Container" spacing={2}>
       <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
-        <div style={{overflow:'auto',height: '75%',width:'100%' }}>
+        <div style={{overflow:'auto',height: '75%',width:'100%'}}>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isDesktop? 'repeat(5, minmax(98px, 1fr))': 'repeat(5, minmax(33%, 1fr))', gap: '5px' ,margin:'5px',overflow:'auto',height: '550px',
-                border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'10px',borderRadius:'10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isDesktop? 'repeat(5, minmax(98px, 1fr))': 'repeat(5, minmax(33%, 1fr))', 
+                gap: '2px' ,margin:'5px',overflow:'auto',height: '550px',
+                border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'2px',borderRadius:'10px'}}>
           {loading && (
           <div
             style={{
@@ -7184,15 +7336,15 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
           
                 (TableList &&  TableList.map((item:any) => (
                     <div key={item.table_count} className={item.Paid} onClick={() => SelectTable(item)}
-                      style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
+                      style={{border: '1px solid #4a90e2',padding: '4px',height: '100px', display: 'flex',flexDirection: 'column',
                         alignItems: 'center',borderRadius: '10px',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                         borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
                         cursor:TableOnprocess === item.table_count ? 'not-allowed': 'pointer',
-                        backgroundColor: item.Susppend === 'YES' ? 'red' :TableOnprocess === item.table_count ? 'yellow' : item.Paid  === 'N' ? 'blue' : '', }}>
+                        backgroundColor: item.Susppend === 'YES' || item.dinein_order_and_pay ==='Y' ? 'red' :TableOnprocess === item.table_count ? 'yellow' : item.Paid  === 'N' ? 'blue' : '', }}>
                         <Typography key={item.table_count} style={{ textShadow: '0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)', transform: 'translateZ(5px)' , 
                           fontSize: item.Susppend === 'YES' ? '10px' : TableOnprocess === item.table_count ? '10px':'20px'
-                        ,fontWeight:'bold' ,color: item.Susppend === 'YES' ? 'white': TableOnprocess === item.table_count ? 'blue':item.Paid  === 'N' ? 'white':'blue' }}>
-                        { item.Susppend === 'YES' ? `Suspend ${item.table_count}`  :TableOnprocess === item.table_count ? `On going ${item.table_count}` : item.table_count} </Typography>
+                        ,fontWeight:'bold' ,color: item.Susppend === 'YES' || item.dinein_order_and_pay ==='Y' ? 'white': TableOnprocess === item.table_count ? 'blue':item.Paid  === 'N' ? 'white':'blue' }}>
+                        {item.dinein_order_and_pay ==='Y'? `Billed ${item.table_count}`: item.Susppend === 'YES' ? `Suspend ${item.table_count}`  :TableOnprocess === item.table_count ? `On going ${item.table_count}` : item.table_count} </Typography>
                         <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
 
                     </div>
@@ -7490,7 +7642,38 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
              
           <div className="modal-content" style={{width:'100%' ,display:'flex',flexDirection:'column' }}>
           <h1>Select Type of Transaction</h1>
-            <Button className="button-dine-in" 
+
+          {DineInOrderAndPay ? (           
+                <>
+
+                <Button className="button-take-out" 
+                onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,TransferTableRef,ClearTableRef,CloseSelectTransTypeRef,3)}
+                ref={SettleOrderRef}
+                onClick={Cleartable}>
+                  <Typography      
+                    sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '1.8rem' },
+                    color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                    borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                  CLEAR TABLE
+                  </Typography>
+                </Button>
+
+              <Button className="button-dine-in-close" 
+              onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,ClearTableRef,CloseSelectTransTypeRef,AddOrderRef,4)}
+              ref={CloseSelectTransTypeRef}
+              style={{backgroundColor:'red'}} onClick={CloseModal}>
+                <Typography      
+                  sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                  color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                  borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                Close
+                </Typography>
+              </Button>
+              </>
+          ):(
+            <>
+             
+             <Button className="button-dine-in" 
               onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,AddOrderRef,SettleOrderRef,0)}
               ref={AddOrderRef}
               onClick={AddOrdertable}>
@@ -7501,8 +7684,6 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                   Add Order
                 </Typography>
             </Button>
-
-
             { userRank == 'Cashier' &&(
             <Button className="button-take-out" 
               onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,SettleOrderRef,TransferTableRef,1)}
@@ -7519,7 +7700,6 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
           )}
 
-
             <Button className="button-dine-in" 
               onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,SettleOrderRef,TransferTableRef,CloseSelectTransTypeRef,2)}
               ref={TransferTableRef}
@@ -7532,9 +7712,8 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                 </Typography>
                 
             </Button>
-
             <Button className="button-dine-in-close" 
-              onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,TransferTableRef,CloseSelectTransTypeRef,AddOrderRef,3)}
+              onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,ClearTableRef,CloseSelectTransTypeRef,AddOrderRef,4)}
               ref={CloseSelectTransTypeRef}
               style={{backgroundColor:'red'}} onClick={CloseModal}>
                 <Typography      
@@ -7544,63 +7723,118 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                  Close
                 </Typography>
                
-             </Button>
+            </Button>
+
+
+            
+            </>
+
+          )}
+
+
+
+
           </div>
         </div>
 )}
 
 {AddOrderModal && (
   
-    <div className="modal">
-  <div className="modal-content" style={{height:'auto'}}>
+  <div className="modal">
+    <div className="modal-content-Addcart">
+    <Grid container spacing={2} >
 
-     <Typography      
-        sx={{
-        fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.2rem', lg: '1.4rem', xl: '1.6rem' },
-        color: '#0d12a1',
-        textShadow: '1px 1px 2px rgba(13, 18, 161, 0.7)',
-        borderRadius: '5px',
-        fontWeight: 'bold', textAlign: 'center',}}>
-      {selectedProduct?.product.long_desc}
-      </Typography>
+      <Grid item xs={12} md={6}>
+   
+          <div className='add-order-container'>
 
 
+        <Typography      
+            sx={{
+            fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.2rem', lg: '1.4rem', xl: '1.6rem' },
+            color: '#0d12a1',
+            textShadow: '1px 1px 2px rgba(13, 18, 161, 0.7)',
+            borderRadius: '5px',
+            fontWeight: 'bold', textAlign: 'center',}}>
+          {selectedProduct?.product.long_desc}
+        </Typography>
+        <div className='img-container'>
+          <img src={image} alt={selectedProduct?.product.bar_code} className='img-element' />
+        </div>
+                <Typography      
+            sx={{
+            fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
+            color: '#0d12a1',
+            borderRadius: '5px',
+            fontWeight: 'bold', textAlign: 'center',}}>
+          Price: {parseFloat(selectedProduct?.product.reg_price).toFixed(2)}
+          </Typography>
+        <div className="input-group" style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
+        <button className="btn-minus" style={{backgroundColor:'white',color:'red' ,border:'solid',marginTop:'0'}} onClick={MinusQuantity} ><FontAwesomeIcon icon={faMinus}/> </button>
+            <input type="number" ref={inputRef}  inputMode="numeric"  placeholder="Quantity" value={quantity} onChange={handleQuantityChange} 
+            style={{width:'70%' ,fontWeight:'bold',textAlign:'center',height:'40px',margin:'0',padding:'0'}}
+            onKeyDown={(event) => HandleAddtocart(event)}
+            />
+            <button className="btn-add" style={{backgroundColor:'white',color:'blue' ,border:'solid',marginTop:'0'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  style={{ verticalAlign: 'middle' }}/></button>
+        </div>
 
-  {/* <h1 className="threeDText">{selectedProduct?.long_desc}</h1> */}
-    <img src={image} alt={selectedProduct?.product.bar_code} style={{ maxWidth: '200px', maxHeight: '150px', marginBottom: '10px' }} />
+        <p className='TotalDue'>Total: {calculateTotal()}</p>
 
-    
-    <Typography      
-        sx={{
-        fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
-        color: '#0d12a1',
-        borderRadius: '5px',
-        fontWeight: 'bold', textAlign: 'center',}}>
-      Price: {parseFloat(selectedProduct?.product.reg_price).toFixed(2)}
-      </Typography>
+          <div className='add-order-button' style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+            <button 
+                style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} 
+                  onClick={CloseAddOrderModal} className="btn-close"> <FontAwesomeIcon icon={faClose} 
+                  />Close
+            </button>
+           
+            <button 
+              style={{color:'white',backgroundColor:'blue',width:'50%',textAlign:'center', borderRadius:'5px',
+              display: 'inline-block'}} onClick={addtocarts}>  <FontAwesomeIcon icon={faShoppingCart} 
+              /> Add to Cart
+            </button>
+          
+          </div>
+        </div>
+        </Grid>
 
-    <div className="input-group" style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
-    <button className="btn-minus" style={{backgroundColor:'white',color:'red' ,border:'solid',marginTop:'0'}} onClick={MinusQuantity} ><FontAwesomeIcon icon={faMinus}/> </button>
-        <input type="number" ref={inputRef}  inputMode="numeric"  placeholder="Quantity" value={quantity} onChange={handleQuantityChange} 
-        style={{width:'70%' ,fontWeight:'bold',textAlign:'center',height:'40px',margin:'0',padding:'0'}}
-        onKeyDown={(event) => HandleAddtocart(event)}
-        />
-        <button className="btn-add" style={{backgroundColor:'white',color:'blue' ,border:'solid',marginTop:'0'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  style={{ verticalAlign: 'middle' }}/></button>
+        <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
+            <div className="num-pad-payment" style={{width:'100%'}}>
+              <div className="num-pad-row">
+                <button className="num-pad-key" onClick={() => setQuantityEntry('1')}>1</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('2')}>2</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('3')}>3</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('4')}>4</button>
+      
+              </div>
+              <div className="num-pad-row">
+         
+                <button className="num-pad-key" onClick={() => setQuantityEntry('5')}>5</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('6')}>6</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('7')}>7</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('8')}>8</button>
+             
+              </div>
+              <div className="num-pad-row">
+                <button className="num-pad-key" onClick={() => setQuantityEntry('9')}>9</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('10')}>10</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('20')}>20</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('30')}>30</button>
+              </div>
+              <div className="num-pad-row">
+                <button className="num-pad-key" onClick={() => setQuantityEntry('0')}>0</button>
+                <button className="num-pad-key" onClick={MinusQuantity}>-</button>
+                <button className="num-pad-key" onClick={addQuantity}>+</button>
+                <button className="num-pad-key" onClick={() => setQuantity(0)}
+                style={{fontSize:'16px'}}
+                  >Clear
+                </button>
+              </div>
+
+            </div>
+
+      </Grid>
+      </Grid>
     </div>
-
-    <p className='TotalDue'>Total: {calculateTotal()}</p>
-
-    
-
-    <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-    <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} 
-          onClick={CloseAddOrderModal} className="btn-close"> <FontAwesomeIcon icon={faClose} />Close</button>
-    <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'50%',textAlign:'center', 
-          display: 'inline-block'}} onClick={addtocarts}>  <FontAwesomeIcon icon={faShoppingCart} /> Add to Cart</button>
-  
-  
-  </div>
-  </div>
 </div>
 
 
@@ -7608,10 +7842,15 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
 {EditOrderModal && (
             <div className="modal">
-            <div className="modal-content">
-              
+               <div className="modal-content-Addcart">
+              <Grid container spacing={2} >
+
+                <Grid item xs={12} md={6}>
+                <div className='add-order-container'>
             <h1 className="threeDText">{selectedItemIndexData?.selectedItem.description}</h1>
-            <img src={image} style={{ maxWidth: '200px', maxHeight: '150px', marginBottom: '10px' }} />
+            <div className='img-container'>
+              <img src={image} alt={selectedProduct?.product.bar_code} className='img-element' />
+          </div>
             <Typography      
               sx={{
               fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
@@ -7648,12 +7887,52 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
             </div>
             <p className='TotalDue'>Total: {calculateTotal()}</p>
 
-            <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'100%',textAlign:'center', display: 'inline-block'}} onClick={onUpdateToCart}> 
+            <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'100%',textAlign:'center', display: 'inline-block',marginTop:'10px'}} onClick={onUpdateToCart}> 
                 <FontAwesomeIcon icon={faShoppingCart} />Update to Cart </button>
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+            <div className='add-order-button' style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
               <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={onClose} className="btn-close"> <FontAwesomeIcon icon={faClose} /> Close</button>
               <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={()=> OpenVireficationEntry('Delete Order')} className="btn-close"> <FontAwesomeIcon icon={faTrashAlt} /> Delete </button>
             </div>
+          </div>
+            </Grid>
+
+            <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
+            <div className="num-pad-payment" style={{width:'100%'}}>
+              <div className="num-pad-row">
+                <button className="num-pad-key" onClick={() => setQuantityEntry('1')}>1</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('2')}>2</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('3')}>3</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('4')}>4</button>
+      
+              </div>
+              <div className="num-pad-row">
+         
+                <button className="num-pad-key" onClick={() => setQuantityEntry('5')}>5</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('6')}>6</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('7')}>7</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('8')}>8</button>
+             
+              </div>
+              <div className="num-pad-row">
+                <button className="num-pad-key" onClick={() => setQuantityEntry('9')}>9</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('10')}>10</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('20')}>20</button>
+                <button className="num-pad-key" onClick={() => setQuantityEntry('30')}>30</button>
+              </div>
+              <div className="num-pad-row">
+                <button className="num-pad-key" onClick={() => setQuantityEntry('0')}>0</button>
+                <button className="num-pad-key" onClick={MinusQuantity}>-</button>
+                <button className="num-pad-key" onClick={addQuantity}>+</button>
+                <button className="num-pad-key" onClick={() => setQuantity(0)}
+                style={{fontSize:'16px'}}
+                  >Clear
+                </button>
+              </div>
+
+            </div>
+
+            </Grid>
+            </Grid>
             </div>
         </div>
 )}
@@ -7741,6 +8020,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
               <input ref={suspendCustomerRef} value={SuspendCustomerData.Customer}
               name="Customer" autoComplete='off'
               onChange={SusppendEntry}
+              onClick={()=>showOnScreenKeybaord('SuspendCustomer')}
               />
             </div>
 
@@ -7749,24 +8029,32 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
             <input ref={suspendCustomeraddressRef} value={SuspendCustomerData.CusAddress}
             name="CusAddress"
             autoComplete='off'
-            onChange={SusppendEntry}/>
+            onChange={SusppendEntry}
+            onClick={()=>showOnScreenKeybaord('SuspendAddress')}
+            />
+        
 
             </div>
 
             <div className='Button-Container'>
               <button className='ok' onClick={()=> SaveSusppendCustomer()}>Suspend</button>
-              <button className='cancel' onClick={()=> setSuspendEntryModal(false)}>Cancel</button>
+              <button className='cancel' onClick={()=>{ setSuspendEntryModal(false);setSuspendCustomerData({
+                Customer :'',
+                CusAddress:'',
+              })}}>Cancel</button>
             </div>
           </div>
 
         </div>
     </div>
+
+    
   </div>
 )}
 
 {OpenLockModal && (
   <div className='modal'>
-    <div className='modal-content'>
+    <div className='modal-content' >
       <h1>Unlock Terminal</h1>
         <div className='Lock-Container'>
           <div className='form-group'>
@@ -7775,7 +8063,9 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
           </div>
           <div className='form-group'>
             <label>Password</label>
-            <input type='password'  ref={LockPasswordRef} value={LockPassword} onChange={(e)=>setLockPassword(e.target.value)}/>
+            <input type='password'  ref={LockPasswordRef} value={LockPassword} onChange={(e)=>setLockPassword(e.target.value)}
+             onClick={()=>showOnScreenKeybaord('LockPassword')}
+            />
           </div>
           <div className='Button-Container'>
             <button onClick={()=>unLockterminal()}>Unlock</button>
@@ -7786,6 +8076,11 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
   </div>
 )}
+
+
+{isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard} currentv={focusedValue} setvalue={setvalue}/>}
+{isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard}    currentv={focusedValue} setvalue={setvalue}/>}
+        
 
 </Grid>
 </>

@@ -150,14 +150,95 @@
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
   }
 
+  .modal-content-Addcart{
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    min-width: 50%;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
 
+  .modal-content-Addcart .num-pad-payment {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+  }
+  
+  .modal-content-Addcart .num-pad-row {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 5px;
+  }
+  
+  
+  .modal-content-Addcart .num-pad-payment .num-pad-row button{
+  height:100px;
+  }
+  
+  .modal-content-Addcart .num-pad-payment .num-pad-key {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    cursor: pointer;
+    width: 25%;
+    transition: background-color 0.3s ease;
+    text-align: center !important;
+  }
+
+  
+.btn-add,.btn-minus{
+  width: 80px;
+  margin: 5px;
+}
+
+.add-order-container{
+  border: 1px solid #4a90e2;
+  padding: 5px;
+  border-radius: 10px;
+  height: 100%;
+  box-shadow: 0 0 5px rgba(74, 144, 226, 0.3) inset;
+  border-style: 'solid';
+  border-width: '2px';
+  border-color: '#4a90e2 #86b7ff #86b7ff #4a90e2';
+  padding: 10px;
+}
+
+.add-order-container .add-order-button{
+  margin: 5px;
+  display: flex;
+  flex-direction: row;
+  height: 50px;
+}
+
+
+/* styles.css */
+
+.add-order-container .img-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px; /* Adjust the height as needed */
+  margin-bottom: 10px;
+}
+
+.add-order-container .img-element {
+  width: 200px;
+  height: 150px;
+  /* Op
+  tional: Add additional styles for image appearance */
+}
 
 
   .modal-contentTable {
     background-color: #fefefe;
     padding: 10px;
     border-radius: 10px;
-    max-width: 100%;
+    width: 80%;
     max-height: 98%;
     overflow-y: auto;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
