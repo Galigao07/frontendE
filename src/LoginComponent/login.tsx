@@ -203,6 +203,12 @@ const setvalue = (value: any) => {
       [focusedInput]: value
     }));
   }
+
+  if (focusedInput === 'username'){
+    if (passwordRef.current){
+      passwordRef.current.focus()
+    }
+  }
   setisShowKeyboard(false)
 };
 const closekeyBoard = () => {
