@@ -133,8 +133,15 @@ const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalu
             }else{
                 setinputData(inputData + String(value));
             }
+            setTimeout(() => {
+                if (inputRef.current){
+                    inputRef.current.focus()
+                }
+            }, 100);
           
         }
+
+  
     };
 
 const HandleKeyDown = (e:any) => {
@@ -143,6 +150,8 @@ const HandleKeyDown = (e:any) => {
     }
 }
 
+
+
     return (
         <div className='modal-key'>
             <div  ref= {modalRef} className='modal-content-keyboard'
@@ -150,7 +159,15 @@ const HandleKeyDown = (e:any) => {
                 <div style={{display:'flex',flexDirection:'row'}}>
                     <input value={inputData}
                       onKeyDown={(e)=> HandleKeyDown(e)}
-                       onChange={(e)=> setinputData(e.target.value)}
+                    //    onChange={(e)=> setinputData(e.target.value)}
+
+                       onChange={(e) => {
+                        const value = e.target.value;
+                        const isNumber = /^[0-9]*$/;
+                        if (isNumber.test(value)) {
+                            setinputData(value);
+                          }
+                        }}
                      ref={inputRef} style={{textAlign:'center',fontSize:'20px',width:'80%'}}/>
                     <button onClick={()=> handleclose()} style={{height:'40px',width:'20%',margin:'0'}}
                   

@@ -137,6 +137,12 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,currentv,setvalue}) => 
             }
           
         }
+        setTimeout(() => {
+            if (inputRef.current){
+                inputRef.current.focus()
+            }
+        }, 100);
+     
     };
 
 
@@ -147,11 +153,11 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,currentv,setvalue}) => 
     }
     return (
         <div className='modal-key'>
-            <div  ref= {modalRef} className='modal-content-keyboard'
+            <div  ref= {modalRef} className='modal-content-keyboard ' 
                             // onMouseDown={handleMouseDown}
                             // onMouseMove={handleMouseMove}
                             // onMouseUp={handleMouseUp}
-                            style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '92%', height: '400px' }} >
+                            style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '98%', height: '400px' }} >
              <div style={{display:'flex',flexDirection:'row'}}>
                 <input  value={inputData} ref={inputRef} 
                 onKeyDown={(e)=> HandleKeyDown(e)}
