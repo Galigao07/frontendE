@@ -8,16 +8,16 @@
       }
       .modal-content-keyboard {
         position: fixed; /* Using fixed positioning to ensure it's centered relative to the viewport */
-        top: 25%;
+        top: 25%; /* Positioning the modal content 25% from the top of the viewport */
         left: 50%; /* Placing the left edge of the modal at 50% of the viewport width */
         transform: translate(-50%, -50%); /* Translating the modal by -50% of its own width and height to center it */
-        background-color: #fefefe;
-        padding: 20px;
-        border-radius: 10px;
-        width: 100%;
-        height: 400px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        background-color: #fefefe; /* Setting background color to a light gray */
+        padding: 20px; /* Adding padding inside the modal */
+        border-radius: 10px; /* Adding rounded corners to the modal */
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3); /* Adding a subtle shadow effect to the modal */
     }
+    
+
     
 
       .container-key{
@@ -113,3 +113,18 @@
     font-size: 25px;
     }
     
+ 
+    @media (max-width: 1052px) {
+      /* Example: Change background color when viewport is smaller */
+      .globalAlphanumeric{
+        width: 100%;
+      }
+    }
+    
+    /* Apply styles when viewport width is greater than 768px */
+    @media (min-width: 1053px) {
+      /* Example: Change font size when viewport is larger */
+      .globalAlphanumeric{
+        width: 90%;
+      }
+    }

@@ -37,6 +37,7 @@ import SuspendImage from '../assets/Susppend.png'
 import VoidTransImage from '../assets/Void.png'
 import CancelTransImage from '../assets/CancelledTransaction.png'
 
+
 import logo from '../assets/logo.png'
 import './css/restaurant.css';
 import CustomerDineIn from './customerEntryDineIn';
@@ -1538,6 +1539,7 @@ const Restaurant: React.FC = () => {
   const addtocarts = () => {
     if (selectedProduct !== null) {
 
+     
     // let dataExist:boolean = false
     // let index : number = 0
     //   for (let i = 0; i < cartItems.length; i++) {
@@ -1562,6 +1564,18 @@ const Restaurant: React.FC = () => {
 
     // }else {
 
+    if (quantity === 0){
+      const productToAdd = {
+        quantity: 1,
+        description: selectedProduct.product.long_desc,
+        price: parseFloat(selectedProduct.product.reg_price).toFixed(2),
+        totalAmount: calculateTotal(),
+        barcode: selectedProduct.product.bar_code,
+        lineno :cartItems.length + 1,
+      };
+      AddPosExtended(productToAdd)
+      addToCart(productToAdd);
+    }else{
       const productToAdd = {
         quantity: quantity,
         description: selectedProduct.product.long_desc,
@@ -1572,6 +1586,9 @@ const Restaurant: React.FC = () => {
       };
       AddPosExtended(productToAdd)
       addToCart(productToAdd);
+    }
+
+     
     // }
 
       setAddOrderModal(false);
@@ -1666,12 +1683,23 @@ const Restaurant: React.FC = () => {
       
     const onUpdateToCart = () => {
       if (selectedItemIndex !== null && selectedItemIndex >= 0 && selectedItemIndex < cartItems.length) {
-        const updatedItems = [...cartItems];
-        updatedItems[selectedItemIndex].quantity = quantity;
-        updatedItems[selectedItemIndex].totalAmount = calculateTotal();  // Update the quantity to the new value
-        setCartItems(updatedItems);
-        UpdatePosExtended(cartItems[selectedItemIndex])
-        closeModal();
+
+        if (quantity === 0){
+          const updatedItems = [...cartItems];
+          updatedItems[selectedItemIndex].quantity = 1;
+          updatedItems[selectedItemIndex].totalAmount = calculateTotal();  // Update the quantity to the new value
+          setCartItems(updatedItems);
+          UpdatePosExtended(cartItems[selectedItemIndex])
+          closeModal();
+        }else{
+          const updatedItems = [...cartItems];
+          updatedItems[selectedItemIndex].quantity = quantity;
+          updatedItems[selectedItemIndex].totalAmount = calculateTotal();  // Update the quantity to the new value
+          setCartItems(updatedItems);
+          UpdatePosExtended(cartItems[selectedItemIndex])
+          closeModal();
+        }
+
       } else {
         console.error('Invalid selectedItemIndex or out of range:', selectedItemIndex);
         // Handle the situation when the index is invalid or out of range
@@ -6872,7 +6900,29 @@ const closekeyBoard = () => {
 }
 
 
-const otherCommandButton = `otherCommandButton ${OrderTypeModal ? 'pointerCursor enablePointerEvents' : 'notAllowedCursor disablePointerEvents'}`;
+// const otherCommandButton = `otherCommandButton ${OrderTypeModal ? 'pointerCursor enablePointerEvents' : 'notAllowedCursor disablePointerEvents'}`;
+
+
+const otherCommandButton = `otherCommandButton`;
+
+const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+const [screenHeight, setScreenHeight] = useState(window.innerHeight);
+// const [devicePixelRatio, setDevicePixelRatio] = useState(window.devicePixelRatio);
+
+const updateScreenSize = () => {
+  setScreenWidth(window.innerWidth);
+  setScreenHeight(window.innerHeight);
+  console.log(window.innerWidth)
+  // setDevicePixelRatio(window.devicePixelRatio);
+};
+
+useEffect(() => {
+  window.addEventListener('resize', updateScreenSize);
+
+  return () => {
+    window.removeEventListener('resize', updateScreenSize);
+  };
+}, []);
 
 
 
@@ -6976,7 +7026,7 @@ const otherCommandButton = `otherCommandButton ${OrderTypeModal ? 'pointerCursor
 
 <iframe id="myIframe" style={{position:'absolute',display:'none',backgroundColor:'#ffff',height:'90%',marginTop:'10px',width:'25%',
 
-marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.com"></iframe>
+marginLeft:'35%',borderRadius:'10px', zIndex: '9999'}} src=''></iframe>
 
 
 <Grid item xs={12} md={3} style={{ height: '100%',width:'60%' }}>
@@ -7308,13 +7358,13 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
   {/* <div className='containertable' style={{display:'flex',flexDirection:'row'}}> */}
 
-  <Grid container className="CreditCard-Container" spacing={2}>
+  <Grid container spacing={2}>
       <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
-        <div style={{overflow:'auto',height: '75%',width:'100%'}}>
+        <div style={{overflow:'auto',height: '80%',width:'100%'}}>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isDesktop? 'repeat(5, minmax(98px, 1fr))': 'repeat(5, minmax(33%, 1fr))', 
-                gap: '2px' ,margin:'5px',overflow:'auto',height: '550px',
-                border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'2px',borderRadius:'10px'}}>
+          <div style={{ display: 'grid', gridTemplateColumns: isDesktop? 'repeat(5, minmax(15%, 1fr))': 'repeat(5, minmax(33%, 1fr))', 
+                gap: '2px' ,margin:'5px',overflow:'auto',height: '590px',
+                border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'5px',borderRadius:'10px'}}>
           {loading && (
           <div
             style={{
@@ -7336,7 +7386,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
           
                 (TableList &&  TableList.map((item:any) => (
                     <div key={item.table_count} className={item.Paid} onClick={() => SelectTable(item)}
-                      style={{border: '1px solid #4a90e2',padding: '4px',height: '100px', display: 'flex',flexDirection: 'column',
+                      style={{border: '1px solid #4a90e2',padding: '4px',height: '100%', display: 'flex',flexDirection: 'column',
                         alignItems: 'center',borderRadius: '10px',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                         borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
                         cursor:TableOnprocess === item.table_count ? 'not-allowed': 'pointer',
@@ -7621,7 +7671,7 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
               ) }
             <div className={otherCommandButton}
               onClick={CloseTerminal}>
-              <p>Close Terminala</p>
+              <p>Close Terminal</p>
               <img src= {ChargeRoom}/>
             </div>
 
@@ -7803,36 +7853,29 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                 <button className="num-pad-key" onClick={() => setQuantityEntry('1')}>1</button>
                 <button className="num-pad-key" onClick={() => setQuantityEntry('2')}>2</button>
                 <button className="num-pad-key" onClick={() => setQuantityEntry('3')}>3</button>
-                <button className="num-pad-key" onClick={() => setQuantityEntry('4')}>4</button>
-      
               </div>
               <div className="num-pad-row">
-         
+                <button className="num-pad-key" onClick={() => setQuantityEntry('4')}>4</button>
                 <button className="num-pad-key" onClick={() => setQuantityEntry('5')}>5</button>
                 <button className="num-pad-key" onClick={() => setQuantityEntry('6')}>6</button>
+              </div>
+
+              <div className="num-pad-row">
                 <button className="num-pad-key" onClick={() => setQuantityEntry('7')}>7</button>
                 <button className="num-pad-key" onClick={() => setQuantityEntry('8')}>8</button>
-             
-              </div>
-              <div className="num-pad-row">
                 <button className="num-pad-key" onClick={() => setQuantityEntry('9')}>9</button>
-                <button className="num-pad-key" onClick={() => setQuantityEntry('10')}>10</button>
-                <button className="num-pad-key" onClick={() => setQuantityEntry('20')}>20</button>
-                <button className="num-pad-key" onClick={() => setQuantityEntry('30')}>30</button>
               </div>
               <div className="num-pad-row">
                 <button className="num-pad-key" onClick={() => setQuantityEntry('0')}>0</button>
-                <button className="num-pad-key" onClick={MinusQuantity}>-</button>
-                <button className="num-pad-key" onClick={addQuantity}>+</button>
                 <button className="num-pad-key" onClick={() => setQuantity(0)}
-                style={{fontSize:'16px'}}
+                style={{fontSize:'30px'}}
                   >Clear
                 </button>
               </div>
 
             </div>
 
-      </Grid>
+            </Grid>
       </Grid>
     </div>
 </div>
@@ -7847,9 +7890,17 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
 
                 <Grid item xs={12} md={6}>
                 <div className='add-order-container'>
-            <h1 className="threeDText">{selectedItemIndexData?.selectedItem.description}</h1>
-            <div className='img-container'>
-              <img src={image} alt={selectedProduct?.product.bar_code} className='img-element' />
+                <Typography      
+                  sx={{
+                  fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.2rem', lg: '1.4rem', xl: '1.6rem' },
+                  color: '#0d12a1',
+                  textShadow: '1px 1px 2px rgba(13, 18, 161, 0.7)',
+                  borderRadius: '5px',
+                  fontWeight: 'bold', textAlign: 'center',}}>
+                   {selectedProduct?.product.long_desc}
+                </Typography>
+            <div className='img-container2'>
+              <img src={image} alt={selectedProduct?.product.bar_code} className='img-element2' />
           </div>
             <Typography      
               sx={{
@@ -7902,29 +7953,22 @@ marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.co
                 <button className="num-pad-key" onClick={() => setQuantityEntry('1')}>1</button>
                 <button className="num-pad-key" onClick={() => setQuantityEntry('2')}>2</button>
                 <button className="num-pad-key" onClick={() => setQuantityEntry('3')}>3</button>
-                <button className="num-pad-key" onClick={() => setQuantityEntry('4')}>4</button>
-      
               </div>
               <div className="num-pad-row">
-         
+                <button className="num-pad-key" onClick={() => setQuantityEntry('4')}>4</button>
                 <button className="num-pad-key" onClick={() => setQuantityEntry('5')}>5</button>
                 <button className="num-pad-key" onClick={() => setQuantityEntry('6')}>6</button>
+              </div>
+
+              <div className="num-pad-row">
                 <button className="num-pad-key" onClick={() => setQuantityEntry('7')}>7</button>
                 <button className="num-pad-key" onClick={() => setQuantityEntry('8')}>8</button>
-             
-              </div>
-              <div className="num-pad-row">
                 <button className="num-pad-key" onClick={() => setQuantityEntry('9')}>9</button>
-                <button className="num-pad-key" onClick={() => setQuantityEntry('10')}>10</button>
-                <button className="num-pad-key" onClick={() => setQuantityEntry('20')}>20</button>
-                <button className="num-pad-key" onClick={() => setQuantityEntry('30')}>30</button>
               </div>
               <div className="num-pad-row">
                 <button className="num-pad-key" onClick={() => setQuantityEntry('0')}>0</button>
-                <button className="num-pad-key" onClick={MinusQuantity}>-</button>
-                <button className="num-pad-key" onClick={addQuantity}>+</button>
                 <button className="num-pad-key" onClick={() => setQuantity(0)}
-                style={{fontSize:'16px'}}
+               style={{fontSize:'30px'}}
                   >Clear
                 </button>
               </div>

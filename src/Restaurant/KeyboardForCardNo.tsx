@@ -145,6 +145,12 @@ const OnScreenKeyboardNumericForCardNo :React.FC <value> = ({handleclose,current
             }
           
         }
+
+        setTimeout(() => {
+            if (inputRef.current){
+                inputRef.current.focus()
+            }
+        }, 100);
     };
 
     useEffect(() => {
@@ -169,6 +175,8 @@ const OnScreenKeyboardNumericForCardNo :React.FC <value> = ({handleclose,current
                     <input value={inputData} 
                     onKeyDown={(e)=> HandleKeyDown(e)}
                     onChange={(e)=> setinputData(e.target.value)}
+
+                    
                     ref={inputRef} style={{textAlign:'center',fontSize:'20px',width:'80%'}}/>
                     <button onClick={()=> handleclose()} style={{height:'40px',width:'20%',margin:'5px'}}>Close</button>
                 </div>
