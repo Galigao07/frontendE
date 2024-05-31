@@ -9,19 +9,19 @@
 
 } */
 
-.Waiter th {
+/* .Waiter th {
     width: auto;
     text-align: center;
     background-color: #f2f2f2;
-  }
+  } */
   
   .Waiter tbody tr:nth-child(even) {
     background-color: #f9f9f9;
   }
   
-  .Waiter tbody tr:hover {
-    background-color: #e9e9e9;
-  }
+  /* .Waiter tbody tr:hover {
+    background-color: #2109aa;
+  } */
   
 
   .Waiter td {

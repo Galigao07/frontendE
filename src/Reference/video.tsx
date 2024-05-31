@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
-import BASE_URL from '../config';
+import {BASE_URL} from '../config';
 import { Grid } from '@mui/material';
 import './css/Video.css'
 

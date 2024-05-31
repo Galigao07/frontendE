@@ -4,7 +4,7 @@ import {  Button, Grid, Table, TextField, Typography } from '@mui/material'; // 
 import './css/WaiterProfile.css';
 
 import axios from 'axios'; 
-import BASE_URL from '../config';
+import {BASE_URL} from '../config';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPlus, faPrint} from '@fortawesome/free-solid-svg-icons';
@@ -411,7 +411,7 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
                                 overflow: 'auto'
                             }}>
                         <thead>
-                            <tr  style={{textAlign:'center'}}>
+                            <tr style={{textAlign:'center'}}>
                             <th>ID Code</th>
                             <th>FullName</th>
                             </tr>

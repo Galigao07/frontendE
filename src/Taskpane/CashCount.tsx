@@ -5,7 +5,7 @@ import './css/CashCount.css'
 import { Table, Typography } from "@mui/material";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 import axios from "axios";
-import BASE_URL from "../config";
+import {BASE_URL} from "../config";
 import { truncate } from "original-fs";
 import logo from '../assets/logo.png'
 import QRCode from 'qrcode-generator';

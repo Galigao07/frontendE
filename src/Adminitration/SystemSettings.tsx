@@ -4,13 +4,18 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import './css/SystemSettings.css'
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
-import BASE_URL from "../config";
+import {BASE_URL} from "../config";
 import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
 
 
 const SystemSettings = () => {
     const [withHotel,setWithHotel] = useState<boolean>(false);
+    const [ShowArrowUpAndDown,setShowArrowUpAndDown] = useState<boolean>(false);
+    const [ProductColPerRows,setProductColPerRows] = useState<any>(0)
+    const [TableColPerRows,setTableColPerRows] = useState<any>(0)
 
+    const ProductColPerRowsRef = useRef<HTMLInputElement>(null)
+    const TableColPerRowsref = useRef<HTMLInputElement>(null)
 
     const setData = async(data:any)=>{
     console.log(data)
@@ -20,6 +25,14 @@ const SystemSettings = () => {
         }else{
             setWithHotel(true)
         }
+
+        if (items.ShowArrowUpAndDown ==='False'){
+            setShowArrowUpAndDown(false)
+        }else{
+            setShowArrowUpAndDown(true)
+        }
+        setProductColPerRows(items.ProductColPerRows)
+        setTableColPerRows(items.TableColPerRows)
        
     })
 
@@ -44,7 +57,10 @@ const SystemSettings = () => {
 const configure = async() => {
 
     const data:any = {
-        'withHotel':withHotel
+        'withHotel':withHotel,
+        'ProductColPerRows':ProductColPerRows,
+        'TableColPerRows':TableColPerRows,
+        'ShowArrowUpAndDown':ShowArrowUpAndDown,
 
     }
     try{
@@ -66,6 +82,20 @@ const configure = async() => {
                     <div className="form-group">
                         <label>With Hotel</label>
                         <input type="checkbox" checked={withHotel} onChange={(e)=>setWithHotel(e.target.checked)}/>
+                    </div>
+                    <div className="form-group">
+                        <label>Show ArrowUp and Down</label>
+                        <input type="checkbox" checked={ShowArrowUpAndDown} onChange={(e)=>setShowArrowUpAndDown(e.target.checked)}/>
+                    </div>
+                    <div className="form-group number">
+                        <label>Product Col Per Rows</label>
+                        <input ref={ProductColPerRowsRef} value={ProductColPerRows} 
+                        onChange={(e)=>setProductColPerRows(e.target.value)} type="number"/>
+                    </div>
+                    <div className="form-group number">
+                        <label>Table Col Per Rows</label>
+                        <input ref={TableColPerRowsref} value={TableColPerRows} 
+                        onChange={(e)=>setTableColPerRows(e.target.value)}  type="number"/>
                     </div>
 
                 </div>

@@ -7,7 +7,7 @@ import './css/CashPaymentEntry.css'
 // import { faBackspace, faBackward, faFastBackward, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import Swal from "sweetalert2";
 import { Grid, Typography } from '@mui/material';
-import BASE_URL from '../config';
+import {BASE_URL} from '../config';
 
 interface CashData {
   handleClose: () => void;
@@ -407,7 +407,7 @@ useEffect(() => {
               <button className="num-pad-key" onClick={() => handleInput('100')}>
                  <Typography      
                     sx={{
-                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '1.4rem', lg: '1.2rem', xl: '1.8rem' }}}>
                     100
                   </Typography>
               </button>
@@ -420,7 +420,7 @@ useEffect(() => {
               <button className="num-pad-key" onClick={() => handleInput('200')}>
                   <Typography      
                     sx={{
-                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '1.4rem', lg: '1.2rem', xl: '1.8rem' }}}>
                     200
                   </Typography>
               </button>
@@ -433,7 +433,7 @@ useEffect(() => {
               <button className="num-pad-key" onClick={() => handleInput('500')}>
                   <Typography      
                     sx={{
-                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '1.4rem', lg: '1.2rem', xl: '1.8rem' }}}>
                     500
                   </Typography>
               </button>
@@ -443,10 +443,10 @@ useEffect(() => {
                 
               </div>
               <div className="num-pad-row">
-                <button className="num-pad-key" onClick={() => handleInput('1000')}>
+                <button className="num-pad-key" onClick={() => handleInput('1000')} style={{padding:'5%'}}>
                   <Typography      
                   sx={{
-                    fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' },
+                    fontSize: { xs: '1.8rem', sm: '1.8rem', md: '1.4rem', lg: '1.2rem', xl: '1.8rem' },
                     width:'25%'}}>
                     1000
                   </Typography>
@@ -456,7 +456,7 @@ useEffect(() => {
                 <button className="num-pad-key"  onClick={() => handleBackspace()}>
                   <Typography      
                     sx={{
-                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                      fontSize: { xs: '1.8rem', sm: '1.8rem', md: '1.4rem', lg: '1.2rem', xl: '1.8rem' }}}>
                     Back
                   </Typography>
                 </button>
@@ -466,7 +466,7 @@ useEffect(() => {
                 <button className="num-pad-key" style={{ width: '33%'}} onClick={handleClose}>
                 <Typography      
                   sx={{
-                    fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                    fontSize: { xs: '1.8rem', sm: '1.8rem', md: '1.4rem', lg: '1.2rem', xl: '1.8rem' }}}>
                     Close
                   </Typography>
                 </button> 
@@ -474,7 +474,7 @@ useEffect(() => {
                 <button className="num-pad-key" style={{ width: '33%'}} onClick={clearInput}>
                 <Typography      
                   sx={{
-                    fontSize: { xs: '1.8rem', sm: '1.8rem', md: '0.8rem', lg: '1.2rem', xl: '1.8rem' }}}>
+                    fontSize: { xs: '1.8rem', sm: '1.8rem', md: '1.4rem', lg: '1.2rem', xl: '1.8rem' }}}>
                     Clear
                   </Typography>
                 </button>

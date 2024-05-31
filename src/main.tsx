@@ -19,6 +19,8 @@
 // window.ipcRenderer.on('main-process-message', (_event, message) => {
 //   console.log(message)
 // })
+
+
 import React from 'react';
 // import ReactDOM from 'react-dom';
 import { HashRouter } from 'react-router-dom';

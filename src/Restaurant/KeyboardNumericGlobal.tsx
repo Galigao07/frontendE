@@ -8,7 +8,7 @@ interface value{
 }
 
 const OnScreenKeyboardNumeric :React.FC <value> = ({handleclose,currentv,setvalue}) => {
-    const [inputData,setinputData] = useState<any>('')
+    const [inputData,setinputData] = useState<string>('')
 
     const [isLetter,setisLetter] = useState<boolean>(true)
     // const [inputData,setinputData] = useState<any>('')

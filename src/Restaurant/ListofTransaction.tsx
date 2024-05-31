@@ -2,7 +2,7 @@ import { Button, Grid, Table } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import './css/ListofTransaction.css'
 import axios from "axios";
-import BASE_URL from "../config";
+import {BASE_URL} from "../config";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 
 

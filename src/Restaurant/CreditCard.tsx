@@ -6,7 +6,7 @@ import './css/CreditCard.css'
 import Swal from "sweetalert2";
 import { Button, Grid, Table, Typography } from "@mui/material";
 import axios, { toFormData } from "axios";
-import BASE_URL from "../config";
+import {BASE_URL} from "../config";
 import OnScreenKeyboard from "./KeyboardGlobal";
 import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";
 import OnScreenKeyboardNumericForCardNo from "./KeyboardForCardNo";

@@ -6,9 +6,11 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    // Other Vite config options
+
   plugins: [
     react(),
-    tsconfigPaths(),
+    tsconfigPaths(), 
     electron({
       main: {
         // Shortcut of `build.lib.entry`.
@@ -34,7 +36,9 @@ export default defineConfig({
       renderer: {},
     }),
   ],
+
   server: {
-    host: '0.0.0.0',
+    // host: '0.0.0.0',
+    host: '192.168.68.109',
   },
 })

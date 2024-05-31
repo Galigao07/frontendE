@@ -28,7 +28,9 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    // icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
+
     // icon: path.join(process.env.VITE_PUBLIC, 'logo.svg'),
     show: false,
     webPreferences : {
@@ -173,6 +175,7 @@ const CreateExtendedMonitor = () => {
 
       // Create a new BrowserWindow for each external display
       const extendedWindow = new BrowserWindow({
+        icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
           x: display.bounds.x,
           y: display.bounds.y,
           width: display.bounds.width,
@@ -203,6 +206,7 @@ const CreateExtendedMonitor = () => {
 const CreateExtendedMonitorNew = () => {
   // Create a new BrowserWindow
   const extendedWindow = new BrowserWindow({
+    icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
       webPreferences: {
         nodeIntegration: true, // or false, depending on your setup
         contextIsolation: false, // or true, depending on your setup

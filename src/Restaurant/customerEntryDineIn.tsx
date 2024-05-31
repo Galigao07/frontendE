@@ -6,7 +6,7 @@ import './css/customerEntryDineIn.css';
 // import './css/customerEntryDineIn.css';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import BASE_URL from '../config';
+import {BASE_URL} from '../config';
 import './css/keyboard.css'
 import OnScreenKeyboard from './KeyboardGlobal';
 
@@ -15,6 +15,7 @@ import { isDesktop} from 'react-device-detect';
 import {  Button, Grid, Table, Typography } from '@mui/material';
 import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
 import OnScreenKeyboardNumericForCardNo from './KeyboardForCardNo';
+import showInfoAlert from '../SwalMessage/ShowInfoAlert';
 
 
 
@@ -47,7 +48,7 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
   
 
     const [customer, setCustomer] = useState<string>('');
-    const [guestCount, setGuestCount] = useState<any>('');
+    const [guestCount, setGuestCount] = useState<string>('');
     const [waiter, setWaiter] = useState<string>('');
     const [waiterID, setWaiterID] = useState<string>('');
     const [customerType, setcustomerType] = useState<string>('Walk-in')
@@ -474,7 +475,7 @@ const handleCustomerTypeWalkIN = () => {
   const handleClear = () => {
     // Detect the clear action and handle it accordingly
     if (guestCountFocus) {
-      setGuestCount(0);
+      setGuestCount('');
       setCursorPosition(0);
     } else if (customerFocus) {
       setCustomer('');
@@ -816,7 +817,7 @@ setTimeout(() => {
 
 
 const [isFocus,setisFocus] = useState<any>(0)
-const SelectButtonHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) => {
+const SelectButtonHandleKeydown =  async(event:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) => {
   event.preventDefault();
   if (event.key == 'ArrowRight' || event.key == 'ArrowDown') {
       NextRef.current.focus();
@@ -922,6 +923,11 @@ const setvalue = (value: any) => {
 
       if (CustomerRef.current){
           setCustomer(value)
+
+          if (GuestCountRef.current){
+            GuestCountRef.current.focus()
+            
+          }
       }else{
         setCustomerSearch(value);
         handleSearchInputChange(value, 'Customer')
@@ -933,11 +939,14 @@ const setvalue = (value: any) => {
    }else if (focusedInput ==='QueNo'){
     setQueNo(value);
   }else if (focusedInput ==='GuestCount'){
-    setGuestCount(value);
+      setGuestCount(value);
    
-    if (WaiterRef.current){
-      WaiterRef.current.focus()
-    }
+      if (WaiterRef.current){
+        
+        WaiterRef.current.focus()
+      }
+   
+ 
 
   }
   setisShowKeyboard(false)
@@ -1031,7 +1040,8 @@ const closekeyBoard = () => {
                               // If the input is a number, update the state
                               setGuestCount(value);
                           }
-                      }}autoComplete="off"
+                      }}
+                      autoComplete="off"
                         // onFocus={GuestCountF}
                         onFocus={()=> showOnScreenKeybaord('GuestCount')}
                         value={guestCount}
@@ -1211,7 +1221,7 @@ const closekeyBoard = () => {
 
         </div>
         {isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard} currentv={[focusedInput2]} setvalue={setvalue}/>}
-        {isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard}  currentv={[focusedInput2]} setvalue={setvalue}/>}
+        {isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard}  currentv={focusedInput2} setvalue={setvalue}/>}
     
     </div>
 

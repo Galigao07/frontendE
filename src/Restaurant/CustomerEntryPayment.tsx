@@ -4,7 +4,7 @@
 import React, { useState,useEffect, useRef, ChangeEvent } from 'react';
 import './css/customerEntryDineIn.css';
 import axios from 'axios';
-import BASE_URL from '../config';
+import {BASE_URL} from '../config';
 
 import  './css/keyboard.css';
 

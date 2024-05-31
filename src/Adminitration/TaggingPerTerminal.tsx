@@ -2,7 +2,7 @@ import React,{useState,useEffect,useRef} from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
-import BASE_URL from "../config";
+import {BASE_URL} from "../config";
 import { Table } from "@mui/material";
 import { Tab } from "react-tabs";
 import AcctTileSLName from "./AcctTileGlobal";
