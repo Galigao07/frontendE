@@ -31,7 +31,6 @@
   }
   
   .OrderList {
-
     width: 100%;
     border-collapse: collapse;
   }
@@ -667,3 +666,33 @@ h1 {
 .disablePointerEvents {
   pointer-events: none;
 }
+
+
+.Product-up-down-Container {
+  position: absolute;
+
+}
+
+
+.Product-up-down-Container .button-up, .Product-up-down-Container .button-down{
+position: absolute;
+color: red;
+font-weight: 900;
+border-radius: 100%;
+height: 50px;
+border: solid 3px red;
+width: 50px;
+background-color: transparent;
+cursor: pointer;
+text-align: center;
+}
+
+.Product-up-down-Container  .fa-fw{
+  font-size: 20px;
+}
+
+.Product-up-down-Container .button-down{
+position: relative;
+bottom: 50px ;
+}
+  

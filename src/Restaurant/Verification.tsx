@@ -4,7 +4,7 @@ import React, { HtmlHTMLAttributes, useEffect, useRef, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
-import BASE_URL from '../config';
+import {BASE_URL} from '../config';
 import axios from 'axios';
 import { isDesktop } from 'react-device-detect';
 import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';

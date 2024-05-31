@@ -6,7 +6,7 @@
 
 import React, { useEffect, useState,useRef, ChangeEvent, useLayoutEffect } from 'react';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import BASE_URL from '../config';
+import {BASE_URL, SOCKET_URL } from '../config';
 import image from '../assets/item.jpeg';
 import table from '../assets/TABLE1.jpg';
 import cash from '../assets/cash.jpeg';
@@ -36,6 +36,7 @@ import CashPullOutImage from '../assets/CashPullOut.jpg'
 import SuspendImage from '../assets/Susppend.png'
 import VoidTransImage from '../assets/Void.png'
 import CancelTransImage from '../assets/CancelledTransaction.png'
+import clientLogo from '../assets/GervaciosLogo.jpg'
 
 
 import logo from '../assets/logo.png'
@@ -82,6 +83,8 @@ import showInfoAlert from '../SwalMessage/ShowInfoAlert';
 import ListOfTransaction from './ListofTransaction';
 import OnScreenKeyboard from './KeyboardGlobal';
 import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
+import { GetSettings } from '../global';
+
 
 
 const swalWithBootstrapButtons = Swal.mixin({
@@ -104,25 +107,46 @@ interface ProductData {
   addtocart:any;
   selectedProductData:any;
   isSelected:any;
-  IsModalOpenF: () => boolean;
+  OrderTypeModal: boolean;
 
 }
 
 
 
   
-const ProductGrid: React.FC<ProductData> = ({ products , addtocart ,selectedProductData,isSelected,IsModalOpenF}) => {
- 
- 
-
+const ProductGrid: React.FC<ProductData> = ({ products , addtocart ,selectedProductData,isSelected,OrderTypeModal}) => {
  
   const [quantity, setQuantity] = useState<number | 1>(1); // Adjust the initial state value
 
     const [Price, setPrice] = useState<number>(1);
     const ProductRef = useRef<HTMLDivElement>(null)
     const [isFocusIndex,setisFocusIndex] = useState<boolean>(true)
+    const [ProductColPerRows, setProductColPerRows] = useState<number>(0);
 
   
+  useEffect(()=>{
+    const fetchData = async() =>{
+      const data = await GetSettings('ProductColPerRows')
+      setProductColPerRows(data)
+      console.log('ProductColPerRows',data)
+    }
+    fetchData()
+  },[])
+
+  const [ShowArrowUpAndDown,setShowArrowUpAndDown] = useState<boolean>(false);
+  useEffect(()=>{
+    const fetchData = async() =>{
+      const data = await GetSettings('ShowArrowUpAndDown')
+      if(data == 'True'){
+        setShowArrowUpAndDown(true)
+      }else{
+        setShowArrowUpAndDown(false)
+      }
+   
+      console.log('ShowArrowUpAndDown',data)
+    }
+    fetchData()
+  },[])
 
 
 
@@ -162,8 +186,8 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
     const [isSelectedIndex, setisSelectedIndex] = useState<any>(null);
     const [productsPerRow, setProductsPerRow] = useState<any>(0);
     const ProductRefs = useRef<any>([]);
-    const [isModalOpenFS, setIsModalOpenF] = useState<boolean>(false)
-    const isModalOpenx = IsModalOpenF();
+    // const [isModalOpenFS, setIsModalOpenF] = useState<boolean>(false)
+    // const isModalOpenx = IsModalOpenF();
     const handleproductclick = (product:any,index:any) => {
 
       selectedProductData({product,index})
@@ -323,12 +347,12 @@ const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(nul
 const Handlekeydown = (e:any,index:any) => {
 e.preventDefault()
   if (e.key === 'ArrowUp' && index > 0) {
-    if (index > productsPerRow -1 ){
-      setisSelectedIndex(index - productsPerRow);
+    if (index > ProductColPerRows -1 ){
+      setisSelectedIndex(index - ProductColPerRows);
     }
 
   } else if (e.key === 'ArrowDown' && index < products.length - 1) {
-    setisSelectedIndex(index + productsPerRow);
+    setisSelectedIndex(index + ProductColPerRows);
   }
 
   else if (e.key === 'ArrowLeft' && index > 0) {
@@ -344,6 +368,25 @@ else if (e.key == 'Enter'){
 
 }
 
+
+const ClickArrowUp = () => {
+  const product_id = document.getElementById('product-id');
+
+  if (product_id){
+    product_id.scrollTop -=650
+  }
+
+   
+}
+const ClickArrowDown = () => {
+
+  const product_id = document.getElementById('product-id');
+
+  if (product_id){
+    product_id.scrollTop +=650
+  }
+   
+}
 
 
 useEffect(() => {
@@ -371,101 +414,173 @@ useEffect(() => {
 }, []); // Empty dependency array ensures that this effect runs only once on component mount
 
 
+const [totalRow,setTotalRow] = useState<any>(0)
+useEffect(() => {
+  // Function to calculate total rows
+  const calculateTotalRows = () => {
+    const container = document.getElementById('product-id');
+    if (container) {
+      const containerHeight = container.clientHeight;
+      const gridItemHeight = 150; // Adjust this value based on your grid item height
+      const gap = 5; // Adjust this value based on your gap between grid items
+      const totalRows = Math.ceil((containerHeight + gap) / (gridItemHeight + gap));
+      setTotalRow(totalRows);
+    }
+  };
+
+  // Call the function initially and on window resize
+  calculateTotalRows();
+  window.addEventListener('resize', calculateTotalRows);
+  return () => window.removeEventListener('resize', calculateTotalRows);
+}, [products, isDesktop]);
+
 
   return (
+  <>
+{OrderTypeModal ? (
+  <div style={{height:'100%'}}>
+  <img src={clientLogo} alt="" style={{ height: '100%', width: '100%', display: 'inline-block' }} />
+</div>
+):(
 
-      <div id = "product-id" style={{ display: 'grid', gridTemplateColumns: isDesktop ? products.length < 6 ? 'repeat(auto-fit, minmax(15%, 150px))' : 'repeat(auto-fit, minmax(15%, 1fr))' :'repeat(auto-fit, minmax(140px, 1fr))', gap: '5px' ,margin:'10px'}}>
-          {products.map((product:any,index) => (
-              <div key={index}
-              tabIndex={index}
-              ref={(ref) => (ProductRefs.current[index] = ref)}
-              //  style={{ border: '1px solid #ccc', padding: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center' , borderRadius:'10px',cursor:'pointer',caretColor:'transparent'}}
-              style={{
-                border: '1px solid #4a90e2',
-                padding: '5px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
-                borderStyle: 'solid',
-                borderWidth: '2px',
-                borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                backgroundColor: isSelectedIndex == index ? 'blue':'white',
-                height:'100%',
-                // width: products.length < 5 ? '80%' : '100%'
-              }}
-              onKeyDown={(e) => Handlekeydown(e,index)}
-             onClick={() => handleproductclick(product,index)}> 
-             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Typography sx={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none',  color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', 
-              textAlign: 'center', marginBottom: '2%', flex: '1 1 100%',height:'40px',
-                 fontSize: { xs: '0.6rem', sm: '0.8rem', md: '.6rem', lg: '.8rem', xl: '0.9rem',
-                },  fontFamily:'Times New Roman'}}>
-                {product.long_desc}
-              </Typography>
-              
-              <img src={image} style={{width: '80%', height: '50%', marginBottom: '1%', flex: '0 0 auto' }} />
-              <Typography sx={{ textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)':'none', 
-              color: isSelectedIndex ==index ? 'white':'black',fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%',
-                 fontSize: { xs: '.6rem', sm: '0.8rem', md: '.6rem', lg: '.8rem', xl: '0.9rem' } , fontFamily:'Times New Roman'}}
-                >Price: {parseFloat(product.reg_price).toFixed(2)}
-              </Typography>
-            </div>
-                  {/* <p style={{fontWeight:'bold',textAlign:'center' , marginBottom: '10px'}}>{product.long_desc}</p>
-                  <img src={image} alt={product.bar_code} style={{ maxWidth: '80%', maxHeight: '150px', marginBottom: '10px' }} />
-                  <p style={{fontWeight:'bold',textAlign:'center' }}> Price: {parseFloat(product.reg_price).toFixed(2)}</p> */}
-              </div>
-          ))}
-       {isModalOpen && (
-    
-        <div className="modal">
-      <div className="modal-content" style={{height:'100%'}}>
-
-
-         <Typography      
-            sx={{
-            fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.2rem', lg: '1.4rem', xl: '1.6rem' },
-            color: '#0d12a1',
-            textShadow: '1px 1px 2px rgba(13, 18, 161, 0.7)',
-            borderRadius: '5px',
-            fontWeight: 'bold', textAlign: 'center',}}>
-          {selectedProduct?.long_desc}
-          </Typography>
-
-
-
-      {/* <h1 className="threeDText">{selectedProduct?.long_desc}</h1> */}
-        <img src={image} alt={selectedProduct?.bar_code} style={{ maxWidth: '200px', maxHeight: '150px', marginBottom: '10px' }} />
-
-        
-        <Typography      
-            sx={{
-            fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
-            color: '#0d12a1',
-            borderRadius: '5px',
-            fontWeight: 'bold', textAlign: 'center',}}>
-          Price: {parseFloat(selectedProduct?.reg_price).toFixed(2)}
-          </Typography>
-        {/* <p className='Price'>Price: {parseFloat(selectedProduct?.reg_price).toFixed(2)}</p> */}
-        <div className="input-group">
-        <button className="btn" style={{backgroundColor:'white',color:'red' ,border:'solid'}} onClick={MinusQuantity} ><FontAwesomeIcon icon={faMinus}/> </button>
-          <input type="number" ref={inputRef}  inputMode="numeric"  placeholder="Quantity" value={quantity} onChange={handleQuantityChange} 
-           style={{width:'60%' ,margin:'10px', fontSize:'20px',fontWeight:'bold',textAlign:'center'}}/>
-          <button className="btn" style={{backgroundColor:'white',color:'blue' ,border:'solid'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  style={{ verticalAlign: 'middle' }}/></button>
-        </div>
-        <p className='TotalDue'>Total Due: {calculateTotal()}</p>
-        <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-        <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={onClose} className="btn-close"> <FontAwesomeIcon icon={faClose} />Close</button>
-        <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={addtocarts}>  <FontAwesomeIcon icon={faShoppingCart} /> Add to Cart</button>
-      </div>
-      </div>
+  <>
+{ShowArrowUpAndDown && 
+<>
+  {isDesktop  && (
+    <div className='Product-up-down-Container' onClick={ClickArrowUp}>
+      <button className='button-up'>
+        <FontAwesomeIcon icon={faArrowUp} className='fa-fw'></FontAwesomeIcon>
+      </button>
     </div>
- 
+    
+  )}
+</>
+}
 
-      )}
-      </div>
+
+    <div id="product-id" style={{overflowY: 'auto' , display: 'grid', gridTemplateColumns: isDesktop ? products.length < ProductColPerRows ? 'repeat(auto-fit, minmax(15%, 150px))' : `repeat(${ProductColPerRows}, minmax(15%, 1fr))` : `repeat(${ProductColPerRows}, minmax(140px, 1fr))`,
+     gap: '5px', margin: '10px',  height: products.length > 18 ? '100%':'',}}>
+
+              {products.map((product: any, index) => (
+                <div key={index}
+                  tabIndex={index}
+                  ref={(ref) => (ProductRefs.current[index] = ref)}
+                  //  style={{ border: '1px solid #ccc', padding: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center' , borderRadius:'10px',cursor:'pointer',caretColor:'transparent'}}
+                  style={{
+                    border: '1px solid #4a90e2',
+                    padding: '5px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',
+                    borderStyle: 'solid',
+                    borderWidth: '2px',
+                    borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                    backgroundColor: isSelectedIndex == index ? 'blue' : 'white',
+                    height: products.length > 18 ? '100%':'170px',
+
+                    // width: products.length < 5 ? '80%' : '100%'
+                  }}
+                  onKeyDown={(e) => Handlekeydown(e, index)}
+                  onClick={() => handleproductclick(product, index)}>
+                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <Typography sx={{
+                      textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)' : 'none', color: isSelectedIndex == index ? 'white' : 'black', fontWeight: 'bold',
+                      textAlign: 'center', marginBottom: '2%', flex: '1 1 100%', height: '40px',
+                      fontSize: {
+                        xs: '0.6rem', sm: '0.8rem', md: '.6rem', lg: '.8rem', xl: '0.9rem',
+                      }, fontFamily: 'Times New Roman'
+                    }}>
+                      {product.long_desc}
+                    </Typography>
+                    <img src={product.prod_img === null ? clientLogo : 'data:image/jpeg;base64,' + product.prod_img} alt="Product Image" style={{ width: '80%', height: '50%', marginBottom: '1%', flex: '0 0 auto' }} />
+                    {/* <img src={clientLogo} style={{ width: '80%', height: '50%', marginBottom: '1%', flex: '0 0 auto' }} /> */}
+                    <Typography sx={{
+                      textShadow: isSelectedIndex == index ? ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)' : 'none',
+                      color: isSelectedIndex == index ? 'white' : 'black', fontWeight: 'bold', textAlign: 'center', flex: '1 1 100%',
+                      fontSize: { xs: '.6rem', sm: '0.8rem', md: '.6rem', lg: '.8rem', xl: '0.9rem' }, fontFamily: 'Times New Roman'
+                    }}
+                    >Price: {parseFloat(product.reg_price).toFixed(2)}
+                    </Typography>
+                  </div>
+                  {/* <p style={{fontWeight:'bold',textAlign:'center' , marginBottom: '10px'}}>{product.long_desc}</p>
+              <img src={image} alt={product.bar_code} style={{ maxWidth: '80%', maxHeight: '150px', marginBottom: '10px' }} />
+              <p style={{fontWeight:'bold',textAlign:'center' }}> Price: {parseFloat(product.reg_price).toFixed(2)}</p> */}
+                </div>
+              ))}
+
+
+              {isModalOpen && (
+
+                <div className="modal">
+                  <div className="modal-content" style={{ height: '100%' }}>
+
+
+                    <Typography
+                      sx={{
+                        fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.2rem', lg: '1.4rem', xl: '1.6rem' },
+                        color: '#0d12a1',
+                        textShadow: '1px 1px 2px rgba(13, 18, 161, 0.7)',
+                        borderRadius: '5px',
+                        fontWeight: 'bold', textAlign: 'center',
+                      }}>
+                      {selectedProduct?.long_desc}
+                    </Typography>
+
+
+
+                    {/* <h1 className="threeDText">{selectedProduct?.long_desc}</h1> */}
+                    <img src={image} alt={selectedProduct?.bar_code} style={{ maxWidth: '200px', maxHeight: '150px', marginBottom: '10px' }} />
+
+
+                    <Typography
+                      sx={{
+                        fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
+                        color: '#0d12a1',
+                        borderRadius: '5px',
+                        fontWeight: 'bold', textAlign: 'center',
+                      }}>
+                      Price: {parseFloat(selectedProduct?.reg_price).toFixed(2)}
+                    </Typography>
+                    {/* <p className='Price'>Price: {parseFloat(selectedProduct?.reg_price).toFixed(2)}</p> */}
+                    <div className="input-group">
+                      <button className="btn" style={{ backgroundColor: 'white', color: 'red', border: 'solid' }} onClick={MinusQuantity}><FontAwesomeIcon icon={faMinus} /> </button>
+                      <input type="number" ref={inputRef} inputMode="numeric" placeholder="Quantity" value={quantity} onChange={handleQuantityChange}
+                        style={{ width: '60%', margin: '10px', fontSize: '20px', fontWeight: 'bold', textAlign: 'center' }} />
+                      <button className="btn" style={{ backgroundColor: 'white', color: 'blue', border: 'solid' }} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus} style={{ verticalAlign: 'middle' }} /></button>
+                    </div>
+                    <p className='TotalDue'>Total Due: {calculateTotal()}</p>
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+                      <button style={{ color: 'white', backgroundColor: 'red', width: '50%', textAlign: 'center', display: 'inline-block' }} onClick={onClose} className="btn-close"> <FontAwesomeIcon icon={faClose} />Close</button>
+                      <button className="btn-add-cart" style={{ color: 'white', backgroundColor: 'blue', width: '50%', textAlign: 'center', display: 'inline-block' }} onClick={addtocarts}>  <FontAwesomeIcon icon={faShoppingCart} /> Add to Cart</button>
+                    </div>
+                  </div>
+                </div>
+
+
+              )}
+
+     
+    </div>
+    {ShowArrowUpAndDown && 
+<>
+    {isDesktop && (
+    <div className='Product-up-down-Container' style={{ position: 'absolute', bottom: '0',marginRight:'-20px',zIndex:'0',}}  
+       onClick={ClickArrowDown}>
+      <button className='button-down'>
+        <FontAwesomeIcon icon={faArrowDown} className='fa-fw' />
+      </button>
+    </div> 
+    )}
+    </>}
+  </>
+
+
+)}
+
+  </>
   );
 };
 
@@ -900,8 +1015,26 @@ const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts,IsM
 
     const [productscCat, setProducts] = useState([]);
 
-    const fetchData = async (x: any,index:any) => {
+    const [ShowArrowUpAndDown,setShowArrowUpAndDown] = useState<boolean>(false);
+    useEffect(()=>{
+      const fetchData = async() =>{
+        const data = await GetSettings('ShowArrowUpAndDown')
+        if(data == 'True'){
+          setShowArrowUpAndDown(true)
+        }else{
+          setShowArrowUpAndDown(false)
+        }
+     
+        console.log('ShowArrowUpAndDown',data)
+      }
+      fetchData()
+    },[])
+  
 
+
+
+
+    const fetchData = async (x: any,index:any) => {
       if (x == 'ALL'){
         setSelectedCategoryall(true)
 
@@ -1167,6 +1300,27 @@ useEffect(() => {
     const matchesXs = useMediaQuery(theme.breakpoints.down('xs'));
     const matchesSm = useMediaQuery(theme.breakpoints.down('sm'));
 
+
+    const ClickArrowUp = () => {
+      const category_id = document.getElementById('category-id');
+    
+      if (category_id){
+        category_id.scrollTop -=650
+      }
+    
+       
+    }
+    const ClickArrowDown = () => {
+    
+      const category_id = document.getElementById('category-id');
+    
+      if (category_id){
+        category_id.scrollTop +=650
+      }
+       
+    }
+
+
     return (
         // <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(200px, 1fr))', gap: '5px' ,margin:'10px'}}>
         //     {category.map(category => (
@@ -1212,115 +1366,134 @@ useEffect(() => {
 
 
 
-<Box
- component="div"
- sx={{
-    // display: 'grid',
-    // gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    // gap: '5px',
-    margin: '5px',
- }}
->
-<div
-    ref={categoryRef}
-     key={0}
-     onClick={() => fetchData('ALL',-1)}
-      style={{
-        border: '1px solid #ccc',
-        padding: '5px',
-        justifyContent: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        height: '60px',
-        // borderRadius: '10px',
-        cursor: 'pointer',
-        color: '#ffffff',
-        backgroundColor:
-        selectedCategoryall ? 'darkBlue' : '#007bff', // Change background color conditionally
-        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-        fontWeight: 'bold',
-        textAlign: 'center',
-        fontSize: '1rem', // Make the font responsive
-        width: matchesXs ? '100%' : matchesSm ? '100%' : '100%', // Adjust width based on breakpoints
-      }} 
-    >
-   <Typography
-      variant="body1"
-      sx={{
-        margin: '5px',
-        textAlign: 'center',
-        fontSize: {
-          xs: '0.8rem', // Default font size for extra-small screens
-          sm: '0.5rem', // Font size for small screens
-          md: '0.6rem', // Font size for medium screens
-          lg: '0.8rem', // Font size for large screens
-          xl: '1rem', // Font size for extra-large screens
-        },
-        fontWeight: 'bold',
-        '@media (min-width:600px)': { // Additional responsive font size using @media query
-          fontSize: '1rem',
-        },
-        // Add more @media queries for other breakpoints if necessary
-      }}
-    >
-      SHOW ALL
-    </Typography>
-    </div>
- {category.map((categoryItem:any,index:any ) => (
-    <div
-      key={index}
-      tabIndex={index}
-      ref={(ref) => (categoryRef.current[index] = ref)}
-      onClick={() => fetchData(categoryItem.category_desc,index)}
-      onKeyDown={(e)=> handleKeydownCategory(e,index)}
-      
-      style={{
-        outline: isSelectedIndexData === index ? '2px solid blue' : 'none',
-        border: '1px solid #ccc',
-        padding: '5px',
-        justifyContent: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        height: '60px',
-        // borderRadius: '10px',
-        cursor: 'pointer',
-        color: '#ffffff',
-        backgroundColor:
-        // selectedCategory === categoryItem.category ? '#ff9800' : '#007bff', // Change background color conditionally
-        isSelectedIndexData === index ? 'darkBlue' : '#007bff', // Change background color conditionally
-        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-        fontWeight: 'bold',
-        textAlign: 'center',
-        fontSize: '1rem', // Make the font responsive
-        width: matchesXs ? '100%' : matchesSm ? '100%' : '100%', // Adjust width based on breakpoints
-      }}
-    >
-   <Typography
-      variant="body1"
-      sx={{
-        margin: '10px',
-        textAlign: 'center',
-        fontSize: {
-          xs: '0.8rem', // Default font size for extra-small screens
-          sm: '0.5rem', // Font size for small screens
-          md: '0.6rem', // Font size for medium screens
-          lg: '0.8rem', // Font size for large screens
-          xl: '1rem', // Font size for extra-large screens
-        },
-        fontWeight: 'bold',
-        '@media (min-width:600px)': { // Additional responsive font size using @media query
-          fontSize: '1rem',
-        },
-        // Add more @media queries for other breakpoints if necessary
-      }}
-    >
-      {categoryItem.category_desc.toUpperCase()}
-    </Typography>
-    </div>
-  ))}
-</Box>
+<div id='category-id' style={{overflowY:'auto',height:'90vh'}}>
+{ShowArrowUpAndDown && 
+<>
+  {isDesktop && (
+        <div className='Product-up-down-Container' onClick={ClickArrowUp}>
+        <button className='button-up' >
+          <FontAwesomeIcon icon={faArrowUp} className='fa-fw'></FontAwesomeIcon>
+        </button>
+      </div>
+        )}
+</>}
+
+
+   
+      <div
+          ref={categoryRef}
+          key={0}
+          onClick={() => fetchData('ALL',-1)}
+            style={{
+              border: '1px solid #ccc',
+              padding: '5px',
+              justifyContent: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              height: '60px',
+              // borderRadius: '10px',
+              cursor: 'pointer',
+              color: '#ffffff',
+              backgroundColor:
+              selectedCategoryall ? 'darkBlue' : '#007bff', // Change background color conditionally
+              textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              fontSize: '1rem', // Make the font responsive
+              width: matchesXs ? '100%' : matchesSm ? '100%' : '100%', // Adjust width based on breakpoints
+            }} 
+          >
+        <Typography
+            variant="body1"
+            sx={{
+              margin: '5px',
+              textAlign: 'center',
+              fontSize: {
+                xs: '0.8rem', // Default font size for extra-small screens
+                sm: '0.5rem', // Font size for small screens
+                md: '0.6rem', // Font size for medium screens
+                lg: '0.8rem', // Font size for large screens
+                xl: '1rem', // Font size for extra-large screens
+              },
+              fontWeight: 'bold',
+              '@media (min-width:600px)': { // Additional responsive font size using @media query
+                fontSize: '1rem',
+              },
+              // Add more @media queries for other breakpoints if necessary
+            }}
+          >
+            SHOW ALL
+          </Typography>
+      </div>
+
+          {category.map((categoryItem:any,index:any ) => (
+              <div
+                key={index}
+                tabIndex={index}
+                ref={(ref) => (categoryRef.current[index] = ref)}
+                onClick={() => fetchData(categoryItem.category_desc,index)}
+                onKeyDown={(e)=> handleKeydownCategory(e,index)}
+                
+                style={{
+                  outline: isSelectedIndexData === index ? '2px solid blue' : 'none',
+                  border: '1px solid #ccc',
+                  padding: '5px',
+                  justifyContent: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  height: '60px',
+                  // borderRadius: '10px',
+                  cursor: 'pointer',
+                  color: '#ffffff',
+                  backgroundColor:
+                  // selectedCategory === categoryItem.category ? '#ff9800' : '#007bff', // Change background color conditionally
+                  isSelectedIndexData === index ? 'darkBlue' : '#007bff', // Change background color conditionally
+                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  fontSize: '1rem', // Make the font responsive
+                  width: matchesXs ? '100%' : matchesSm ? '100%' : '100%', // Adjust width based on breakpoints
+                }}
+              >
+            <Typography
+                variant="body1"
+                sx={{
+                  margin: '10px',
+                  textAlign: 'center',
+                  fontSize: {
+                    xs: '0.8rem', // Default font size for extra-small screens
+                    sm: '0.5rem', // Font size for small screens
+                    md: '0.6rem', // Font size for medium screens
+                    lg: '0.8rem', // Font size for large screens
+                    xl: '1rem', // Font size for extra-large screens
+                  },
+                  fontWeight: 'bold',
+                  '@media (min-width:600px)': { // Additional responsive font size using @media query
+                    fontSize: '1rem',
+                  },
+                  // Add more @media queries for other breakpoints if necessary
+                }}
+              >
+                {categoryItem.category_desc.toUpperCase()}
+              </Typography>
+              </div>
+            ))}
+  
+
+  {ShowArrowUpAndDown && <>
+    {isDesktop && (
+          <div className='Product-up-down-Container' style={{ position: 'absolute', bottom: '0',marginRight:'-20px'}} 
+          onClick={ClickArrowDown}>
+            <button className='button-down' >
+              <FontAwesomeIcon icon={faArrowDown} className='fa-fw'></FontAwesomeIcon>
+            </button>
+          </div>
+        )}
+</>}
+
+</div>
     );
   };
 
@@ -1371,6 +1544,7 @@ const Restaurant: React.FC = () => {
   const [OrderTypeModal, setOrderTypeModal] = useState<boolean>(true);
   const [tableNoModal, setTableNoModal] = useState<boolean>(false);
   const [PaymentOpenModal, setPaymentOpenModal] = useState<boolean>(false);
+  const [PaymentDiscountOpenModal, setPaymentDiscountOpenModal] = useState<boolean>(false);
   const [DineIn, setDineIn] = useState<boolean>(false);
   const [CustomerDineInModal,setCustomerDineInModal] = useState<boolean>(false)
   const [CustomeryPaymentModal,setCustomeryPaymentModal] = useState<boolean>(false)
@@ -1485,6 +1659,23 @@ const Restaurant: React.FC = () => {
 
   const [selectedProduct, setSelectedProduct] = useState<SelectedDatas | null>(null);
   const [Price, setPrice] = useState<number>(0);
+
+
+const [TableColPerRows,setTableColPerRows] = useState<any>(0)
+
+  useEffect(()=>{
+    const fetchData = async() =>{
+      const data = await GetSettings('TableColPerRows')
+      setTableColPerRows(data)
+      console.log('TableColPerRows',data)
+    }
+
+    fetchData()
+  },[])
+
+
+
+
 
  const selectedProductData = (data:any) => {
   setAddOrderModal(true)
@@ -1994,9 +2185,9 @@ const unLockterminal = async() => {
     }, 50);
   }
 
-    const logoutClick = async () => {
-      localStorage.clear();
-      window.location.reload();
+const logoutClick = async () => {
+      // localStorage.clear();
+      // window.location.reload();
       swalWithBootstrapButtons.fire({
           title: 'Confirmation',
           text: "Do you want logout?",
@@ -2017,8 +2208,6 @@ const unLockterminal = async() => {
                     localStorage.clear();
                     window.location.reload();
                   }
-              
-
               } catch (error) {
                    console.error('Error during logout:', error);
               }
@@ -2164,6 +2353,13 @@ const BacktoHome = () => {
     setTableNo('')
     DeletePosExtendedAll()
     setTableOnprocess('')
+    if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+      const message = {
+        'message': 0,
+        'TableNO':false,
+      };
+      chatSocket.send(JSON.stringify(message));
+    }
   }
 
 }
@@ -2257,7 +2453,7 @@ const PaymentClickControlS = () => {
    }
 
    useEffect(() => {
-    console.log('CustomerName:', CustomerName);
+    // console.log('CustomerName:', CustomerName);
     setCustomer(CustomerName)
   }, [CustomerName]);
 
@@ -2279,18 +2475,21 @@ const PaymentClickControlS = () => {
       if (response.status === 200) {
         setLoadingPrint(false)
     
-        if (dataFromModal.PaymentType === 'Sales Order')
+        if (dataFromModal.PaymentType === 'Sales Order'){
         setSOCustomer(dataFromModal)
         printReceipt(dataFromModal,response.data.SOdata);
         setCustomerOrderInfo([])
+   
       } else {
         // Handle other response statuses if needed
         setSOCustomer(dataFromModal)
         printReceipt(dataFromModal,response.data.SOdata);
         setDineIn(false)
+        setPaymentDiscountOpenModal(true)
         setCustomerOrderInfo([])
       }
-    } catch (error: any) {
+    } 
+  }catch (error: any) {
       if (error.response) {
         // The request was made and the server responded with a status code
         console.error('Server responded with a non-2xx status:', error.response.data);
@@ -3266,7 +3465,9 @@ const SelectQue = (index:any) => {
  
 };
 
-const SelectTableOk = (searchItemindex: string) => {
+const SelectTableOk = (searchItemindex: any) => {
+
+  const selected = TableList[parseInt(searchItemindex) - 1]
 
   if (showTable) {
   if (parseInt(searchItemindex) === TableOnprocess){
@@ -3289,8 +3490,18 @@ const SelectTableOk = (searchItemindex: string) => {
           
         }, 50);
       } else {
-        setTableNoModal(false);
-        setisSelected(0)
+        if (selected.dinein_order_and_pay === 'Y'){
+          setSelectTypeOfTransaction(true)
+          setDineInOrderAndPay(true)
+          setTimeout(() => {
+            ClearTableRef.current?.focus();
+          }, 50);
+        }else{
+          setDineInOrderAndPay(false)
+          setTableNoModal(false);
+          setisSelected(0)
+        }
+    
       }
     }
     
@@ -3344,7 +3555,7 @@ useEffect(() => {
   const socket = new WebSocket(`ws://${urlWithoutPort}:8001/ws/count/`);
 
   socket.onopen = () => {
-    console.log('WebSocket connection established.');
+    // console.log('WebSocket connection established.');
     const message = {
       'message': 'Hello, world im back!'
     };
@@ -3353,7 +3564,7 @@ useEffect(() => {
 
   socket.onmessage = async (event) => {
     const data = JSON.parse(event.data);
-    console.log('Received data:', data);
+    // console.log('Received data:', data);
     const TableRecieve = data.message.message
 
     if (TableRecieve){
@@ -3391,7 +3602,7 @@ useEffect(() => {
         return response.json();
       })
       .then(data => {
-        console.log('Load data befor b-out',data)
+        // console.log('Load data befor b-out',data)
         let tmp_queNO:any = 0
         let tmp_table:any = 0
         let tmp_ordertpye:any = ''
@@ -3524,10 +3735,8 @@ const calculateTotalDue = () => {
              let totalDisCount:any = 0
              if (DiscountData){
               DiscountData.map((item:any) => {
-                console.log(item.ByAmount)
                 totalDisCount += item.ByAmount
               })
-              console.log('totalDisCount',totalDisCount)
               totalDue = totalDue - totalDisCount
              }
           
@@ -3535,10 +3744,8 @@ const calculateTotalDue = () => {
             if (DiscountData){
               let totalDisCount:any = 0
               DiscountData.map((item:any) => {
-                console.log(item.Discount)
                 totalDisCount += item.Discount
               })
-              console.log('totalDisCount',totalDisCount)
               totalDue = totalDue - totalDisCount
              }
           }
@@ -3807,9 +4014,7 @@ useEffect(() => {
         const DataInfo = JSON.parse(storeDataInfo);
         setCartItems(storedCartData);
         RePrintCashPaymentReceipt(DataInfo)
-      } else {
-        console.error('No cart data found in localStorage');
-      }
+      } 
 }, [refreshCart]); // Trigger effect when refreshCart changes
 
 
@@ -4224,8 +4429,6 @@ const SaveTransactionDiscountEntry = (data:any) => {
 
 
 
-
-
 //******** PRINT DESCRIPTION AND ITEMS QTY******** */
     const generateReceipt = () => {
 
@@ -4490,21 +4693,33 @@ const SaveTransactionDiscountEntry = (data:any) => {
     let total = 0
     let totalqty = 0
 
+    receiptContent += '<div style="font-size:20px; font-weight:bold;">';
+    receiptContent += '<div>------------------------------------------------</div>'
+    receiptContent += '<div> QTY |       DESCRIPTION       </div>'
+    receiptContent += '<div>------------------------------------------------</div>'
+  
 
-    receiptContent += '<div>------------------------------------------------</div>'
-    receiptContent += '<div>QTY  |              DESCRIPTION       </div>'
-    receiptContent += '<div>------------------------------------------------</div>'
- 
-    function wrapDescription(description: string, maxLength: number) {
-      if (description.length <= maxLength) {
-        return description;
+    // function wrapDescription(description: string, maxLength: number) {
+    //   if (description.length <= 23) {
+    //     return description;
+    //   } else {
+    //     const wrappedDescription = description.substring(0, 23);
+    //     const remainingDescription = description.substring(maxLength);
+    //     const des:any =  wrappedDescription + '\n' + wrapDescription(remainingDescription, maxLength);
+    //     return des ;
+    //   }
+    // }
+
+    function wrapDescription(description: string, maxLength: number): string {
+      if (description.length <= 25) {
+          return description;
       } else {
-        const wrappedDescription = description.substring(0, maxLength);
-        const remainingDescription = description.substring(maxLength);
-        // return wrappedDescription + '\n' + wrapDescription(remainingDescription, maxLength);
-        return wrappedDescription ;
+          const wrappedDescription = description.substring(0, 25);
+          const remainingDescription = description.substring(25,maxLength);
+          const des: string = wrappedDescription + '\n' + '      ' + wrapDescription(remainingDescription, maxLength);
+          return des;
       }
-    }
+  }
     const maxLength = 35
      
     cartItems.forEach((item:any) => {
@@ -4515,7 +4730,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
         const itemDescription = item.description; // Replace with your actual item description
         const wrappedDescription = wrapDescription(itemDescription, maxLength);
     
-        const formattedQuantity = String(parseInt(item.quantity)).padEnd(4, ' ')
+        const formattedQuantity = String(parseInt(item.quantity)).padStart(3, ' ')
         if (item.description.length < 25){
          const lengthShort = 25 - item.description.length
           maxLengthChar =  maxLengthChar + lengthShort
@@ -4588,6 +4803,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
         totalqty += parseFloat(item.quantity); 
         //#endregion
    });
+   receiptContent += '</div>'
 
       const amountDue = `Total Amount Due: ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       const totalQTY = `Items ${totalqty}`
@@ -4696,36 +4912,58 @@ const SaveTransactionDiscountEntry = (data:any) => {
 
 
               doc.open();
-              doc.write('<style>body {  font-family: Consolas, monaco, monospace; }</style>');
-              doc.write('<div style="width: 300px; margin:none; font-size:10px">');
-              doc.write('<div>'); // Start a container div for content
+                doc.write(`
+                <style>
+                  @page {
+                    size: 80mm auto; /* Adjust size to 58mm or 80mm as per your POS printer */
+                    margin: 7mm; /* Adjust margin as needed */
+                    margin-toop: 0mm;
+                    margin-right: 5mm;
+                  }
+                  body {
+                    font-family: "Courier New", monospace;
+                    font-weight: bold;
+                    margin: 0;
+                    padding: 0;
+                  }
+                  .receipt-content {
+                    width: 100%;
+                    font-size: 15px;
+                  }
+                </style>
+              `);
+              
+
+              // doc.write('<style>body { font-family: "Courier New", monospace;font-weight:bold; } </style>');
+              doc.write('<div class="receipt-content" style="width: 400px; font-size: 15px;">');
+              doc.write('<div style="font-size: 20px">'); // Start a container div for content
         
               // Embed the logo image using an <img> tag
-              doc.write('<div style="text-align: center;">');
-              doc.write(`<img src="${logo}" alt="Logo Image" style="max-width: 50px; display: inline-block;" />`);
-              doc.write('</div>');
+              // doc.write('<div style="text-align: center;">');
+              // doc.write(`<img src="${logo}" alt="Logo Image" style="max-width: 50px; display: inline-block;" />`);
+              // doc.write('</div>');
     
               doc.write('<div style="text-align: center;">');
               doc.write('<p> Sales Order </p>');
               doc.write('</div>')
-              doc.write(`<DIV>Customer: ${SOInfo.Customer} </DIV>`);
-              doc.write(`<div>Table No: ${TableNo}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              &nbsp;&nbsp;&nbsp;&nbsp;
-              &nbsp; Guest Count: ${SOInfo.GuestCount}</div>`);
+              doc.write(`<div>Customer: ${SOInfo.Customer} </div>`);
+              doc.write(`<div>Table No: ${TableNo}</div>`);
+              doc.write(`<div>Guest Count: ${SOInfo.GuestCount}</div>`);
               doc.write('<div style="text-align: center;">');
               doc.write(`<p> ${OrderType}</p>`);
               doc.write('</div>')
     
     
+      
+              doc.write('<pre font-size: 10px;>------------------------------------------------</pre>');
               doc.write('<div style="text-align: center;">');
-              doc.write('<div>---------------------------------------------</div>');
               doc.write(`<div> SO# ${SONumber.SO_NO}</div>`);
               doc.write(`<div> ${formattedDateTime} </div>`);
               doc.write('</div>')
     
               // Write the receipt content
               doc.write('<pre>' + receiptContent + '</pre>');
+              doc.write('</div>')
     
 
               let receiptContent1 = '';
@@ -4738,7 +4976,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
                 const fullName = localStorage.getItem('FullName');
               
                 if (fullName) {
-                  const spaces = ' '.repeat(Math.max(0, 47 - (Cashier.length + fullName.length)));
+                  const spaces = ' '.repeat(Math.max(0, 38 - (Cashier.length + fullName.length)));
                   const receiptContent1 = `<div>${Cashier} ${spaces}${fullName}</div>`;
                   doc.write('<pre>' + receiptContent1 + '</pre>');
                 } else {
@@ -4765,7 +5003,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
               const DocumentNo = String(documentno).padStart(8,'0')
     
     
-              const spacesTRANS = ' '.repeat(Math.max(0, 47 -(TRANS.length + DocumentNo.length + SONumber.TerminalNo.length +1) ));
+              const spacesTRANS = ' '.repeat(Math.max(0, 38 -(TRANS.length + DocumentNo.length + SONumber.TerminalNo.length +1) ));
               receiptContent1 =`<div>${spacesTRANS} ${TRANS}${SONumber.TerminalNo}-${DocumentNo} </div>`
     
      
@@ -4773,24 +5011,24 @@ const SaveTransactionDiscountEntry = (data:any) => {
               doc.write('<pre>' + receiptContent1 + '</pre>');
               //********************************************************* */
     
-              const qr = QRCode(0, 'H'); // QR code type and error correction level
-              qr.addData('Your data for QR code'); // Replace with the data you want in the QR code
-              qr.make();
+              // const qr = QRCode(0, 'H'); // QR code type and error correction level
+              // qr.addData('Your data for QR code'); // Replace with the data you want in the QR code
+              // qr.make();
         
-              // Get the generated QR code as a data URI
-              const qrDataURI = qr.createDataURL();
+              // // Get the generated QR code as a data URI
+              // const qrDataURI = qr.createDataURL();
         
-              // Insert the QR code image into the document
-              doc.write('<div style="text-align: center;">');
-              doc.write(`<img src="${qrDataURI}" alt="QR Code"  style="max-width: 120px; display: inline-block;" />`);
-              doc.write('</div>'); // Close the container div
-              doc.close();
-              console.log('999') /// Dont delete
+              // // Insert the QR code image into the document
+              // doc.write('<div style="text-align: center;">');
+              // doc.write(`<img src="${qrDataURI}" alt="QR Code"  style="max-width: 120px; display: inline-block;" />`);
+              // doc.write('</div>'); // Close the container div
+              // doc.close();
+              // console.log('999') /// Dont delete
      
               
-
+   
          
-              DeletePosExtendedAll()
+      
               // triggerPrint()
               setTimeout(async () => {
                
@@ -4799,6 +5037,7 @@ const SaveTransactionDiscountEntry = (data:any) => {
 
                
               if (SOInfo.PaymentType ==='Sales Order'){
+                DeletePosExtendedAll()
                 setOrderType('')
                 setOrderTypeModal(true)
                 setisSelected(null)
@@ -6925,6 +7164,13 @@ useEffect(() => {
 }, []);
 
 
+useEffect(() =>{
+ if (OrderType === 'TAKE OUT'){
+  setPaymentDiscountOpenModal(true)
+ }
+},[OrderType,CustomerOrderInfo])
+
+
 
 
   return (
@@ -6932,10 +7178,9 @@ useEffect(() => {
     
 <Grid container
       className='Restaurant-trans'
-      style={{ height: '100vh' }}
+      style={{ height: '100vh',border:'1px solid'}}
       spacing={0.1}
-      justifyContent="space-between" 
-    >
+      justifyContent="space-between" >
 
 {loadingPrint && (
         <div
@@ -6956,7 +7201,7 @@ useEffect(() => {
         >
           <ClipLoader color="#4a90e2" loading={loadingPrint} size={50} />
         </div>
-      )}
+)}
 
 
 <div style={overlayStyle} />
@@ -6976,25 +7221,25 @@ useEffect(() => {
              Category Section
             </Typography>
 
-            <div className='Category-container' style={{ overflowY: 'auto', maxHeight: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '2px' }}>
-           {isMobile && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center',height:'20px'}}>
-                  
-                  
-                  {categoryHide ? (
-                    <div style={{ marginBottom: '20px' }}>
-                      <FontAwesomeIcon icon={faAngleDoubleDown} style={{ position: 'absolute', margin: '5px', cursor: 'pointer', fontSize: '20px' }} onClick={CategoryHideClick} />
+            <div className='Category-container' style={{overflowY:'auto',overflow:'hidden',maxHeight:'90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '2px' }}>
+                  {isMobile && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center',height:'20px'}}>
+                          
+                          
+                          {categoryHide ? (
+                            <div style={{ marginBottom: '20px' }}>
+                              <FontAwesomeIcon icon={faAngleDoubleDown} style={{ position: 'absolute', margin: '5px', cursor: 'pointer', fontSize: '20px' }} onClick={CategoryHideClick} />
+                            </div>
+                          ) : (
+                            <FontAwesomeIcon icon={faAngleDoubleUp} style={{ position: 'absolute', cursor: 'pointer', fontSize: '20px' }} onClick={CategoryHideClick} />
+                          )}
+                        
                     </div>
-                  ) : (
-                    <FontAwesomeIcon icon={faAngleDoubleUp} style={{ position: 'absolute', cursor: 'pointer', fontSize: '20px' }} onClick={CategoryHideClick} />
-                  )}
-                
-            </div>
-        )}   
+                )}   
 
-            <div style={{display: categoryHide ? 'block':'none'}}>
-            <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} IsModalOpen={IsModalOpen} />
-            </div>
+                <div style={{display: categoryHide ? 'block':'none',height:'100%'}}>
+                <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} IsModalOpen={IsModalOpen} />
+                </div>
 
           </div>
 
@@ -7017,8 +7262,8 @@ useEffect(() => {
          
 
   
-          <div className='Product-container' style={{ overflowY: 'auto', height: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '2px' }}>
-            <ProductGrid products={products} addtocart={addToCart} selectedProductData={selectedProductData} isSelected ={isSelected} IsModalOpenF = {IsModalOpen} />
+          <div className='Product-container' style={{ overflowY: 'auto',overflow:'hidden',height: '90vh', border: ' 1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '2px' }}>
+            <ProductGrid products={products} addtocart={addToCart} selectedProductData={selectedProductData} isSelected ={isSelected} OrderTypeModal = {OrderTypeModal} />
            
           </div>
         </div>
@@ -7029,7 +7274,7 @@ useEffect(() => {
 marginLeft:'35%',borderRadius:'10px', zIndex: '9999'}} src=''></iframe>
 
 
-<Grid item xs={12} md={3} style={{ height: '100%',width:'60%' }}>
+<Grid item xs={12} md={3} style={{ height: '100%',width:'60%'}}>
       <div className='Transaction-container' style={{ height: '95%'}}>
           <Typography      
               sx={{
@@ -7272,28 +7517,22 @@ marginLeft:'35%',borderRadius:'10px', zIndex: '9999'}} src=''></iframe>
             align="center"
             sx={{
               fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-              textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-              border: '2px solid #4a90e2',
-              borderRadius: '10px',
-              padding: '10px',
-              color: 'blue !important',
-              fontWeight:'bold'
+              textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',border: '2px solid #4a90e2',borderRadius: '10px',
+              padding: '10px',color: 'blue !important',fontWeight:'bold'
             }}
           >
           Choose Order Type
         </Typography>
 
               <Button className="button-dine-in" onClick={handleDineIn} 
-              ref={DineInRef}
-              onKeyDown={(e)=> OrderTypeHandleKeydown(e,TakeOutRef,DineInRef,TakeOutRef,0)}
-              >
-                <Typography      
-                  sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                  color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                  borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
-                   Dine In
-                </Typography>
-                
+                ref={DineInRef}
+                onKeyDown={(e)=> OrderTypeHandleKeydown(e,TakeOutRef,DineInRef,TakeOutRef,0)}>
+                  <Typography      
+                    sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                    color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                    borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                    Dine In
+                  </Typography>
               </Button>
 
               <Button className="button-take-out"onClick={handleTakeOut} 
@@ -7362,7 +7601,7 @@ marginLeft:'35%',borderRadius:'10px', zIndex: '9999'}} src=''></iframe>
       <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
         <div style={{overflow:'auto',height: '80%',width:'100%'}}>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isDesktop? 'repeat(5, minmax(15%, 1fr))': 'repeat(5, minmax(33%, 1fr))', 
+          <div style={{ display: 'grid', gridTemplateColumns: isDesktop? `repeat(${TableColPerRows}, minmax(15%, 1fr))`: `repeat(${TableColPerRows}, minmax(33%, 1fr))`, 
                 gap: '2px' ,margin:'5px',overflow:'auto',height: '590px',
                 border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'5px',borderRadius:'10px'}}>
           {loading && (
@@ -7564,7 +7803,8 @@ marginLeft:'35%',borderRadius:'10px', zIndex: '9999'}} src=''></iframe>
 
           </div>
 
-              {(OrderType === 'TAKE OUT' || CustomerOrderInfo.PaymentType === 'Order and Pay') && (
+              {/* {(OrderType === 'TAKE OUT' || CustomerOrderInfo.PaymentType === 'Order and Pay') &&  */}
+            {PaymentDiscountOpenModal && (
               <><h1> SELECT DISCOUNT</h1>
                   <div className='PaymentModalContainer'>
 
@@ -7698,7 +7938,7 @@ marginLeft:'35%',borderRadius:'10px', zIndex: '9999'}} src=''></iframe>
 
                 <Button className="button-take-out" 
                 onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,TransferTableRef,ClearTableRef,CloseSelectTransTypeRef,3)}
-                ref={SettleOrderRef}
+                ref={ClearTableRef}
                 onClick={Cleartable}>
                   <Typography      
                     sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '1.8rem' },

@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {  Button, Grid, MenuItem, Select, SelectChangeEvent, Table, TextField, Typography } from '@mui/material'; // Import Material-UI components
 import './css/userProfile.css';
 import axios from 'axios'; 
-import BASE_URL from '../config';
+import {BASE_URL} from '../config';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {faPlus, faPrint} from '@fortawesome/free-solid-svg-icons';

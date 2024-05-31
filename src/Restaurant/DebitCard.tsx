@@ -5,7 +5,7 @@ import './css/DebitCard.css'
 import Swal from "sweetalert2";
 import { Button, Grid, Table, Typography } from "@mui/material";
 import axios from "axios";
-import BASE_URL from "../config";
+import {BASE_URL} from "../config";
 import OnScreenKeyboard from "./KeyboardGlobal";
 import { isDesktop } from "react-device-detect";
 import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";

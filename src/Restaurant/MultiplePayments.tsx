@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import BASE_URL from "../config";
+import {BASE_URL} from "../config";
 import './css/MultiplePayments.css'
 import { Button } from "@mui/material";
 import CreditCardPaymentEntry from './CreditCardPayment';

@@ -4,11 +4,15 @@ import axios from 'axios';
 import './login.css';
 import logo from './logo.png';
 import Swal from 'sweetalert2';
-import BASE_URL from '../config';
-import { isMobile, isTablet, setUserAgent } from 'react-device-detect';
+import {BASE_URL,SOCKET_URL} from '../config';
+import { isDesktop, isMobile, isTablet, setUserAgent } from 'react-device-detect';
 import { Button, Typography } from '@mui/material';
 import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
 import OnScreenKeyboard from '../Restaurant/KeyboardGlobal';
+import PackageInfo from '../PackageInfo';
+import showErrorAlert from '../SwalMessage/ShowErrorAlert';
+import showInfoAlert from '../SwalMessage/ShowInfoAlert';
+
 
 
 
@@ -69,26 +73,52 @@ import OnScreenKeyboard from '../Restaurant/KeyboardGlobal';
     }, []);
 
 
+    
+    //CHECK IF TERMINAL IS ALREADY LOGIN
+    useEffect (()=>{
+
+      const CheckterminalLogin = async () => {
+          const response = await axios.get(`${BASE_URL}/api/check-login/`)
+         if (response.status == 200){
+          const { Info }: { Info?: any } = response.data; // Adjust 'Info' type as per the actual structure
+          if (Info) {
+            const { UserRank, FullName, UserID, UserName, TerminalNo, SiteCode,TransID }: any = Info; // Adjust types as per the actual structure
+            localStorage.setItem('isLogin', 'true');
+            localStorage.setItem('UserRank', UserRank);
+            localStorage.setItem('FullName', FullName);
+            localStorage.setItem('UserID', UserID);
+            localStorage.setItem('UserName', UserName);
+            localStorage.setItem('TerminalNo', TerminalNo);
+            localStorage.setItem('SiteCode', SiteCode);
+            localStorage.setItem('TransID', TransID);
+            window.location.reload();
+          }
+         }
+      }
+      
+      CheckterminalLogin();
+   
+       },[])
+
+
+
 
     useEffect(() => {
       const channel = new BroadcastChannel('my-channel');
-  
-      // Add an event listener to listen for logout messages
       channel.onmessage = (event) => {
         const message = event.data;
       if (message.type === 'login') {
-
         window.location.reload();
         }
-
       };
-  
-      // Clean up the event listener when the component unmounts
       return () => {
         channel.close();
       };
     // eslint-disable-next-line no-use-before-define
     }, []);
+
+
+  
     
 
   const { username, password } = formData;
@@ -121,11 +151,13 @@ import OnScreenKeyboard from '../Restaurant/KeyboardGlobal';
           localStorage.setItem('TransID', TransID);
           window.location.reload();
           // Process the extracted data as needed
+        }else{
+          showInfoAlert(response.data.message)
         }
   
    
         // channel.postMessage({ type: 'login' });
-      }
+      } 
     } catch (error) {
       Swal.fire({
         title: 'Log in Error',
@@ -187,10 +219,12 @@ const [guestCountFocus, setGuestCountFocus] = useState<boolean>(false);
 const [isShowKeyboard, setisShowKeyboard] = useState<boolean>(false);
 const [isShow, setisShow] = useState<boolean>(false);
 const showOnScreenKeybaord = (ref:any) => {
+if(isDesktop){
+  setisShowKeyboard(true)
+  setFocusedInput(ref)
 
-    setisShowKeyboard(true)
-    setFocusedInput(ref)
-  
+}
+
 }
 const ShowKeyorNot = () => {
   setisShow(!isShow);
@@ -385,9 +419,10 @@ const handleSpecialButtonClick = (value:any) => {
         {/* Footer content */}
       </div>
     </div>
+  
   </div>
   {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard}  currentv ={formData[focusedInput]} setvalue={setvalue}/>}
-
+  <PackageInfo />
 </div>
 
 

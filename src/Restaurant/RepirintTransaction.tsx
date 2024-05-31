@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState,useRef } from 'react';
 import axios from 'axios';
-import BASE_URL from '../config';
+import {BASE_URL} from '../config';
 import './css/RepirintTransaction.css'
 // import '../Restaurant/css/RepirintTransaction.css'
 import ReprintImage from '../assets/ReprintImage.jpeg';

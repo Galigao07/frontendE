@@ -3,7 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { ClassNames } from "@emotion/react";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
-import BASE_URL from "../config";
+import {BASE_URL} from "../config";
 import { Table } from "@mui/material";
 import './css/MultiplePriceTypeSiteSetup.css'
 import AcctTileSLName from "./AcctTileGlobal";

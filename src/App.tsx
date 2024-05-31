@@ -33,6 +33,7 @@ import TaggingPerTerminal from './Adminitration/TaggingPerTerminal'
 import ReprintXReadandZRead from './Taskpane/ReprintXReadandZRead'
 import SalesReports from './Taskpane/SalesReports'
 import SystemSettings from './Adminitration/SystemSettings'
+import ProductProfile from './Reference/ProductProfile'
 
 
 // import OnlineTestApp from './OnlineTestApp';
@@ -43,6 +44,9 @@ import SystemSettings from './Adminitration/SystemSettings'
 import { createBrowserHistory } from 'history';
 import DebitCardTagging from './Adminitration/Setup'
 import Setup from './Adminitration/Setup'
+import showErrorAlert from './SwalMessage/ShowErrorAlert'
+import { BASE_URL } from './config'
+import axios from 'axios'
 
 const history = createBrowserHistory();
 function App() {
@@ -364,6 +368,7 @@ const logoutClick = async () => {
   }, [show]);
   
 
+
   return (
 
 
@@ -433,7 +438,7 @@ const logoutClick = async () => {
                <div className="dropdown">
                  <button className="dropbtn">Reference <i className="fas fa-caret-down"></i></button>
                  <div className="dropdown-content">
-                     <NavLink     to="/Profile" target="_blank">Product Profile</NavLink>
+                     <NavLink     to="/Product-Profile">Product Profile</NavLink>
                      <NavLink     to="WaiterProfile">Waiter List</NavLink>
                      <NavLink     to="/Customer-Details" >Customer Details</NavLink>
                      <NavLink     to="/Supplier-Details" >Supplier Details</NavLink>
@@ -586,8 +591,8 @@ const logoutClick = async () => {
           </aside>
   
     
-                      {openReports && 
-                        <>
+          {openReports && 
+            <>
                           <div className='modal'>
                             <div className='modal-content'>
                               <h1>Select Types of Reports</h1>
@@ -610,8 +615,8 @@ const logoutClick = async () => {
                             </div>
                           </div>
 
-                          </>
-                          }
+            </>
+          }
          </main>
 
         )
@@ -657,7 +662,7 @@ const Content = () => {
       <Route path="/Reprint-Xread-Zread" element={<ReprintXReadandZRead/>} />
       <Route path="/Sales-Reports" element={<SalesReports/>} />
       <Route path="/System-Settings" element={<SystemSettings/>} />
-
+      <Route path="/Product-Profile" element={<ProductProfile/>} />
     </Routes>
   );
 };

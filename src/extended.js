@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // extended.js
 
-const BASE_URL = 'http://127.0.0.1:8000';
+// const BASE_URL = 'http://127.0.0.1:8000';
 // const BASE_URL = 'http://192.168.68.114:8000';
 
 // const socket = new WebSocket('ws://localhost:8000/ws/extended'); 
@@ -34,7 +34,8 @@ let socket;
 let socketdata = null
 let data
 
-
+let BASE_URL = 'http://192.168.68.112:8000';
+let SOCKET_URL = 'http://192.168.68.112:8001';
 
 
 const chatSocket = new WebSocket('ws://localhost:8001/ws/group_name/');

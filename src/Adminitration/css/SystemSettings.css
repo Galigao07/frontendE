@@ -11,12 +11,24 @@
     flex-direction: row;
 }
 
+
+
 .settings .form-group label{
   width: fit-content;
 }
 
-.settings .form-group input{
+.settings .form-group input[type='checkbox']{
   max-width: 20px;
   font-size: 40px;
   margin-top: 5px;
+}
+
+.settings .form-group.number{
+  display: flex;
+  flex-direction: column;
+}
+
+.settings .form-group.number input[type='number']{
+width: 50px;
+text-align: center;
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Button, Grid, MenuItem, Select, SelectChangeEvent, Table, TextField, Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import BASE_URL from "../config";
+import {BASE_URL} from "../config";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
 import Swal from "sweetalert2";

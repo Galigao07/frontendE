@@ -7,7 +7,7 @@
 import React, { useState,useEffect, useRef } from 'react';
 import './css/listofDineInSalesOrder.css'; // Import CSS file for styling
 import axios, { AxiosError } from 'axios';
-import BASE_URL from '../config';
+import {BASE_URL} from '../config';
 
 import cash from '../assets/cash.jpeg';
 import credit from '../assets/credit.png';

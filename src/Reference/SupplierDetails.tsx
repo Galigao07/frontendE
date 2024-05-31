@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus,faPrint,faEdit,faTrashAlt,faSave,faCameraAlt,faSearch, faL } from '@fortawesome/free-solid-svg-icons'
 import Swal from 'sweetalert2';
 import { Grid } from '@mui/material';
-import BASE_URL from '../config';
+import {BASE_URL} from '../config';
 
 
 

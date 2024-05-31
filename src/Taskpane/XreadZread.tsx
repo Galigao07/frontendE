@@ -3,7 +3,7 @@ import axios from "axios";
 import { Table, Typography } from "@mui/material";
 import './css/XreadZread.css';
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
-import BASE_URL from "../config";
+import {BASE_URL} from "../config";
 import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
 
 

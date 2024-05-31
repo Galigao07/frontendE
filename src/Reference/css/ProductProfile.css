@@ -1,0 +1,44 @@
+.Search-icon {
+    cursor: pointer;
+    color:  blue ;
+}
+
+
+
+.modal-order {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  
+  .modal-content-SearchProductProfile {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 400px;
+    max-height:  700px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  td img{
+   height: 50px;
+   width: 50px;
+   border-radius: 50px;
+  }
+
+.Product-list tr{
+    height: auto;
+    margin: 5px;
+}
+
+.modal-content-SearchProductProfile .Table-Container{
+    margin: 10px;
+    height: 400px;
+    overflow: auto;
+}

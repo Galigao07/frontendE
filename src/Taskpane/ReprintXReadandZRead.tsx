@@ -2,7 +2,7 @@
 import React, {useRef,useState,useEffect} from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import BASE_URL from "../config";
+import {BASE_URL} from "../config";
 import { GetCurrentDateOnly } from "../global";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 import './css/ReprintXReadandZRead.css'
