@@ -11,6 +11,7 @@ import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
 const SystemSettings = () => {
     const [withHotel,setWithHotel] = useState<boolean>(false);
     const [ShowArrowUpAndDown,setShowArrowUpAndDown] = useState<boolean>(false);
+    const [multiple_printer,setmultiple_printer] = useState<boolean>(false);
     const [ProductColPerRows,setProductColPerRows] = useState<any>(0)
     const [TableColPerRows,setTableColPerRows] = useState<any>(0)
 
@@ -30,6 +31,11 @@ const SystemSettings = () => {
             setShowArrowUpAndDown(false)
         }else{
             setShowArrowUpAndDown(true)
+        }
+        if (items.multiple_printer ==='False'){
+            setmultiple_printer(false)
+        }else{
+            setmultiple_printer(true)
         }
         setProductColPerRows(items.ProductColPerRows)
         setTableColPerRows(items.TableColPerRows)
@@ -61,6 +67,7 @@ const configure = async() => {
         'ProductColPerRows':ProductColPerRows,
         'TableColPerRows':TableColPerRows,
         'ShowArrowUpAndDown':ShowArrowUpAndDown,
+        'multiple_printer':multiple_printer,
 
     }
     try{
@@ -79,11 +86,15 @@ const configure = async() => {
             <h1>System Settings</h1>
             <div className="card">
                 <div className="settings">
-                    <div className="form-group">
+                    <div className="form-group checkbox">
+                        <label>Multiple Printer</label>
+                        <input type="checkbox" checked={multiple_printer} onChange={(e)=>setmultiple_printer(e.target.checked)}/>
+                    </div>
+                    <div className="form-group checkbox">
                         <label>With Hotel</label>
                         <input type="checkbox" checked={withHotel} onChange={(e)=>setWithHotel(e.target.checked)}/>
                     </div>
-                    <div className="form-group">
+                    <div className="form-group checkbox">
                         <label>Show ArrowUp and Down</label>
                         <input type="checkbox" checked={ShowArrowUpAndDown} onChange={(e)=>setShowArrowUpAndDown(e.target.checked)}/>
                     </div>

@@ -178,9 +178,14 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
               CreditCardPayment({ CreditCardPaymentList: updatedList }); // Assuming you want to pass an object with a key 'CreditCardPaymentList'
             } else {
               // If not empty, just add CreditCardPaymentData to the existing list without creating a new key
-              const updatedList = [...CreditCardPaymentList, CreditCardPaymentData];
-              setCreditCardPaymentList(updatedList); // Update state or variable
-              CreditCardPayment({ CreditCardPaymentList: updatedList }); // Maintain consistency in function calls
+              if (CreditCardPaymentData.CardNo !='' && CreditCardPaymentData.CardIssuer !=''  && CreditCardPaymentData.AcquireBank !=''){
+                const updatedList = [...CreditCardPaymentList, CreditCardPaymentData];
+                setCreditCardPaymentList(updatedList); // Update state or variable
+                CreditCardPayment({ CreditCardPaymentList: updatedList }); // Maintain consistency in function calls
+              }else{
+                CreditCardPayment({ CreditCardPaymentList}); // Maintain consistency in function calls
+              }
+            
             }
              
             

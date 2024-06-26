@@ -11,6 +11,7 @@ import { isDesktop } from "react-device-detect";
 import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 import OnScreenKeyboardNumericForCardNo from "./KeyboardForCardNo";
+import { set } from "date-fns";
 
 
 
@@ -51,6 +52,8 @@ const DebitCardPayment: React.FC<DebitCardPaymentTrans> = ({handleClose,amountdu
         AmountDue: 0,
     })
 
+
+
     useEffect(() => {
       let amount = amountdue.replace(',','')
       setDebitCardPaymentData({...DebitCardPaymentData,AmountDue:amount})
@@ -87,9 +90,14 @@ const DebitCardPayment: React.FC<DebitCardPaymentTrans> = ({handleClose,amountdu
                   debitcardpayment({ DebitCardPaymentList: updatedList }); // Assuming you want to pass an object with a key 'CreditCardPaymentList'
                 } else {
                   // If not empty, just add CreditCardPaymentData to the existing list without creating a new key
-                  const updatedList = [...DebitCardPaymentList, DebitCardPaymentData];
-                  setDebitCardPaymentList(updatedList); // Update state or variable
-                  debitcardpayment({ DebitCardPaymentList: updatedList }); // Maintain consistency in function calls
+                  if (DebitCardPaymentData.CardNo!=''){
+                    const updatedList = [...DebitCardPaymentList, DebitCardPaymentData];
+                    setDebitCardPaymentList(updatedList); // Update state or variable
+                    debitcardpayment({ DebitCardPaymentList: updatedList }); // Maintain consistency in function calls
+                  }else{
+                    debitcardpayment({DebitCardPaymentList});
+                  }
+               
                 }
                 setDebitCardPaymentData({
                     CardNo:'',
