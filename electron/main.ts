@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-inner-declarations */
-import { app, BrowserWindow,dialog,ipcMain,screen,session,protocol} from 'electron'
+import { app, BrowserWindow,dialog,ipcMain,screen,session,protocol,shell} from 'electron'
 import { truncate } from 'original-fs';
 // import path from 'node:path'
 import path from 'path';
@@ -34,22 +34,21 @@ function createWindow() {
     // icon: path.join(process.env.VITE_PUBLIC, 'logo.svg'),
     show: false,
     webPreferences : {
-      partition: 'disable_cache',
-      devTools: true,
+      // plugins: true,
+      // partition: 'disable_cache',
+      // devTools: true,
       nodeIntegration: true,
-      contextIsolation: true,
+      contextIsolation: false,
       webSecurity: false,
-      allowRunningInsecureContent: true,
+      // allowRunningInsecureContent: true,
       preload: path.join(__dirname, 'preload.js'),
-      // sandbox: true, // Enable sandbox mode for additional security
 
-      // enableBlinkFeatures: 'HTML5HistoryAPI',
-      // session: session.fromPartition('persist:name'), 
     },
     fullscreen: false, 
     frame:true,
     
   })
+  // win.webContents.openDevTools();
 
   win.on('close', async () => {
     const isLogin = await win?.webContents.executeJavaScript('window.localStorage.getItem("isLogin")');
@@ -124,7 +123,13 @@ function createWindow() {
     win.loadURL(VITE_DEV_SERVER_URL)
   } else {
     const srcDirectory = app.getAppPath()
-    win.loadURL(`file://${path.join(srcDirectory, '/dist/index.html')}`);
+    // win.loadURL(`file://${path.join(srcDirectory, '/dist/index.html')}`);
+
+    win.loadURL(url.format({
+      pathname: path.join(srcDirectory, 'dist/index.html'),
+      protocol: 'file:',
+      slashes: true
+  }));
 
   }
 
@@ -233,12 +238,12 @@ const CreateExtendedMonitorNew = () => {
 
 };
 
-
-
 app.whenReady().then(() => {
   createWindow();
   CreateExtendedMonitor();
+});
 
 
-  
+ipcMain.on('open-blob-url', (event, url) => {
+    shell.openExternal(url);
 });

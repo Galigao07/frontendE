@@ -47,8 +47,13 @@ const MultiplePayments:React.FC<MultiplepaymentsData> = ({handleclose,totalDue,M
 //// ************************** CREDIT CARD PAYMENT TYPE TRANSACTION ******************
 
 const OpenCreditCardPayment = () => {
-  localStorage.removeItem('CreditCardPayment')
+  if (localStorage.getItem('CreditCardPayment')){
+    localStorage.removeItem('CreditCardPayment')
+    setCreditCardAmount(0)
+    return
+  }
 
+  
     const totalDueFloat: number = removeThousandSeparator(totalDue);
     const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
     const remainingAmountDue: number = totalDueFloat - amountTenderedFloat;
@@ -97,8 +102,12 @@ const OpenCreditCardPayment = () => {
     return parseFloat(s.replace(/,/g, ''));
 };
   const OpenDebitCardPayment = () => {
-    localStorage.removeItem('DebitCardPayment')
-    setDebitCardAmount(0)
+    if (localStorage.getItem('DebitCardPayment')){
+      localStorage.removeItem('DebitCardPayment')
+      setDebitCardAmount(0)
+      return
+    }
+ 
     const totalDueFloat: number = removeThousandSeparator(totalDue);
     const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
     const remainingAmountDue: number = totalDueFloat - amountTenderedFloat;

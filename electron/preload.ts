@@ -51,7 +51,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 });
 
-
+contextBridge.exposeInMainWorld('electron', {
+  openBlobURL: (url:any) => ipcRenderer.send('open-blob-url', url)
+});
 
 ipcRenderer.on('print-iframe', (event, data) => {
   const { iframeWindow } = data; // Access the iframeWindow reference

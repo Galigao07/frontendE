@@ -201,7 +201,7 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
 };
 
 
-const  sendDataToMain = () => {
+const sendDataToMain = () => {
   if (customer === '' || guestCount === '' || waiter === '' || waiterID === '') {
     if (guestCount === ''){
       Swal.fire({

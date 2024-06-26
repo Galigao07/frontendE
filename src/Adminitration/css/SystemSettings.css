@@ -18,12 +18,13 @@
 }
 
 .settings .form-group input[type='checkbox']{
-  max-width: 20px;
-  font-size: 40px;
-  margin-top: 5px;
+  height: 20px;
+  width: 20px;
+  font-size: 100px;
+  
 }
 
-.settings .form-group.number{
+.settings .form-group.number ,.form-group.checkbox{
   display: flex;
   flex-direction: column;
 }

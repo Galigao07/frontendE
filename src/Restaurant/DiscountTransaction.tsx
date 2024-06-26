@@ -253,7 +253,7 @@ const onUpdateToCart = () => {
 
 const handleCheckboxChange = (index: number) => {
     const updatedItems = [...TransactionDiscountEntryList];
-    if (  updatedItems[index].isDisCount){
+    if (updatedItems[index].isDisCount){
         updatedItems[index].isDisCount = false;
     } else {
         updatedItems[index].isDisCount = true;

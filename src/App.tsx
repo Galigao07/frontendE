@@ -34,6 +34,7 @@ import ReprintXReadandZRead from './Taskpane/ReprintXReadandZRead'
 import SalesReports from './Taskpane/SalesReports'
 import SystemSettings from './Adminitration/SystemSettings'
 import ProductProfile from './Reference/ProductProfile'
+import ProductPrintCategory from './Reference/ProductPrintCategory'
 
 
 // import OnlineTestApp from './OnlineTestApp';
@@ -443,7 +444,7 @@ const logoutClick = async () => {
                      <NavLink     to="/Customer-Details" >Customer Details</NavLink>
                      <NavLink     to="/Supplier-Details" >Supplier Details</NavLink>
                      <NavLink     to="TableList">Table List</NavLink>
-                     <NavLink     to="/chartofaccounts" target="_blank">Product Print Category</NavLink>
+                     <NavLink     to="/Product-Print-Category">Product Print Category</NavLink>
                      <NavLink     to="/chartofaccounts" target="_blank">POS Site Code</NavLink>
                      <NavLink     to="/Video">Change Video</NavLink>
                  
@@ -663,6 +664,8 @@ const Content = () => {
       <Route path="/Sales-Reports" element={<SalesReports/>} />
       <Route path="/System-Settings" element={<SystemSettings/>} />
       <Route path="/Product-Profile" element={<ProductProfile/>} />
+      <Route path="/Product-Print-Category" element={<ProductPrintCategory/>} />
+      
     </Routes>
   );
 };

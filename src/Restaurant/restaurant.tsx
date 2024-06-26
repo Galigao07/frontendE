@@ -71,7 +71,7 @@ import SeniorCitezenDiscount from './DiscountSeniorCitezen';
 import ItemDiscounts from './DiscountItems'
 import TradeDiscountList from './DiscountTrade'
 import TransactionDiscount from './DiscountTransaction';
-import jsPDF from 'jspdf';
+import jsPDF, { Html2CanvasOptions } from 'jspdf';
 import eventEmitter from 'events';
 import MultiplePayments from './MultiplePayments';
 import CreditCardPaymentEntry from './CreditCardPayment';
@@ -83,8 +83,12 @@ import showInfoAlert from '../SwalMessage/ShowInfoAlert';
 import ListOfTransaction from './ListofTransaction';
 import OnScreenKeyboard from './KeyboardGlobal';
 import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
+import PdfModal from './PdfModal';
 import { GetSettings } from '../global';
+import { pdfjs } from 'react-pdf';
+import { Link } from 'react-router-dom';
 
+import pdfjsLib from 'pdfjs-dist';
 
 
 const swalWithBootstrapButtons = Swal.mixin({
@@ -1546,6 +1550,8 @@ const Restaurant: React.FC = () => {
   const [PaymentOpenModal, setPaymentOpenModal] = useState<boolean>(false);
   const [PaymentDiscountOpenModal, setPaymentDiscountOpenModal] = useState<boolean>(false);
   const [DineIn, setDineIn] = useState<boolean>(false);
+  const [IsPayment, setIsPayment] = useState<boolean>(false);
+  
   const [CustomerDineInModal,setCustomerDineInModal] = useState<boolean>(false)
   const [CustomeryPaymentModal,setCustomeryPaymentModal] = useState<boolean>(false)
   const [SelectTypeOfTransaction,setSelectTypeOfTransaction] = useState<boolean>(false)
@@ -1622,7 +1628,57 @@ const Restaurant: React.FC = () => {
   const SideCode = localStorage.getItem('SiteCode');
   const userRank = localStorage.getItem('UserRank');
 
+
+  const [pdfPath, setPdfPath] = useState<any>('');
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   
+  const ClosePdfModal = ()=> {
+    setIsPdfModalOpen(false)
+  }
+
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchPdfReceiptData = async () => {
+      try {
+          const response = await axios.get(`${BASE_URL}/api/receipt-pdf/`, {
+              responseType: 'blob', // Important to get the response as a blob
+          });
+          const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+          setPdfPath(url);
+      } catch (error) {
+          console.error('Error fetching PDF:', error);
+          setError('Error fetching PDF. Please try again.');
+      }
+  };
+
+  const fetchPdfSalesorderData = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}/api/sales-order-pdf/`, {
+            responseType: 'blob', // Important to get the response as a blob
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+        setPdfPath(url);
+    } catch (error) {
+        console.error('Error fetching PDF:', error);
+        setError('Error fetching PDF. Please try again.');
+    }
+};
+
+
+
+//   const fetchPdfReceiptData = async () => {
+//     try {
+//       const response = await axios.get(`${BASE_URL}/api/receipt-pdf/`, {
+//         responseType: 'blob' // Important to get the response as a blob
+//     });
+//     // Create a URL for the blob
+//     const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+//     setPdfPath(url); // Set the URL to your state or use it directly
+//     } catch (error) {
+//         console.error('Error fetching data', error);
+//         throw error;
+//     }
+// };
 
   interface TableItem {
     table_count: number;
@@ -1825,7 +1881,12 @@ const [TableColPerRows,setTableColPerRows] = useState<any>(0)
   //   }
 
   // }
+  const addToCart = (item: any) => {
+    // Create a new array by spreading the existing cartItems and adding the new item to it
+    const updatedCartItems = [item, ...cartItems];
 
+    setCartItems(updatedCartItems);
+};
 
   const setQuantityEntry = (qty:any) => {
 
@@ -1935,14 +1996,14 @@ const [TableColPerRows,setTableColPerRows] = useState<any>(0)
   const AddPosExtended = async (data:any) => {
 
     try{
-
+      if (isDesktop){
       const response = await axios.post(`${BASE_URL}/api/extended-data/`, {data:data,TableNo:TableNo,OrderType:OrderType});
 
       if (response.status==200){
         console.log('added successfully')
         // sendData();
       }
-
+    }
     }catch{
       console.error('error');
       
@@ -1953,6 +2014,7 @@ const [TableColPerRows,setTableColPerRows] = useState<any>(0)
   const UpdatePosExtended = async (data:any) => {
 
     try{
+      if (isDesktop){
 
       const response = await axios.put(`${BASE_URL}/api/extended-data/`, {data:data,TableNo:TableNo,OrderType:OrderType});
 
@@ -1960,7 +2022,7 @@ const [TableColPerRows,setTableColPerRows] = useState<any>(0)
         console.log('added successfully')
         // sendData();
       }
-
+    }
     }catch{
       console.error('error');
       
@@ -1989,7 +2051,7 @@ const [TableColPerRows,setTableColPerRows] = useState<any>(0)
   const DeletePosExtended = async (deleteData:any) => {
 
     try{
-
+      if (isDesktop){
       const response = await axios.delete(`${BASE_URL}/api/extended-data/`, {
          data: { deleteData: deleteData }
         });
@@ -1997,7 +2059,7 @@ const [TableColPerRows,setTableColPerRows] = useState<any>(0)
       if (response.status==200){
         console.log('Deleted successfully')
       }
-
+    }
     }catch{
       console.error('error');
       
@@ -2010,13 +2072,13 @@ const [TableColPerRows,setTableColPerRows] = useState<any>(0)
   const DeletePosExtendedAll = async () => {
 
     try{
-
+      if (isDesktop){
       const response = await axios.delete(`${BASE_URL}/api/extended-data-terminal/`);
 
       if (response.status==200){
         console.log('Deleted successfully')
       }
-
+    }
     }catch{
       console.error('error');
       
@@ -2471,14 +2533,21 @@ const PaymentClickControlS = () => {
     // console.log(dictionary)
    
     try {
-      const response = await axios.post(`${BASE_URL}/api/add-sales-order/`,{data:cartItems,data2:dataFromModal,TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo});
+      const response = await axios.post(`${BASE_URL}/api/add-sales-order/`,{data:cartItems,data2:dataFromModal,TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,OrderType:OrderType});
       if (response.status === 200) {
         setLoadingPrint(false)
     
         if (dataFromModal.PaymentType === 'Sales Order'){
         setSOCustomer(dataFromModal)
-        printReceipt(dataFromModal,response.data.SOdata);
+        fetchPdfSalesorderData()
+        setIsPdfModalOpen(true)
+        DeletePosExtendedAll()
+        // printReceipt(dataFromModal,response.data.SOdata);
         setCustomerOrderInfo([])
+        setTableNo('')
+        setOrderType('')
+        setCartItems([])
+        setOrderTypeModal(true)
    
       } else {
         // Handle other response statuses if needed
@@ -2657,8 +2726,6 @@ customer = CustomerOrderInfo
       AmountTenderedMultiple=total
   }
 
-
-
     try {
       const response = await axios.post(`${BASE_URL}/api/save-sales-order-payment/`,{data:cartItems,AmountTendered: PaymentType === 'MULTIPLE' ? AmountTenderedMultiple :AmountTendered,
                                                                                     TableNo:TableNo,CashierID:CashierID,
@@ -2674,19 +2741,26 @@ customer = CustomerOrderInfo
                                                                                     Discounted_by:Discounted_by});
           if (response1.status === 200) {
             setLoadingPrint(false)
-            PrintCashPaymentReceipt(response1.data);
+            //  PrintCashPaymentReceipt(response1.data);
             localStorage.removeItem('Discounted_by')
             setDiscountDataLits('')
             setDiscountData('')
+            setCartItems([])
+            fetchPdfReceiptData()
+            DeletePosExtendedAll()
+            setIsPdfModalOpen(true)
+            setTableNo('')
+            setDiscountData('')
+            setDiscountType('')
+            setOrderTypeModal(true)
+            setisSelected(null)
+          
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
           }
   
-        } else {
-          // Handle other response statuses if needed
-          console.log('Request failed with status:', response.status);
-        }
+        } 
 
         if (PaymentType === 'CREDIT CARD') {
           let CreditCard:any = ''
@@ -2715,10 +2789,18 @@ customer = CustomerOrderInfo
             localStorage.removeItem('CreditCardPayment')
             setLoadingPrint(false)
 
-            PrintCreditCardPaymentReceipt(response1.data);
+            // PrintCreditCardPaymentReceipt(response1.data);
             setDiscountDataLits('')
             setDiscountData('')
-      
+            setCartItems([])
+            fetchPdfReceiptData()
+            DeletePosExtendedAll()
+            setIsPdfModalOpen(true)
+            setTableNo('')
+            setDiscountData('')
+            setDiscountType('')
+            setOrderTypeModal(true)
+            setisSelected(null)
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -2757,9 +2839,18 @@ customer = CustomerOrderInfo
             localStorage.removeItem('DebitCardPayment')
             setLoadingPrint(false)
    
-            PrintCreditCardPaymentReceipt(response1.data);
+            // PrintCreditCardPaymentReceipt(response1.data);
             setDiscountDataLits('')
             setDiscountData('')
+            setCartItems([])
+            fetchPdfReceiptData()
+            DeletePosExtendedAll()
+            setIsPdfModalOpen(true)
+            setTableNo('')
+            setDiscountData('')
+            setDiscountType('')
+            setOrderTypeModal(true)
+            setisSelected(null)
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -2797,9 +2888,18 @@ customer = CustomerOrderInfo
 
 
             setLoadingPrint(false)
-            PrintChargePaymentReceipt(response1.data);
+            // PrintChargePaymentReceipt(response1.data);
             setDiscountDataLits('')
             setDiscountData('')
+            setCartItems([])
+            fetchPdfReceiptData()
+            DeletePosExtendedAll()
+            setIsPdfModalOpen(true)
+            setTableNo('')
+            setDiscountData('')
+            setDiscountType('')
+            setOrderTypeModal(true)
+            setisSelected(null)
             localStorage.removeItem('Charge')
           } else {
             // Handle other response statuses if needed
@@ -2854,13 +2954,22 @@ customer = CustomerOrderInfo
                                                                                     Discounted_by:Discounted_by});
           if (response1.status === 200) {
 
-            PrintCreditCardPaymentReceipt(response1.data);
+            // PrintCreditCardPaymentReceipt(response1.data);
             localStorage.removeItem('CreditCardPayment')
             localStorage.removeItem('DebitCardPayment')
             localStorage.removeItem('CashAmount')
             setDiscountDataLits('')
             setDiscountData('')
             setLoadingPrint(false)
+            setCartItems([])
+            fetchPdfReceiptData()
+            DeletePosExtendedAll()
+            setIsPdfModalOpen(true)
+            setTableNo('')
+            setDiscountData('')
+            setDiscountType('')
+            setOrderTypeModal(true)
+            setisSelected(null)
           } else {
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
@@ -3701,12 +3810,7 @@ useEffect(() => {
 };
 
 
-const addToCart = (item: any) => {
-        // Create a new array by spreading the existing cartItems and adding the new item to it
-        const updatedCartItems = [item, ...cartItems];
-    
-        setCartItems(updatedCartItems);
-};
+
 
 const calculateTotalDue = () => {
         let totalDue = 0;
@@ -5706,6 +5810,7 @@ if (iframe !== null) {
 
   DeletePosExtendedAll()
   // triggerPrint()
+  setCartItems([])
   setTimeout(() => {
     iframeWindow.print();
     // window.location.reload(); 
@@ -5723,6 +5828,8 @@ if (iframe !== null) {
     setTableNo('')
     setDiscountData('')
     setDiscountType('')
+    setOrderTypeModal(true)
+    setisSelected(null)
   }, 1000); 
     // Print the receipt
   
@@ -7273,7 +7380,6 @@ useEffect(() =>{
 
 marginLeft:'35%',borderRadius:'10px', zIndex: '9999'}} src=''></iframe>
 
-
 <Grid item xs={12} md={3} style={{ height: '100%',width:'60%'}}>
       <div className='Transaction-container' style={{ height: '95%'}}>
           <Typography      
@@ -8049,7 +8155,7 @@ marginLeft:'35%',borderRadius:'10px', zIndex: '9999'}} src=''></iframe>
           {selectedProduct?.product.long_desc}
         </Typography>
         <div className='img-container'>
-          <img src={image} alt={selectedProduct?.product.bar_code} className='img-element' />
+        <img src={selectedProduct?.product.prod_img === null ? clientLogo : 'data:image/jpeg;base64,' + selectedProduct?.product.prod_img} alt={selectedProduct?.product.bar_code} className='img-element' />
         </div>
                 <Typography      
             sx={{
@@ -8140,7 +8246,8 @@ marginLeft:'35%',borderRadius:'10px', zIndex: '9999'}} src=''></iframe>
                    {selectedProduct?.product.long_desc}
                 </Typography>
             <div className='img-container2'>
-              <img src={image} alt={selectedProduct?.product.bar_code} className='img-element2' />
+            <img src={selectedProduct?.product.prod_img === null ? clientLogo : 'data:image/jpeg;base64,' + selectedProduct?.product.prod_img} alt={selectedProduct?.product.bar_code} className='img-element' />
+              {/* <img src={selectedProduct?.product.prod_img} alt={selectedProduct?.product.bar_code} className='img-element2' /> */}
           </div>
             <Typography      
               sx={{
@@ -8360,7 +8467,23 @@ marginLeft:'35%',borderRadius:'10px', zIndex: '9999'}} src=''></iframe>
 
   </div>
 )}
+{pdfPath && (
+    <PdfModal open={isPdfModalOpen} handleClose={ClosePdfModal} pdfPath={pdfPath} />
+   )}
 
+{/* {pdfPath ? (
+                <>
+                    <iframe
+                        title="PDF Viewer"
+                        src={pdfPath}
+                        width="100%"
+                        height="600px"
+                        style={{ border: 'none' }}
+                    />
+                </>
+            ) : (
+                <p>Loading PDF...</p>
+            )} */}
 
 {isShowKeyboard && < OnScreenKeyboard handleclose = {closekeyBoard} currentv={focusedValue} setvalue={setvalue}/>}
 {isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard}    currentv={focusedValue} setvalue={setvalue}/>}

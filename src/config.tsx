@@ -12,8 +12,9 @@
 
 // export const BASE_URL = 'http://127.0.0.1:8000';
 // export const SOCKET_URL = 'http://127.0.0.1:8001';
+
 // export const BASE_URL = 'http://192.168.43.155:8000';
 // export const SOCKET_URL = 'http://192.168.43.155:8001';
 
-export const BASE_URL = 'http://192.168.68.109:8000';
-export const SOCKET_URL = 'http://192.168.68.109:8001';
+export const BASE_URL = 'http://192.168.68.116:8000';
+export const SOCKET_URL = 'http://192.168.68.116:8001';
