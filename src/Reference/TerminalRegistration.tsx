@@ -74,10 +74,10 @@ const TerminalRegistration: React.FC = () => {
     const [selectedItemIndex, setSelectedItemIndex] = useState<any>(0);
 
 
-useEffect(() => {
-        // Fetch data when the component mounts
-        fetchData();
-}, []); // Empty dependency array to run this effect only once
+        useEffect(() => {
+                // Fetch data when the component mounts
+                fetchData();
+        }, []); // Empty dependency array to run this effect only once
 
 const fetchData = async () => {
                 try {
@@ -506,31 +506,32 @@ const HandleKeydown = (event:any, Backref:any, Currentref:any, nextRef:any) => {
                             </thead>
                             <tbody>
                             {Array.isArray(users) && users.length > 0 ? (
-            users.map((item, index) => (
-                <tr key={index} onClick={() => handleRetrieveUserData(index)} > 
-                <td style={{textAlign:'center'}}>{item.ul_code}</td>
-                <td title={item.terminal_no} style={{textAlign:'center'}}>{item.terminal_no}</td>
-                <td style={{textAlign:'start'}}>{item.description}</td>
-                <td style={{textAlign:'start'}}>{parseInt(item.site_no)}</td>
-                <td style={{textAlign:'center'}}>{item.Serial_no}</td>
-                <td title={item.Machine_no}>{item.Machine_no}</td>
-                <td style={{textAlign:'start'}}>{item.Model_no}</td>
-                <td style={{textAlign:'start'}}>{item.PTU_no}</td>
-                <td style={{textAlign:'start'}}>{item.date_issue}</td>
-                <td style={{textAlign:'start'}}>{item.date_valid}</td>
-            
-        </tr>
-    ))
-    ) : (
-    <tr>
-        <td colSpan={10}>No items in the transaction</td>
-    </tr>
-    )}
+                                        users.map((item, index) => (
+                                            <tr key={index} onClick={() => handleRetrieveUserData(index)} > 
+                                            <td style={{textAlign:'center'}}>{item.ul_code}</td>
+                                            <td title={item.terminal_no} style={{textAlign:'center'}}>{item.terminal_no}</td>
+                                            <td style={{textAlign:'start'}}>{item.description}</td>
+                                            <td style={{textAlign:'start'}}>{parseInt(item.site_no)}</td>
+                                            <td style={{textAlign:'center'}}>{item.Serial_no}</td>
+                                            <td title={item.Machine_no}>{item.Machine_no}</td>
+                                            <td style={{textAlign:'start'}}>{item.Model_no}</td>
+                                            <td style={{textAlign:'start'}}>{item.PTU_no}</td>
+                                            <td style={{textAlign:'start'}}>{item.date_issue}</td>
+                                            <td style={{textAlign:'start'}}>{item.date_valid}</td>
+                                        
+                                    </tr>
+                                ))
+                                ) : (
+                                <tr>
+                                    <td colSpan={10}>No items in the transaction</td>
+                                </tr>
+                                )}
                 
 
                             </tbody>
                         </Table>
-            </div>
+             </div>
+       
             </Grid>
 
 

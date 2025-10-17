@@ -57,7 +57,7 @@ const ListOfTransaction: React.FC<Transaction> = ({handleclose,data})=>{
                 DateTo:DateTo,
                 DocType:DocType,
                 DocNo:DocNo
-            }
+            },withCredentials:true
         })
         if (response.status === 200){
             // showSuccessAlert('Success While Fetching Data in Sales invoice')
@@ -81,7 +81,7 @@ const CancelleTransaction = async(data:any) => {
         const response = await axios.post(`${BASE_URL}/api/sales-list-of-transaction/`,{
             data:isSelectedData,
             verify : data,
-        })
+        },{withCredentials:true})
         if (response.status === 200){
             showSuccessAlert('Transaction Successfully cancelled')
             FetchData()

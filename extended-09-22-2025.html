@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./extendes.css">
+    <title>PosExtended Data</title>
+</head>
+<body id="root" style="overflow: hidden;">
+    <!-- <p id="connect"></p>
+    <p id="data"></p>
+    <p id="socket"></p> -->
+
+
+<div class="MainComtainer" style="display: flex;flex-direction: row; background-color: #007bff;"> 
+
+
+        <div id="Video" class="Container">
+
+        </div>
+
+        <div id="TableContainer" class="Container">
+            <p id="socket"></p>
+            <p id="socket1"></p>
+            <div id="tableDiv" >
+                <table id="tableid">
+                    <thead>
+                        <tr style="width: 100%;font-size: 40px;">
+                            <th class="qty">QTY</th>
+                            <th class="description">DESCRIPTION</th>
+                            <th class="price">PRICE</th>
+                            <th class="amount">AMOUNT</th>
+                            <th class="barcode" style="display: none;">BARCODE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyid">
+
+                    </tbody>
+                </table>
+            </div >
+          
+            <div id="TotalDiv">
+                <div id="Data">
+                    <label>TOTAL ITEMS:</label>
+                    <label id="items"></label>
+
+                </div>
+      
+                <div id="Data">
+                    <label>AMOUNT DUE:</label>
+                    <label id="amount"></label>
+                </div>
+
+                <div id="Data">
+                    <label>AMOUNT TENDERED:</label>
+                    <label id ="tendered"></label>
+                </div>
+
+                <div id="Data">
+                    <label>CHANGE:</label>
+                    <label id="change"></label>
+                </div>
+
+               
+    
+            </div>
+        </div>
+
+    </div>
+
+
+    <script src="./src/extended.js"></script>
+
+</body>
+</html>

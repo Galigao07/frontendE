@@ -147,8 +147,45 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
   //     }
   //     return Promise.resolve();
   // };
+
+    const validateCreditCardData = () => {
+    const {
+      CardNo,
+      AcquireBank,
+      CardIssuer,
+      CardHolder,
+      ApprovalNo,
+      ExpiryMonth,
+      ExpiryYear,
+      AmountDue,
+    } = CreditCardPaymentData;
+
+    // ✅ Check if any field is empty or invalid
+    if (
+      !CardNo ||
+      !AcquireBank ||
+      !CardIssuer ||
+      !CardHolder ||
+      !ApprovalNo ||
+      !ExpiryMonth ||
+      !ExpiryYear ||
+      !AmountDue ||
+      AmountDue <= 0
+    ) {
+      Swal.fire({
+        icon: "error",
+        title: "Missing Information",
+        text: "Please fill out all required fields before proceeding.",
+      });
+      return false;
+    }
+
+    return true; // ✅ Valid data
+  };
   
   const SaveCreditPayment = async () => {
+
+           if (CreditCardPaymentList.length > 0) {
 
         swalWithBootstrapButtons.fire({
             title: 'Confirmation',
@@ -161,16 +198,6 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
     
             }).then(async (result) => {
             if (result.isConfirmed) {
-
-              // 
-              // CreditCardPayment([CreditCardPaymentData])
-
-            // if (CreditCardPaymentList.length === 0) {
-            //   setCreditCardPaymentList([...CreditCardPaymentList, CreditCardPaymentData]);
-            //   CreditCardPayment({CreditCardPaymentList:CreditCardPaymentData})
-            // }else{
-            //   CreditCardPayment(CreditCardPaymentList:[{CreditCardPaymentList,CreditCardPaymentData}])
-            // }
             if (CreditCardPaymentList.length === 0) {
               // If empty, add CreditCardPaymentData to the list and call CreditCardPayment with the new list
               const updatedList = [...CreditCardPaymentList, CreditCardPaymentData];
@@ -203,7 +230,7 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
             }
             
         })
-    
+      }
     }
 
 
@@ -697,18 +724,6 @@ const onDelete = () => {
   const [viewSave,setviewSave] = useState(false)
   const [isEdit,setisEdit] = useState(false)
 
-  // useEffect(() =>{
-  //   let amount: string = amountdue.toString().replace(',', '');
-  //   if (parseFloat(amount) === totalAmountDue)  {
-  //       setviewSave(true)
-  //   } else {
-  //       setviewSave(false)
-  //   }
-
-  //   const bal :any = parseFloat(amount)- totalAmountDue
-  //   setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:bal})
-  // },[totalAmountDue])
-
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
 
@@ -747,8 +762,6 @@ useEffect(()=>{
   const mid = Math.ceil(BankList.length / 2)
 
   setBankList1(BankList.slice(0,mid))
-  console.log('setBankList1',BankList.slice(0,mid))
-  console.log('setBankList2',BankList.slice(mid))
   setBankList2(BankList.slice(mid))
 
 },[BankList])
@@ -761,7 +774,7 @@ useEffect(()=>{
             const result = await axios.get(`${BASE_URL}/api/bank-company/`,{
               params: {
                 customer:e
-              }
+              },withCredentials:true
             }); 
             
             if (result) {
@@ -771,7 +784,7 @@ useEffect(()=>{
               const result = await axios.get(`${BASE_URL}/api/bank-card/`,{
                 params: {
                   customer:e
-                }
+                },withCredentials:true
               }); 
               
               if (result) {

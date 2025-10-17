@@ -92,16 +92,6 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,currentv,setvalue}) => 
         }, 100);
     }
 
-    // useEffect(()=>{
-    //     setTimeout(() => {
-    //         if (inputRef.current){
-    //             inputRef.current.focus()
-    //             inputRef.current.select()
-    //         }
-    //     }, 100);
-      
-    // },[])
-
 
 
 
@@ -151,13 +141,45 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,currentv,setvalue}) => 
             SendData()
         }
     }
+
+
+     useEffect(() => {
+            const handleKeyPress = (e: KeyboardEvent) => {
+      
+              if (e.key === 'F5') {
+                e.preventDefault(); // Prevent the default browser refresh action for F5
+              }
+              else if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault(); // Prevent the default browser action for Control + N
+              }
+              else if ( e.key === 'F2') {
+                e.preventDefault(); // Prevent the default browser action for Control + N
+                console.log('F2')
+              }  
+              else if ( e.key === 'F1') {
+                e.preventDefault(); // Prevent the default browser action for Control + N
+              }
+              else if ( e.key === 'Escape') {
+                e.preventDefault(); // Prevent the default browser action for Control + N
+                handleclose();
+              }
+              else if (e.ctrlKey && e.key === 's') { // Control + S
+                e.preventDefault();
+            };
+        }
+            window.addEventListener('keydown', handleKeyPress);
+          
+            return () => {
+              window.removeEventListener('keydown', handleKeyPress);
+            };
+          }, []); 
     return (
         <div className='modal-key'>
             <div  ref= {modalRef} className='modal-content-keyboard ' 
                             // onMouseDown={handleMouseDown}
                             // onMouseMove={handleMouseMove}
                             // onMouseUp={handleMouseUp}
-                            style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '98%', height: '400px' }} >
+                            style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, width: '90%', height: '400px' }} >
              <div style={{display:'flex',flexDirection:'row'}}>
                 <input  value={inputData} ref={inputRef} 
                 onKeyDown={(e)=> HandleKeyDown(e)}

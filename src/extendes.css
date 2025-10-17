@@ -1,9 +1,6 @@
 .Container {
-    width: 95%;
-    height: 800px;
-    margin: 1%;
-
-
+    width: 100%;
+    height: 100%
 }
 
 #body {
@@ -26,9 +23,21 @@ th.barcode {
 th {
     /* Add common styles for table headers and cells */
     font-weight: bold;
-    font-size: 30px;
+    font-size: 25px;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    background-color: blue;
+    color: white;
+    padding-bottom: 10px;
+
     /* Add more styles as needed */
 }
+ .sticky-top {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 0;
+
+  }
 td {
     /* Add common styles for table headers and cells */
     font-size: 20px;
@@ -45,11 +54,11 @@ width: 70%;
 }
 
 th.price, td.price {
-    width: 20%;
-    }
+width: 20%;
+ }
 th.amount, td.amount {
         width: 20%;
-        }
+}
 /* Define styles for other columns similarly */
 table {
     padding-inline: 1%;
@@ -59,11 +68,12 @@ table {
     border: 3px solid blue;
     border-radius: 10px;
     background-color: white;
+
     margin: 1%;
 }
 
 #tableDiv{
-
+    
   height: 80%;
   overflow: auto;
 }
@@ -96,4 +106,32 @@ table {
 
 #Data #items,#amount,#tendered,#change {
 text-align: end;
+}
+.data-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    /* font-family: 'Courier New', Courier, monospace; */
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: bold;
+ 
+}
+
+  .table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+/* Vertical scrollbar */
+.table-wrapper::-webkit-scrollbar-track {
+    background: blue;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #0836ef;
+    border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #0836ef;
 }

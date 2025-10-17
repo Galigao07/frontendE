@@ -2,6 +2,7 @@
 import { Button } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import Swal from "sweetalert2";
+import getextendedAMTAPI from "../utils/getAmountTenderedAPI";
 
 interface  CreditCardPaymentData{
     handleClose:() => void;
@@ -46,6 +47,13 @@ const CreditCardPayment: React.FC<CreditCardPaymentData> = ({handleClose,amountd
           amounttendered: amountdue,
           change: changeDue,
         });
+
+      const api = getextendedAMTAPI();
+        const x : any = {
+              Amount:amountdue,
+              Change:changeDue
+        }
+        api.sendTendered(x); 
       }
 
     };
@@ -55,6 +63,8 @@ const CreditCardPayment: React.FC<CreditCardPaymentData> = ({handleClose,amountd
     const handleAmountReceivedChange = (value: string) => {
       setAmountReceived(parseFloat(value));
     };
+
+
   
   
 

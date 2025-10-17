@@ -22,6 +22,8 @@ const Setup: React.FC<TransTypeData> = ({Transaction,TransType}) => {
     const [DebitSalesTransactionTable ,setDebitSalesTransactionTable] = useState<boolean>(false)
     const [CreditSalesTransactionTable ,setCreditSalesTransactionTable] = useState<boolean>(false)
     const [SetupSLPerTerminal ,setSetupSLPerTerminal] = useState<boolean>(false)
+    const [SetuCashShortageOver ,setSetuCashShortageOver] = useState<boolean>(false)
+    const [SetupGiftCheck ,setSetupGiftCheck] = useState<boolean>(false)
     let type = ''
     const [selectedindex,setselectedindex] = useState<any>(null)
     const [showAcctTitleModal,setshowAcctTitleModal] = useState<boolean>(false)
@@ -39,14 +41,15 @@ const HideTable = () => {
     setCreditSalesTransactionTable(false)
     setAllowedPricetypeTable(false)
     setSetupSLPerTerminal(false)
+    setSetuCashShortageOver(false)
 }
 
 const ChangeAcctitle = (index:any) => {
-setshowAcctTitleModal(true)
-setSLorAcct('Account Title') 
-const data = listOfdata[index]
-setselectedData(data)
-setselectedindex(index)
+        setshowAcctTitleModal(true)
+        setSLorAcct('Account Title') 
+        const data = listOfdata[index]
+        setselectedData(data)
+        setselectedindex(index)
 }
 
 const ChangeSlAccount = (index:any) => {
@@ -91,6 +94,10 @@ useEffect(()=> {
                 }else if (Transaction =='Setup SL Type Per Terminal'){
                     type  = 'Setup SL Type Per Terminal'
                     setSetupSLPerTerminal(true)
+                }else if (TransType=='CASH SHORTAGE AND CASH OVERAGE'){
+                    setSetuCashShortageOver(true)
+                }else if (TransType=='GIFT CHECK EXCESS'){
+                    setSetupGiftCheck(true)
                 }
                 const response = await axios.get(`${BASE_URL}/api/setup/`,{
                     params: {
@@ -101,7 +108,6 @@ useEffect(()=> {
                 if (response.status==200){
                     const data = response.data
                    setlistOfdata(data)
-                    console.log('REcieve',data)
                 }
     
             }catch{
@@ -351,7 +357,7 @@ const HandleClickConfigure = async() => {
                     </Table>   
                 }
 
-                {SetupSLPerTerminal && 
+                {SetupSLPerTerminal || SetuCashShortageOver && 
                     <Table>
                         <thead>
                             <tr>
@@ -367,6 +373,32 @@ const HandleClickConfigure = async() => {
                                     <td>{item.event}</td>
                                     <td onClick={(e) => ChangeAcctitle(index)}>{item.accttitle}</td>
                                     <td onClick={(e) => ChangeSlAccount(index)}> {item.slacct}</td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={3}></td>
+                            </tr>
+                        )}
+                           
+                        </tbody>
+                    </Table>   
+                }
+
+                {SetupGiftCheck && 
+                    <Table>
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Acount Title</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {listOfdata.length > 0 ? (
+                            listOfdata.map((item:any, index:any) => (
+                                <tr key={index}>
+                                    <td>{item.event}</td>
+                                    <td onClick={(e) => ChangeAcctitle(index)}>{item.accttitle}</td>
                                 </tr>
                             ))
                         ) : (

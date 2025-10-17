@@ -477,7 +477,7 @@ const onDelete = () => {
             const result = await axios.get(`${BASE_URL}/api/bank-company/`,{
               params: {
                 customer:e
-              }
+              },withCredentials:true
             }); 
             
             if (result) {

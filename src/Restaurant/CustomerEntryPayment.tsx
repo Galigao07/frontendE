@@ -383,7 +383,7 @@ const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
           const result = await axios.get(`${BASE_URL}/api/customer-list/`,{
             params: {
               customer:e
-            }
+            },withCredentials:true
           }); 
           
           if (result) {

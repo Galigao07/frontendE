@@ -103,7 +103,7 @@ const SaveChargeToRoom = async () => {
             }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await axios.post(`${BASE_URL}/api/save-charge-to-room`)
+                    const response = await axios.post(`${BASE_URL}/api/save-charge-to-room`,)
                
                     if (response.status==200){
                        showSuccessAlert(response.data.message)
@@ -203,7 +203,7 @@ const fetchCategory = async()=> {
   try{
 const response = await axios.get(`${BASE_URL}/api/customer-category/`,{params: {
   category:ChargeCustomerAccount.CustomerID
-}})
+},withCredentials:true})
 if (response.status == 200){
   setcategoryList(response.data.data)
 
@@ -218,7 +218,7 @@ const fetchCustomerwithCategory = async(name:any)=> {
   try{
 const response = await axios.get(`${BASE_URL}/api/customer-with-category/`,{params: {
   name:name
-}})
+},withCredentials:true})
 if (response.status == 200){
 
   setCustomerList(response.data)

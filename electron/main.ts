@@ -1,12 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-inner-declarations */
+
 import { app, BrowserWindow,dialog,ipcMain,screen,session,protocol,shell} from 'electron'
 import { truncate } from 'original-fs';
-// import path from 'node:path'
-import path from 'path';
+import { loadConfig } from "./configManager"
+import * as fs from 'fs/promises'; // Use for async file operations
+import * as path from 'path';
 import * as url from 'url';
-
+import { exec } from 'child_process';
+import PDFWindow from 'electron-pdf-window';
+import { Buffer } from 'buffer';
+// // import path from 'node:path'
+// import path from 'path';
+// // import fs from "fs";
+// import { promises as fs } from "fs";
+// import * as url from 'url';
+// import { config } from 'process';
+// import PDFWindow from "electron-pdf-window";
+// import { Buffer } from 'buffer';
 // The built directory structure
 //
 // ├─┬─┬ dist
@@ -26,33 +38,41 @@ let win: BrowserWindow | null
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
-function createWindow() {
+
+let globalItems: any = [];
+let tenderedAmt: any = [];
+app.on("certificate-error", (event, webContents, url, error, certificate, callback) => {
+  // Ignore certificate errors for self-signed cert
+  event.preventDefault();
+  callback(true);
+});
+
+async function createWindow() {
+   
+await ensureConfig();
+const config = await loadConfig(); // ⬅️ load system config first
+
   win = new BrowserWindow({
     // icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
-
     // icon: path.join(process.env.VITE_PUBLIC, 'logo.svg'),
     show: false,
     webPreferences : {
-      // plugins: true,
-      // partition: 'disable_cache',
-      // devTools: true,
-      nodeIntegration: true,
-      contextIsolation: false,
-      webSecurity: false,
-      // allowRunningInsecureContent: true,
-      preload: path.join(__dirname, 'preload.js'),
-
+    webSecurity: false,
+    preload: path.join(__dirname, 'preload.js'),
+    nodeIntegration: false,
+    contextIsolation: true, // ✅ Recommended
+    partition: 'persist:main', // ✅ persistent session
+    
     },
-    fullscreen: false, 
-    frame:true,
+    fullscreen: true, 
+    frame:false,
     
   })
   // win.webContents.openDevTools();
 
   win.on('close', async () => {
     const isLogin = await win?.webContents.executeJavaScript('window.localStorage.getItem("isLogin")');
-    console.log('2222')
     if (isLogin === true) {
       const choice = dialog.showMessageBoxSync(win!, {
         type: 'question',
@@ -62,7 +82,7 @@ function createWindow() {
       });
   
       if (choice === 1) {
-        console.log('111111')
+ 
         // event.preventDefault(); // Prevents the window from closing
       }
     }
@@ -88,6 +108,11 @@ function createWindow() {
 
 
   app.on('before-quit', async (event) => {
+
+    BrowserWindow.getAllWindows().forEach(win => {
+    win.webContents.send('before-quit');
+  });
+
     if (win) {
 
       if (LOGIN == 'true') {
@@ -118,6 +143,8 @@ function createWindow() {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
   })
 
+
+
   if (VITE_DEV_SERVER_URL) {
 
     win.loadURL(VITE_DEV_SERVER_URL)
@@ -137,113 +164,355 @@ function createWindow() {
 
   win.once('ready-to-show', () => {
     win?.show();
-    if (splashScreen) {
-      executeAndRepeat();
-      splashScreen.close(); // Close the splash screen ifW it exists
-    }
+    win?.webContents.session.cookies.get({})
   });
+// win.on("closed", () => (win = null));
 
+  win.on('closed', () => {
+    // Close any other window
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) win.close();
+    }
+    app.quit();
+  });
 }
-
-
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    console.log('Close...');
+  
     app.quit()
+    
     win = null
   }
 })
 
+// ipcMain.on('closeApp', () => {
+//   app.quit();
+// });
+
 ipcMain.on('closeApp', () => {
+  // Close all BrowserWindows manually
+  for (const win of BrowserWindow.getAllWindows()) {
+    win.removeAllListeners('close'); // remove custom preventDefault
+    win.close();
+  }
+
+  // Quit the app completely
   app.quit();
 });
 
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
+
     createWindow()
   }
 })
-
+let extendedWindow: BrowserWindow | null = null;
 const CreateExtendedMonitor = () => {
   const displays = screen.getAllDisplays();
-  console.log('displays',displays)
+  // console.log('displays',displays)
   // Loop through all displays
 
-  if (displays.length === 1)
-{
+  if (displays.length === 1){
+
   CreateExtendedMonitorNew();  
 }  displays.forEach((display, index) => {
-      // Ignore primary display
-      if (index === 0) return;
 
-      // Create a new BrowserWindow for each external display
-      const extendedWindow = new BrowserWindow({
+      if (index === 0) return;
+      const isDev = !!process.env.VITE_DEV_SERVER_URL;
+       extendedWindow = new BrowserWindow({
         icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
           x: display.bounds.x,
           y: display.bounds.y,
           width: display.bounds.width,
           height: display.bounds.height,
           webPreferences: {
-              nodeIntegration: true, // Enable Node.js integration in the renderer process
-              contextIsolation: false, // or true, depending on your setup
-              webSecurity: false // This allows loading local files in Electron
+          preload: path.join(__dirname, "preload.js"), // ✅ ADD THIS LINE
+          contextIsolation: true,
+          nodeIntegration: false,
+          webSecurity: false // This allows loading local files in Electron
           },
           fullscreen : true,
           frame:false,
       });
-      // const srcDirectory = app.getAppPath(); // Assuming dataFile.txt is in the app directory
-      // // console.log('aaaa',srcDirectory)
-      // const htmlFilePath = path.join(srcDirectory, 'src', 'extended.html');
-      // // const htmlFilePath = path.resolve(srcDirectory, '..', 'extended.html');
-      // // console.log(htmlFilePath)
-      // extendedWindow.loadFile(htmlFilePath);
-      // extendedWindow.loadFile('extended.html')
+        // extendedWindow.webContents.openDevTools();
+        
+          if (isDev) {
+            extendedWindow.loadURL(`${process.env.VITE_DEV_SERVER_URL}/extended.html`);
+          } else {
+                const htmlPath = path.join(app.getAppPath(), 'dist', 'extended.html');
+                extendedWindow.loadURL(
+                  url.format({
+                    pathname: htmlPath,
+                    protocol: 'file:',
+                    slashes: true,
+                  })
+                );
 
-      extendedWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'extended.html'),
-        protocol: 'file:',
-        slashes: true
-    }));
+          }
+           const sendCurrentState = (extendedWindow: BrowserWindow) => {
+              extendedWindow.webContents.send("sync-global-items", globalItems);
+              extendedWindow.webContents.send("sync-global-tendered", tenderedAmt);
+            };
+
+            BrowserWindow.getAllWindows().forEach((extendedWindow) => {
+              // Send immediately in case window is already loaded
+              sendCurrentState(extendedWindow);
+
+              // Also send on future loads (reloads)
+              extendedWindow.webContents.on("did-finish-load", () => sendCurrentState(extendedWindow));
+            });
+
+  extendedWindow.on("closed", () => (extendedWindow = null));
+ 
+    //   extendedWindow.loadURL(url.format({
+    //     pathname: path.join(__dirname, 'extended.html'),
+    //     protocol: 'file:',
+    //     slashes: true
+    // }));
   });
 }
 const CreateExtendedMonitorNew = () => {
+    const isDev = !!process.env.VITE_DEV_SERVER_URL;
   // Create a new BrowserWindow
-  const extendedWindow = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
-      webPreferences: {
-        nodeIntegration: true, // or false, depending on your setup
-        contextIsolation: false, // or true, depending on your setup
-        webSecurity: false // This allows loading local files in Electron
-      },
-      fullscreen: false,
-    frame:true,
-  });
-  // console.log('aaaa',srcDirectory)
-  // Load the HTML file into the new window
-  // const srcDirectory = app.getAppPath(); // Assuming dataFile.txt is in the app directory
-  // const tmpPath = 'file//' + __dirname + './src/extended.html'
-  // console.log('aaaa',VITE_DEV_SERVER_URL)
-  // const htmlFilePath = path.join(tmpPath)
-  // const htmlFilePath = path.join(tmpPath, 'src', 'extended.html');
-  // extendedWindow.loadFile(htmlFilePath);
+    extendedWindow = new BrowserWindow({
+        icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
+          webPreferences: {
+          preload: path.join(__dirname, "preload.js"), // ✅ ADD THIS LINE
+          nodeIntegration: true,
+          contextIsolation: false,
+          webSecurity: false // This allows loading local files in Electron
+          },
+          fullscreen : true,
+          frame:false,
+      });
 
-  extendedWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'extended.html'),
-    protocol: 'file:',
-    slashes: true
-}));
+  if (isDev) {
+
+    extendedWindow.loadURL(`${process.env.VITE_DEV_SERVER_URL}/extended.html`);
+  } else {
+
+    extendedWindow.loadFile(path.join(__dirname, "../dist/extended.html"));
+     
+  }
+
+      const sendCurrentState = (extendedWindow: BrowserWindow) => {
+        extendedWindow.webContents.send("sync-global-items", globalItems);
+        extendedWindow.webContents.send("sync-global-tendered", tenderedAmt);
+      };
+
+      BrowserWindow.getAllWindows().forEach((extendedWindow) => {
+        // Send immediately in case window is already loaded
+        sendCurrentState(extendedWindow);
+
+        // Also send on future loads (reloads)
+        extendedWindow.webContents.on("did-finish-load", () => sendCurrentState(extendedWindow));
+      });
+
+
+  extendedWindow.on("closed", () => (extendedWindow = null));
+
+//   extendedWindow.loadURL(url.format({
+//     pathname: path.join(__dirname, 'extended.html'),
+//     protocol: 'file:',
+//     slashes: true
+// }));
 // extendedWindow.loadFile('extended.html')
 
 };
-
+const gotLock = app.requestSingleInstanceLock();
 app.whenReady().then(() => {
+
+  ensureConfig();
+  // if (!gotLock) {
+  //   app.quit();
+  //   return;
+  // } else {
+  //   app.on('second-instance', () => {
+  //     // Someone tried to run a second instance, we should focus our window.
+  //     if (win) {
+  //       if (win.isMinimized()) win.restore();
+  //       win.focus();
+  //     }
+  //   });
+  // }
   createWindow();
   CreateExtendedMonitor();
+
+
+  
+  ipcMain.on("update-global-items", (_event, items: any[]) => {
+    globalItems = items;
+
+    // Broadcast to all windows
+    BrowserWindow.getAllWindows().forEach((extendedWindow) => {
+      extendedWindow.webContents.send("sync-global-items", globalItems);
+      
+    });
+  });
+
+  ipcMain.handle("get-current-global-items", () => {
+    return globalItems;
+  });
+
+
+  ipcMain.on("update-global-tendered", (_event, tendered: any[]) => {
+    tenderedAmt = tendered;
+
+
+    // Broadcast to all windows
+    BrowserWindow.getAllWindows().forEach((extendedWindow) => {
+      extendedWindow.webContents.send("sync-global-tendered", tenderedAmt);
+    });
+  });
+
+  ipcMain.handle("get-current-global-tendered", () => {
+    return tenderedAmt;
+  });
 });
+
+
 
 
 ipcMain.on('open-blob-url', (event, url) => {
     shell.openExternal(url);
 });
+
+
+function log(msg: string) {
+  try {
+    const logPath = path.join(path.dirname(process.execPath), "debug.log");
+    // still sync here (logging is lightweight)
+    require("fs").appendFileSync(logPath, `${new Date().toISOString()} - ${msg}\n`);
+  } catch (err) {
+    console.error("Failed to write log:", err);
+  }
+}
+
+function getConfigPath() {
+  const configPath = app.isPackaged
+    ? path.join(path.dirname(process.execPath), "config.json")
+    : path.join(__dirname, "../public/config.json");
+
+  return configPath;
+}
+
+async function ensureConfig(): Promise<string> {
+  const configPath = getConfigPath();
+
+  try {
+    await fs.access(configPath); // check if file exists
+  
+  } catch {
+    // file doesn't exist → create it
+
+    const defaultConfig = {
+        ulCode: "1",
+              ptuNo: "PTU NO: FP092022-115-0345623-00005",
+              terminalNo: "1",
+              machineNo: "22091316054628404",
+              siteNo: "6",
+              serialNo: "9S715HK12277ZS5000149",
+              modelNo: "ST1000DM010",
+              description: "TERMINAL 21",
+              dateIssue: "2024-09-01",
+              dateValid: "2030-12-31",
+              host: "https://192.168.68.115:5173",
+              ipaddress: "https://192.168.68.115",
+              ws:"ws://192.168.68.115",
+              port: "8000",
+              socketport: "8001",
+              printer:"Brother DCP-T420W Printer",
+              pdf:"C:\\Users\\User\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe",
+              pdfWorker: "resources\\pdf.worker.min.js"
+      // ulCode: "1",
+      // ptuNo: "PTU",
+      // terminalNo: "1",
+      // machineNo: "SDNFJ2340",
+      // siteNo: "1",
+      // serialNo: "3421JOPWR",
+      // modelNo: "KNGTF9324",
+      // description: "TERMINAL 1",
+      // dateIssue: new Date().toISOString().split("T")[0],
+      // dateValid: new Date().toISOString().split("T")[0],
+      // host:'localhost:5173',
+      // ipaddress:"localhost",
+      // port:"8000",
+      // socketport:"8001"
+    };
+
+
+    await fs.writeFile(configPath, JSON.stringify(defaultConfig, null, 2));
+  }
+
+  return configPath;
+}
+
+
+
+//  UPDATE AND GET DATA IN CONFIG.JSON FILE
+ipcMain.handle("config:get", async () => {
+  const configPath = await ensureConfig();
+  const raw = await fs.readFile(configPath, "utf-8");
+  const parsed = JSON.parse(raw);
+  return parsed;
+});
+
+
+ipcMain.handle("config:set", async (_event, newConfig) => {
+  const configPath = await ensureConfig();
+  // Prevent nesting: strip off accidental `config` field
+  if ("config" in newConfig) {
+    delete (newConfig as any).config;
+  }
+
+  await fs.writeFile(configPath,JSON.stringify(newConfig, null, 2));
+
+  return newConfig;
+});
+
+
+
+// <-- Replace with your SumatraPDF.exe path
+//  const SUMATRA_PATH = "C:\\Users\\User\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe";
+ipcMain.handle('print-pdf', async (event, pdfBuffer: ArrayBuffer) => {
+  const configPath = await ensureConfig();
+  const raw = await fs.readFile(configPath, "utf-8");
+  const parsed = JSON.parse(raw);
+  const SUMATRA_PATH = parsed.pdf;
+  const printerName = parsed.printer; // Replace with your printer name
+
+  const tempPath = path.join(app.getPath('temp'), `receipt_${Date.now()}.pdf`);
+
+  try {
+    // Save PDF to temporary file
+    await fs.writeFile(tempPath, new Uint8Array(pdfBuffer));
+
+    // Use SumatraPDF to print silently
+    // /print-to "<PrinterName>" /silent
+    
+    await new Promise<void>((resolve, reject) => {
+      exec(
+        `"${SUMATRA_PATH}" -print-to "${printerName}" -silent "${tempPath}"`,
+        (error, stdout, stderr) => {
+          if (error) return reject(error);
+          resolve();
+        }
+      );
+    });
+
+    return { success: true };
+  } catch (err) {
+    console.error('Print error:', err);
+    return { success: false, error: String(err) };
+  } finally {
+    // Cleanup temp file after a short delay
+    setTimeout(async () => {
+      try {
+        await fs.unlink(tempPath);
+      } catch {}
+    }, 5000);
+  }
+});
+

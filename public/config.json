@@ -1,0 +1,20 @@
+{
+  "ulCode": "1",
+  "ptuNo": "PTU NO: FP092022-115-0345623-00005",
+  "terminalNo": "1",
+  "machineNo": "22091316054628404",
+  "siteNo": "6",
+  "serialNo": "9S715HK12277ZS5000149",
+  "modelNo": "ST1000DM010",
+  "description": "TERMINAL 21",
+  "dateIssue": "2024-09-01",
+  "dateValid": "2030-12-31",
+  "host": "http://192.168.68.115:5173",
+  "ipaddress": "http://localhost",  
+  "ws": "ws://localhost",       
+  "port": "8000",                        
+  "socketport": "8001",                     
+  "printer":"Brother DCP-T420W Printer",
+  "pdf":"C:\\Users\\User\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe",
+  "pdfWorker": "pdf.worker.min.js"
+}

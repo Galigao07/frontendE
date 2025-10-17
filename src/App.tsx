@@ -14,6 +14,9 @@ import Restaurant from './Restaurant/restaurant';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDollarSign, faListAlt, faPowerOff, faReceipt } from '@fortawesome/free-solid-svg-icons';
+
+//************  REFERENCE  **************** */
+
 import UserProfile from './Reference/UserProfile'
 import WaiterProfile from './Reference/WaiterProfile'
 import TableList from './Reference/TableList'
@@ -24,18 +27,28 @@ import SupplierSetup from './Reference/SupplierSetup'
 import ClientSetup from './Reference/ClientSetup'
 import CustomerDetails from './Reference/CustomerDetails'
 import SupplierDetails from './Reference/SupplierDetails'
-import CashCount from './Taskpane/CashCount'
-import XreadZred from './Taskpane/XreadZread'
+
+
+//************  ADMINITRATION **************** */
 import CostofSalesAccountTagging from './Adminitration/CostofSalesAccountTagging'
 import MultiplePriceTypeSiteSetup from './Adminitration/MultiplePriceTypeSiteSetup'
 import TaggingofSaslesCategoryList from './Adminitration/TaggingofSaslesCategoryList'
 import TaggingPerTerminal from './Adminitration/TaggingPerTerminal'
+import OtherPaymentSetup from './Adminitration/OtherPaymentSetup'
+
+
+//************  TASKPANE  **************** */
+import CashCount from './Taskpane/CashCount'
+import XreadZred from './Taskpane/XreadZread'
 import ReprintXReadandZRead from './Taskpane/ReprintXReadandZRead'
 import SalesReports from './Taskpane/SalesReports'
 import SystemSettings from './Adminitration/SystemSettings'
 import ProductProfile from './Reference/ProductProfile'
 import ProductPrintCategory from './Reference/ProductPrintCategory'
-
+import TerminalSetup from './Reference/TerminalSetup'
+import { InProgressLoading } from './Loader/Loader'
+import GiftChecDenomination from './Reference/GftCheckDenomination'
+import GiftCehckSeriesNumber from './Reference/GiftCheckSeriesNumber'
 
 // import OnlineTestApp from './OnlineTestApp';
 // import electron, { BrowserWindow } from 'electron';
@@ -49,9 +62,20 @@ import showErrorAlert from './SwalMessage/ShowErrorAlert'
 import { BASE_URL } from './config'
 import axios from 'axios'
 
+import { useDispatch, useSelector, UseSelector } from 'react-redux'
+import { UseDispatch } from 'react-redux'
+import { setGlobalIsLogin ,setGlobalIsLoading} from './globalSlice'
+import { RootState } from './store'
+import { useLoginSocket } from './Restaurant/websocketConnection'
+import { ReconnectingLoading } from './Loader/Reconnecting'
+
+
 const history = createBrowserHistory();
-function App() {
+ function App() {
   const navigate = useNavigate();
+  const dispatch = useDispatch()
+   const { openSocket, sendMessage, closeSocket,isConnected } = useLoginSocket();
+
   // const [count, setCount] = useState(0)
 
   // return (
@@ -83,12 +107,16 @@ function App() {
 const [show,setShow] =  useState<boolean>(false)
 const [active,setActive] =  useState<string>("")
 const [Rank,setRank] =  useState<boolean>(false)
-
-const isLogin = localStorage.getItem('isLogin') === 'true';
+const isLogin = useSelector((state:RootState)=> state.global.globalIsLogin)
+const isLoading = useSelector((state:RootState)=> state.global.globalIsLoading)
+// const isLogin = localStorage.getItem('isLogin') === 'false';
 // const PrintSO = localStorage.setItem('PrintSO','false');
 const PrintSO = localStorage.getItem('PrintSO') === 'true';
 const userRank = localStorage.getItem('UserRank');
 const [openReports,setopenReports] = useState<boolean>(false)
+useEffect(()=>{
+  console.log('isLoading',isLoading)
+},[isLoading])
 
 // if (userRank === 'Cashier') {
 //   // Perform actions specific to the 'Admin' user rank
@@ -125,7 +153,7 @@ const [openReports,setopenReports] = useState<boolean>(false)
 //#endregion
  
 
-
+const [GiftCheckVisible, setGiftCheckVisible] = useState(false);
 // -----------------------------REFERENCE DROPDOWN-----------------------
 //#region 
   const [subsidiaryVisible, setSubsidiaryVisible] = useState(false);
@@ -134,6 +162,7 @@ const [openReports,setopenReports] = useState<boolean>(false)
     setslcategoriesyVisible(false);
     setRefNumberSetupVisible(false);
     setBankVisible(false);
+    setGiftCheckVisible(false)
   };
 
   const [slcategoriesVisible, setslcategoriesyVisible] = useState(false);
@@ -142,6 +171,7 @@ const [openReports,setopenReports] = useState<boolean>(false)
       setSubsidiaryVisible(false);
       setRefNumberSetupVisible(false);
       setBankVisible(false);
+      setGiftCheckVisible(false)
   };
 
   const [RefNumberSetupVisible, setRefNumberSetupVisible] = useState(false);
@@ -150,6 +180,7 @@ const [openReports,setopenReports] = useState<boolean>(false)
       setSubsidiaryVisible(false);
       setslcategoriesyVisible(false);
       setBankVisible(false);
+      setGiftCheckVisible(false)
   };
 
   const [BankVisible, setBankVisible] = useState(false);
@@ -158,6 +189,17 @@ const [openReports,setopenReports] = useState<boolean>(false)
       setSubsidiaryVisible(false);
       setslcategoriesyVisible(false);
       setRefNumberSetupVisible(false);
+      setGiftCheckVisible(false)
+  };
+
+
+
+  const handleGiftCheckClick = () => {
+      setBankVisible(false);
+      setSubsidiaryVisible(false);
+      setslcategoriesyVisible(false);
+      setRefNumberSetupVisible(false);
+      setGiftCheckVisible(!GiftCheckVisible)
   };
 
 //#endregion
@@ -280,6 +322,7 @@ const logoutClick = async () => {
       }).then((result) => {
         if (result.isConfirmed) {
        localStorage.isLogin = false
+       dispatch(setGlobalIsLogin(false))
             // try {
             //     const instance = axios.create({
             //         xsrfHeaderName: 'X-CSRFToken',     
@@ -300,7 +343,7 @@ const logoutClick = async () => {
             //         localStorage.removeItem('setLogin');
             //         localStorage.removeItem('csrfToken');
               
-                    window.location.reload();
+            
             //     })
 
             // } catch (error) {
@@ -316,21 +359,7 @@ const logoutClick = async () => {
     navigate(`/TaskPane/`);
   };
 
-  // const handleClick = (route: string): void => {
-  //   history.push(`/TaskPane/${route}`);
-  // };
 
-  // const handleClick = () => {
-  //   history.push(`/TaskPane/`);
-  // };
-
-  useEffect(() =>{
-    console.log('asdasdddddddddddddddddddddddddddddddddddd')
-
-  },[])
-
-
-  
   useEffect(() => {
     const sidebutton = document.getElementById('sidebutton');
     const sidebutton1 = document.getElementById('sidebutton1');
@@ -372,9 +401,12 @@ const logoutClick = async () => {
 
   return (
 
-
-
+    <>
+    
     <div> 
+      {/* {isLogin && !isConnected && <ReconnectingLoading/>} */}
+
+     {isLoading && <InProgressLoading /> }
       {isLogin ? (
         userRank === 'Cashier' || userRank === 'Salesman' ? (
             <Restaurant/>
@@ -439,14 +471,42 @@ const logoutClick = async () => {
                <div className="dropdown">
                  <button className="dropbtn">Reference <i className="fas fa-caret-down"></i></button>
                  <div className="dropdown-content">
-                     <NavLink     to="/Product-Profile">Product Profile</NavLink>
-                     <NavLink     to="WaiterProfile">Waiter List</NavLink>
-                     <NavLink     to="/Customer-Details" >Customer Details</NavLink>
-                     <NavLink     to="/Supplier-Details" >Supplier Details</NavLink>
-                     <NavLink     to="TableList">Table List</NavLink>
-                     <NavLink     to="/Product-Print-Category">Product Print Category</NavLink>
-                     <NavLink     to="/chartofaccounts" target="_blank">POS Site Code</NavLink>
-                     <NavLink     to="/Video">Change Video</NavLink>
+                     <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }   to="/Product-Profile">Product Profile</NavLink>
+                     <NavLink   className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="WaiterProfile">Waiter List</NavLink>
+                     <NavLink   className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/Customer-Details" >Customer Details</NavLink>
+                     <NavLink   className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/Supplier-Details" >Supplier Details</NavLink>
+                     <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }   to="TableList">Table List</NavLink>
+                     <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }   to="/Product-Print-Category">Product Print Category</NavLink>
+                     <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }   to="/chartofaccounts" target="_blank">POS Site Code</NavLink>
+                     <NavLink   className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/Video">Change Video</NavLink>
+                     <div className="nested-dropdown" >
+                        <NavLink to="#" id="ARsummaryid"  onClick={handleGiftCheckClick} className="link-with-icon" style={{width: '100%'}}>Gift Checks Setup<i className="fas fa-caret-down"></i></NavLink>
+                           <div className="nested13-dropdown-content" id="ARsummaryidContent" style={{ display: GiftCheckVisible ? 'block' : 'none',width: '250px' }}>
+                              <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="Gift-Check-Denomination">Gift Check Denomination</NavLink>
+                              <NavLink className={({ isActive }) =>
+                                      isActive ? "nav-link1 active" : ""
+                                    } to="Gift-Check-Series-Number">Gift Check With Serial Number</NavLink>
+                                    
+                            </div>
+                      </div>
                  
                  </div>
                </div>
@@ -454,43 +514,69 @@ const logoutClick = async () => {
                <div className="dropdown">
                    <button className="dropbtn">Adminitration <i className="fas fa-caret-down"></i></button>
                    <div className="dropdown-content">
-                       <NavLink    to="userProfile">User Account Control</NavLink> 
-                       <NavLink  to="{% url 'UserDeatials' %}">POS Transaction</NavLink> 
+                       <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }   to="userProfile">User Account Control</NavLink> 
+                       <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="{% url 'UserDeatials' %}">POS Transaction</NavLink> 
    
                      <div className="nested7-dropdown" >
-                       <NavLink   to="#" id="unpostid" onClick={handleUnpostRepostClick} className="link-with-icon">Unpost Transaction<i className="fas fa-caret-down"></i></NavLink>
+                       <NavLink   to="/unpost-transaction" id="unpostid" onClick={handleUnpostRepostClick} className="link-with-icon">Unpost Transaction<i className="fas fa-caret-down"></i></NavLink>
                        <div className="nested7-dropdown-content" id="unpostidcontent" style={{ display : UnpostRepostVisible ? 'block' : 'none'}}>
-                           <NavLink    to="#">By Date Transaction</NavLink>
-                           <NavLink    to="#">By Reference No</NavLink>
+                           <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="/by-date-transaction">By Date Transaction</NavLink>
+                           <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/by-reference-transaction">By Reference No</NavLink>
                        </div>
                      </div>
    
    
                      <div className="nested4-dropdown" >
-                       <NavLink to="#" id="systemconfigid" onClick={handleSystemConfigClick} className="link-with-icon" >System Configuration<i className="fas fa-caret-down"></i></NavLink>
+                       <NavLink to="/system-configuration" id="systemconfigid" onClick={handleSystemConfigClick} className="link-with-icon" >System Configuration<i className="fas fa-caret-down"></i></NavLink>
                        <div className="nested4-dropdown-content" id="systemconfigidcontent" style={{display: SystemConfigVisible ? 'block' : 'none'}}>
-                           <NavLink    to="#">POS Settings </NavLink>
+                           <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/pos-settings">POS Settings </NavLink>
    
                            <div className="nested5-dropdown" >
-                             <NavLink to="#" id="transtypesetupid" onClick={handleTransactionTypeClick} className="link-with-icon" style={{width: '95%'}}>Tagging of Sales Transaction<i className="fas fa-caret-down"></i></NavLink>
+                             <NavLink to="/tagging-of-sales-transaction" id="transtypesetupid" onClick={handleTransactionTypeClick} className="link-with-icon" style={{width: '95%'}}>Tagging of Sales Transaction<i className="fas fa-caret-down"></i></NavLink>
                              <div className="nested5-dropdown-content" id="transtypesetupidcontent" style={{display : TransactionTypeVisible ? 'block' : 'none'}}>
-                                 <NavLink   to="/Debit-Account-Sales-Transaction">Debit Accounts for Sales</NavLink>
-                                 <NavLink   to="/Credit-Account-Sales-Transaction">Credit Accounts for Sales</NavLink>
-                                 <NavLink   to="/Tagging-of-sales-Category-List">Per Category</NavLink>
-                                 <NavLink   to="/Tagging-per-terminal">Per Terminal</NavLink>
+                                 <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/Debit-Account-Sales-Transaction">Debit Accounts for Sales</NavLink>
+                                 <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/Credit-Account-Sales-Transaction">Credit Accounts for Sales</NavLink>
+                                 <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/Tagging-of-sales-Category-List">Per Category</NavLink>
+                                 <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="/Tagging-per-terminal">Per Terminal</NavLink>
                          
                              </div>
                            </div>
    
-                           <NavLink   to="/cost-of-sales">Cost of Sales Account Tagging</NavLink>
-                           <NavLink   to="/Setup-SL-Per-terminal">Tagging of SL Account for Sales</NavLink>
+                           <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/cost-of-sales">Cost of Sales Account Tagging</NavLink>
+                           <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="/Setup-SL-Per-terminal">Tagging of SL Account for Sales</NavLink>
    
    
                          <div className="nested6-dropdown" >
                            <NavLink to="#" id="Withheldtaxid"  onClick={handlCardMachineClick}  className="link-with-icon">Card Machine and Acct Tittle Tagging<i className="fas fa-caret-down"></i></NavLink>
                            <div className="nested6-dropdown-content" id="Withheldtaxidcontent" style={{display : CardMachineVisible ? 'block' : 'none'}}>
-                               <NavLink   to="/Credit-Card">Credit Card</NavLink>
-                               <NavLink   to="/Debit-Card">Debit Card</NavLink>
+                               <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="/Credit-Card">Credit Card</NavLink>
+                               <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/Debit-Card">Debit Card</NavLink>
      
                        
                            </div>
@@ -500,8 +586,12 @@ const logoutClick = async () => {
                          <div className="nested7-dropdown" >
                            <NavLink  to="#" id="Withheldtaxid"  onClick={handlewithHeldTaxClick}  className="link-with-icon">Terminal price type Setup<i className="fas fa-caret-down"></i></NavLink>
                            <div className="nested7-dropdown-content" id="Withheldtaxidcontent" style={{display : withHeldTaxVisible ? 'block' : 'none'}}>
-                               <NavLink   to="/Default-price-type">Default Price Type</NavLink>
-                               <NavLink   to="/Allowed-price-type">Allowed Price Type</NavLink>
+                               <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/Default-price-type">Default Price Type</NavLink>
+                               <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="/Allowed-price-type">Allowed Price Type</NavLink>
      
                        
                            </div>
@@ -509,24 +599,55 @@ const logoutClick = async () => {
    
    
                            
-                           <NavLink   to="#">Reset Number Generator </NavLink>
-                           <NavLink   to="#">Database Syncronize</NavLink>
-                           <NavLink   to="#">Tagging POS Site Code </NavLink>
-                           <NavLink   to="#">Revenue Tagging</NavLink>
+                           <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/reset-number-generator">Reset Number Generator </NavLink>
+                           <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/database=sync">Database Syncronize</NavLink>
+                           <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/tagging-pos-site-code">Tagging POS Site Code </NavLink>
+                           <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/other-payment-setup">Other Debit List & Account Tagging</NavLink>
+                          <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/Setup-cash-shortage-overage">Tagging of Cash Shortage and Cash Overage</NavLink>
+
+                          <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/Setup-gift-check-excess">Account Title Tagging For Gift Check Excess</NavLink>
+
+                          <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/revenue-tagging">Revenue Tagging</NavLink>
                        </div>
                      </div>
   
-                       <NavLink to="/System-Settings">System Settings</NavLink>
-                       <NavLink to="#">Clear Login Errors</NavLink>
+                       <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="/System-Settings">System Settings</NavLink>
+                       <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="/clear-login">Clear Login Errors</NavLink>
    
                      <div className="nested10-dropdown" >
-                       <NavLink to="#" id="utilityid" onClick={handleUtilityClick} className="link-with-icon">Company Setup<i className="fas fa-caret-down"></i></NavLink>
+                       <NavLink to="" id="utilityid" onClick={handleUtilityClick} className="link-with-icon">Company Setup<i className="fas fa-caret-down"></i></NavLink>
                        
                        <div className="nested10-dropdown-content" id="utilityidContent" style={{display: UtilityVisible ? 'block' : 'none'}}>
-                           <NavLink to="/Client-Setup">Client Details Setup</NavLink>
-                           <NavLink to="/Supplier-Setup">Supplier Details Setup</NavLink>
-                           <NavLink to="#">Terminal Setup</NavLink>
-                           <NavLink to="/Terminal-Registration">Terminal Registration</NavLink>
+                           <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="/Client-Setup">Client Details Setup</NavLink>
+                           <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="/Supplier-Setup">Supplier Details Setup</NavLink>
+                           <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="/Terminal-Setup">Terminal Setup</NavLink>
+                           <NavLink  className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="/Terminal-Registration">Terminal Registration</NavLink>
                        </div>
                       </div>
 
@@ -536,8 +657,12 @@ const logoutClick = async () => {
                <div className="dropdown">
                    <button className="dropbtn">Utility <i className="fas fa-caret-down"></i></button>
                    <div className="dropdown-content">
-                       <NavLink  to="#">User Account Control</NavLink>
-                       <NavLink  to="#">System Configuration</NavLink>
+                       <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  }  to="/user-account-control">User Account Control</NavLink>
+                       <NavLink className={({ isActive }) =>
+                                    isActive ? "nav-link1 active" : ""
+                                  } to="System-configuration">System Configuration</NavLink>
                    </div>
                </div>
                </div>       
@@ -558,12 +683,12 @@ const logoutClick = async () => {
                           <FontAwesomeIcon icon={faReceipt} className="nav-link-icon"  key={2} id={"2"} ></FontAwesomeIcon>
                               <span className={`nav-link-name ${show ? 'show' : null}`} >X Reading And Z reading</span>    
                           </NavLink>  
-                          <NavLink id='sidebutton2'   className={active === "3" ? "nav-link active" : "nav-link"} to=""  onClick={()=>setopenReports(true)} title="Reports">
+                          <NavLink id='sidebutton2'   className={active === "3" ? "nav-link active" : "nav-link"} to="/Reports"  onClick={()=>setopenReports(true)} title="Reports">
                           <FontAwesomeIcon icon={faListAlt} className="nav-link-icon"  key={3} id={"3"} onClick={()=>setopenReports(true)}></FontAwesomeIcon>
                               <span className={`nav-link-name ${show ? 'show' : null}`}  onClick={()=>setopenReports(true)}>Reports</span>    
                           </NavLink>  
                         
-                          <NavLink id='sidebutton3'  className={active === "9" ? "nav-link active" : "nav-link"} key={9} onClick={() => logoutClick()} title="Logout" to={''}>
+                          <NavLink id='sidebutton3'  className={active === "9" ? "nav-link active" : "nav-link"} key={9} onClick={() => logoutClick()} title="Logout" to="/logout">
                               <FontAwesomeIcon icon={faPowerOff} className="nav-link-icon" key={9} id={"9"} onClick={() => logoutClick()}></FontAwesomeIcon>
                               <span className={`nav-link-name ${show ? 'show' : null}`}  onClick={() => logoutClick()}>Logout</span>    
                           </NavLink>   
@@ -622,9 +747,14 @@ const logoutClick = async () => {
 
         )
       ) : (
+        <>
         <LoginForm />
+        </>
+     
+       
       )}
     </div>
+     </>
     // <Provider store={store}>
     // </Provider>
 
@@ -636,6 +766,7 @@ const logoutClick = async () => {
 const Content = () => {
   return(
     <Routes>
+      {/*************** REFERENCE *************** */}
       <Route path="/" element={<Homepage />} />
       <Route path="/Profile" element={<Profile />} />
       <Route path="/userProfile" element={<UserProfile />} />
@@ -643,10 +774,16 @@ const Content = () => {
       <Route path="/TableList" element={<TableList />} />
       <Route path="/Video" element={<VideoUpload />} />
       <Route path="/Terminal-Registration" element={<TerminalRegistration />} />
+      <Route path="/Terminal-Setup" element={<TerminalSetup />} />
+      <Route path="/Product-Print-Category" element={<ProductPrintCategory/>} />
+      <Route path="/Gift-Check-Denomination" element={<GiftChecDenomination/>} />
+      <Route path="/Gift-Check-Series-Number" element={<GiftCehckSeriesNumber/>} />
       <Route path="/Supplier-Setup" element={<SupplierSetup />} />
       <Route path="/Client-Setup" element={<ClientSetup />} />
       <Route path="/Supplier-Details" element={<SupplierDetails />} />
       <Route path="/Customer-Details" element={<CustomerDetails />} />
+
+     {/*************** TASKPANE *************** */}
       <Route path="/Cash-Count" element={<CashCount />} />
       <Route path="/Xread-Zread" element={<XreadZred />} />
       <Route path="/cost-of-sales" element={<CostofSalesAccountTagging/>} />
@@ -657,6 +794,9 @@ const Content = () => {
       <Route path="/Credit-Card" element={<Setup Transaction = "Event Setup - Credit"  TransType='Bank' />} />
       <Route path="/Default-price-type" element={<Setup Transaction = "Default Price Type"  TransType='PriceType' />} />
       <Route path="/Setup-SL-Per-terminal" element={<Setup Transaction = "Setup SL Type Per Terminal"  TransType='' />} />
+      <Route path="/Setup-cash-shortage-overage" element={<Setup Transaction = "Tagging of Cash Shortage and Cash Overage"  TransType='CASH SHORTAGE AND CASH OVERAGE' />} />
+      <Route path="/Setup-gift-check-excess" element={<Setup Transaction = "Account Title Tagging for Gift Check Excess"  TransType='GIFT CHECK EXCESS' />} />
+
       <Route path="/Allowed-price-type" element={<MultiplePriceTypeSiteSetup/>} />
       <Route path="/Tagging-of-sales-Category-List" element={<TaggingofSaslesCategoryList/>} />
       <Route path="/Tagging-per-terminal" element={<TaggingPerTerminal/>} />
@@ -664,7 +804,9 @@ const Content = () => {
       <Route path="/Sales-Reports" element={<SalesReports/>} />
       <Route path="/System-Settings" element={<SystemSettings/>} />
       <Route path="/Product-Profile" element={<ProductProfile/>} />
-      <Route path="/Product-Print-Category" element={<ProductPrintCategory/>} />
+
+      {/*************** ADMINITRATOR *************** */}
+      <Route path="/other-payment-setup" element={<OtherPaymentSetup/>} />
       
     </Routes>
   );

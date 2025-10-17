@@ -8,6 +8,7 @@ import './css/CashPaymentEntry.css'
 import Swal from "sweetalert2";
 import { Grid, Typography } from '@mui/material';
 import {BASE_URL} from '../config';
+import getextendedAMTAPI from '../utils/getAmountTenderedAPI';
 
 interface CashData {
   handleClose: () => void;
@@ -202,7 +203,23 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
 
   // };
 
+useEffect(() => {
+const api = getextendedAMTAPI();
+const x : any = {
+      Amount:amountReceived,
+      Change:changeDue
+    }
+  try{
+    api.sendTendered(x); // send full cart to main process
+  }catch(error){
+    console.log('error',error)
+  }
+    
+  }, [amountReceived,changeDue]);
+
+
   const handleAmountReceivedChange = (value:any) => {
+  
     // Remove commas from the input value
     const dotCount = value.split('.').length - 1;
     if (dotCount === 2 ) {
@@ -219,8 +236,16 @@ const CashPaymentEntry: React.FC<CashData> = ({handleClose,amountdue,amounttende
     const sanitizedValue = tmp.replace(/[^0-9.]/g, '');
     if (sanitizedValue.charAt(sanitizedValue.length - 1) === '.') {
       setAmountReceived((prevValue: any) => {
-        const res = prevValue as string + '.';
-        return res.toString();
+         const dot = prevValue.split('.').length
+        if (dot > 1 ){
+        const res = prevValue.slice(0, -1);
+          return res.toString();
+        }else{
+           const res = prevValue as string + '.';
+             return res.toString();
+        }
+       
+      
       });
     } else {
       // Format the sanitized value as a number with locale-specific formatting
@@ -327,7 +352,6 @@ useEffect(() => {
 
   socket.onmessage = async (event) => {
     const data = JSON.parse(event.data);
-    console.log('Received data:', data);
 
   };
   socket.onerror = (error) => {

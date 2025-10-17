@@ -7,9 +7,13 @@ import CreditCardPaymentEntry from './CreditCardPayment';
 import DebitCardPaymentEntry from './DebitCardPayment';
 import CreditCardPayment from './CreditCard';
 import DebitCardPayment from './DebitCard';
+import GiftCheckPaymentTransModal from "./GiftCheck";
+import OnlinePaymentTransModal from "./Online";
+import OtherPaymentTransModal from "./Other";
 import { isDesktop } from "react-device-detect";
 import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
+import getextendedAMTAPI from "../utils/getAmountTenderedAPI";
 interface MultiplepaymentsData {
     handleclose:()=> void;
     totalDue:any;
@@ -23,11 +27,18 @@ const MultiplePayments:React.FC<MultiplepaymentsData> = ({handleclose,totalDue,M
   ;
     const [DebitCardPaymentModal, setDebitCardPaymentModal] = useState<boolean>(false);
     const [CreditCardPaymentModal, setCreditCardPaymentModal] = useState<boolean>(false);
+    const [GiftCheckPaymentModal, setGiftCheckPaymentModal] = useState<boolean>(false);
+    const [OtherPaymentModal, setOtherPaymentModal] = useState<boolean>(false);
+    const [OnlinePaymentModal, setOnlinePaymentModal] = useState<boolean>(false);
     const [CashAmount, setCashAmount] = useState<any>(null)
     const [CurrentCheckAmount, setCurrentCheckAmount] =  useState<any>('0.00')
     const [DebitCardAmount, setDebitCardAmount] = useState<any>('0.00')
     const [CreditCardAmount, setCreditCardAmount] =  useState<any>('0.00')
     const [CreditSalesAmount, setCreditSalesAmount] = useState<any>('0.00')
+
+     const [GiftCheckAmount, setGiftCheckAmount] = useState<any>('0.00')
+    const [OnlineAmount, setOnlineAmount] =  useState<any>('0.00')
+    const [OtherAmount, setOtherAmount] = useState<any>('0.00')
     const [RemainingAmountDue,setRemainingAmountDue] = useState<any>(0)
 
     const [amountDue, setamountDue] = useState<any>('0.00')
@@ -39,7 +50,11 @@ const MultiplePayments:React.FC<MultiplepaymentsData> = ({handleclose,totalDue,M
     const CurrentCheckAmountRef = useRef<HTMLButtonElement>(null);
     const DebitCardAmountRef = useRef<HTMLButtonElement>(null);
     const CreditCardAmountRef = useRef<HTMLButtonElement>(null);
-    const CreditSalesAmountRef = useRef<HTMLButtonElement>(null);
+    const CreditSalesAmountRef = useRef<HTMLButtonElement>(null)
+    
+    const GiftCheckAmountRef = useRef<HTMLButtonElement>(null);
+    const OnlineAmountRef = useRef<HTMLButtonElement>(null);
+    const OtherAmountRef = useRef<HTMLButtonElement>(null);
     const SaveButtonRef = useRef<HTMLButtonElement>(null);
     const CloseButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -142,14 +157,146 @@ const OpenCreditCardPayment = () => {
     setDebitCardPaymentEntryModal(false)
 
   };
-  
-  
   const CloseDebitCardPaymentEntryModal = () => {
     setDebitCardPaymentEntryModal(false)
   }
   
   //////******************************** END HERE **********************************/////
+
+ 
+  //// ************************** GIFT CHECK PAYMENT TYPE TRANSACTION ******************
+  const OpenGiftCheckPayment = () => {
+    if (localStorage.getItem('GiftCheckPayment')){
+      localStorage.removeItem('GiftCheckPayment')
+      setGiftCheckAmount(0)
+      return
+    }
+ 
+    const totalDueFloat: number = removeThousandSeparator(totalDue);
+    const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
+    const remainingAmountDue: number = totalDueFloat - amountTenderedFloat;
+    if (remainingAmountDue === 0){
+      return;
+    }
+    setRemainingAmountDue(remainingAmountDue.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
+    setGiftCheckPaymentModal(true)
+  }
   
+  const GiftCheckPaymentOK =(data:any) => {
+
+    const GiftCheckPaymentData = data.GiftCheckPaymentList
+    let totalD:any  = 0
+    GiftCheckPaymentData.map((items:any) => {
+      totalD = parseFloat(items.amount) +   parseFloat(totalD)
+    });
+
+
+    setGiftCheckAmount(totalD)
+    localStorage.setItem('GiftCheckPayment',JSON.stringify(data))
+    setGiftCheckPaymentModal(false)
+  
+  }
+  
+  const CloseGiftCheckPayment = () => {
+    setGiftCheckPaymentModal(false)
+
+  }
+  
+  const SaveGiftCheckPayment = async (data: { amounttendered: number; change:number; }) => {
+    setGiftCheckPaymentModal(false)
+  };
+
+  //////******************************** END HERE **********************************/////
+
+    //// ************************** ONLINE PAYMENT TYPE TRANSACTION ******************
+  const OpenOnlinePayment = () => {
+    if (localStorage.getItem('OnlinePayment')){
+      localStorage.removeItem('OnlinePayment')
+      setOnlineAmount(0)
+      return
+    }
+ 
+    const totalDueFloat: number = removeThousandSeparator(totalDue);
+    const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
+    const remainingAmountDue: number = totalDueFloat - amountTenderedFloat;
+    if (remainingAmountDue === 0){
+      return;
+    }
+    setRemainingAmountDue(remainingAmountDue.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
+    setOnlinePaymentModal(true)
+  }
+  
+  const OnlinePaymentOK =(data:any) => {
+
+    const OnlinePaymentData = [data.OnlinekPaymentList]
+    let totalD:any  = 0
+    OnlinePaymentData.map((items:any) => {
+      totalD = parseFloat(items.total_amount) +   parseFloat(totalD)
+    });
+
+
+    setOnlineAmount(totalD)
+    localStorage.setItem('OnlinePayment',JSON.stringify(data))
+    setOnlinePaymentModal(false)
+  
+  }
+  
+  const CloseOnlinePayment = () => {
+    setOnlinePaymentModal(false)
+
+  }
+  
+  const SaveOnlinePayment = async (data: { amounttendered: number; change:number; }) => {
+    setOnlinePaymentModal(false)
+  };
+
+  //////******************************** END HERE **********************************/////
+
+
+  //// ************************** OTHER PAYMENT TYPE TRANSACTION ******************
+  const OpenOtherPayment = () => {
+    if (localStorage.getItem('OtherPayment')){
+      localStorage.removeItem('OtherPayment')
+      setOnlineAmount(0)
+      return
+    }
+ 
+    const totalDueFloat: number = removeThousandSeparator(totalDue);
+    const amountTenderedFloat: number = removeThousandSeparator(amountTendered);
+    const remainingAmountDue: number = totalDueFloat - amountTenderedFloat;
+    if (remainingAmountDue === 0){
+      return;
+    }
+    setRemainingAmountDue(remainingAmountDue.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}))
+    setOtherPaymentModal(true)
+  }
+  
+  const OtherPaymentOK =(data:any) => {
+
+    const OtherPaymentData = data.OtherPaymentList
+    let totalD:any  = 0
+    OtherPaymentData.map((items:any) => {
+      totalD = parseFloat(items.total_amount) +   parseFloat(totalD)
+    });
+
+
+    setOtherAmount(totalD)
+    localStorage.setItem('OtherPayment',JSON.stringify(data))
+    setOtherPaymentModal(false)
+  
+  }
+  
+  const CloseOtherPayment = () => {
+    setOtherPaymentModal(false)
+
+  }
+  
+  const SaveOtherPayment = async (data: { amounttendered: number; change:number; }) => {
+    setOtherPaymentModal(false)
+  };
+
+  //////******************************** END HERE **********************************/////
+
 
 
   const SaveMultiplepaments = () => {
@@ -204,16 +351,19 @@ const OpenCreditCardPayment = () => {
         const debitCard:number = parseFloat(DebitCardAmount) || 0;
         const creditCard:number = parseFloat(CreditCardAmount) || 0;
         const creditSales:number = parseFloat(CreditSalesAmount) || 0;
+        const giftcheck:number = parseFloat(OnlineAmount) || 0;
+        const online:number = parseFloat(OtherAmount) || 0;
+        const other:number = parseFloat(GiftCheckAmount) || 0;
         const totalDued:number = removeThousandSeparator(totalDue) ;
     
-        const totalReceived = cash + check + debitCard + creditCard + creditSales;
+        const totalReceived = cash + check + debitCard + creditCard + creditSales + giftcheck + online + other;
         const change =   totalDued - totalReceived
     
         setchange(change);
         setamountTendered(totalReceived.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));
 
 
-    }, [CashAmount, CurrentCheckAmount, DebitCardAmount, CreditCardAmount, CreditSalesAmount, totalDue]);
+    }, [CashAmount, CurrentCheckAmount, DebitCardAmount, CreditCardAmount, CreditSalesAmount, totalDue,OnlineAmount,OtherAmount,GiftCheckAmount]);
     
             
     useEffect(() => {
@@ -237,14 +387,30 @@ const OpenCreditCardPayment = () => {
           }
           else if (e.ctrlKey && e.key === 's') { // Control + S
             e.preventDefault();
-        };
+             if (CreditCardPaymentModal || DebitCardPaymentModal || GiftCheckPaymentModal ||
+                  OnlinePaymentModal || OtherPaymentModal) {
+                    return
+              }
+              SaveMultiplepaments()
+            
+        }else if (e.key === 'Escape') { // Control + S
+            e.preventDefault();
+            if (CreditCardPaymentModal || DebitCardPaymentModal || GiftCheckPaymentModal ||
+                  OnlinePaymentModal || OtherPaymentModal) {
+                    return
+              }
+              handleclose()
+            
+        }
     }
         window.addEventListener('keydown', handleKeyPress);
       
         return () => {
           window.removeEventListener('keydown', handleKeyPress);
         };
-      }, []);   
+      }, [CreditCardPaymentModal,DebitCardPaymentModal,GiftCheckPaymentModal,OnlinePaymentModal,OtherPaymentModal,
+        CreditCardAmount,DebitCardAmount,CashAmount,GiftCheckAmount,OnlineAmount,OtherAmount,amountTendered
+      ]);   
 
 
 
@@ -267,7 +433,11 @@ const OpenCreditCardPayment = () => {
       const setvalue = (value: any) => {
         if (focusedInput) {
           if (value > parseFloat(amountDue)){
-
+              if (focusedInput  ==='Cash') {
+                setCashAmount(value)
+                  setisShowKeyboard(false)
+                return
+              } 
             let x:any = amountDue.replace(',', '')
             setCashAmount(x)
           }else{
@@ -288,6 +458,17 @@ const OpenCreditCardPayment = () => {
         setisShowKeyboard(false)
       }
   
+      useEffect(()=>{
+
+         const api = getextendedAMTAPI();
+        const x : any = {
+              Amount:amountTendered,
+              Change:0
+        }
+        api.sendTendered(x); 
+      
+
+      },[amountTendered])
   
     return(
       <>
@@ -352,6 +533,36 @@ const OpenCreditCardPayment = () => {
                         
                     </div>
 
+                    <div className="form-group">
+                      <label>Gift Check</label>
+                      <button  ref={GiftCheckAmountRef}
+                          onKeyDown={(e) => Handlekeydown(e,CreditCardAmountRef,GiftCheckAmountRef,OnlineAmountRef)}
+                          onClick={OpenGiftCheckPayment}
+                          >Click here..</button>
+                          <input value={GiftCheckAmount}   placeholder="0.00" 
+                          readOnly/>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Online Payment</label>
+                      <button  ref={OnlineAmountRef}
+                          onKeyDown={(e) => Handlekeydown(e,GiftCheckAmountRef,OnlineAmountRef,OtherAmountRef)}
+                          onClick={OpenOnlinePayment}
+                          >Click here..</button>
+                          <input value={OnlineAmount}   placeholder="0.00" 
+                          readOnly/>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Other Payment</label>
+                      <button  ref={OtherAmountRef}
+                          onKeyDown={(e) => Handlekeydown(e,OnlineAmountRef,OtherAmountRef,SaveButtonRef)}
+                          onClick={OpenOtherPayment}
+                          >Click here..</button>
+                          <input value={OtherAmount}   placeholder="0.00" 
+                          readOnly/>
+                    </div>
+
                 </div>
 
                 
@@ -374,21 +585,22 @@ const OpenCreditCardPayment = () => {
                 </div>
 
                 <div className="Button-Container">
-                    <button ref={SaveButtonRef}  className="btn" 
-                        onKeyDown={(e) => Handlekeydown(e,CreditSalesAmountRef,SaveButtonRef,CloseButtonRef)}
+                    <Button ref={SaveButtonRef}  
+                        onKeyDown={(e) => Handlekeydown(e,OtherAmountRef,SaveButtonRef,CloseButtonRef)}
                         style={{backgroundColor:'blue'}}
                         onClick={SaveMultiplepaments}
-                        >Save</button>
-                    <button ref={CloseButtonRef}
+                        >Save</Button>
+                    <Button ref={CloseButtonRef}
+                     style={{backgroundColor:'Red'}}
                          onKeyDown={(e) => Handlekeydown(e,SaveButtonRef,CloseButtonRef,SaveButtonRef)}
 
                          onClick={handleclose}
                         >Close
-                    </button>
+                    </Button>
 
-                    <button className="btn-show"  type='button' 
+                    {/* <Button className="btn-show"  type='button' 
                       onClick={ShowKeyorNot}>Keyboard {isShow ? 'Disable':'Enable'}
-                    </button>
+                    </Button> */}
 
                 </div>
             </div>
@@ -396,7 +608,10 @@ const OpenCreditCardPayment = () => {
             {CreditCardPaymentEntryModal && <CreditCardPaymentEntry handleClose={CloseCreditCardPaymentEntryModal} amountdue={totalDue} amounttendered={SaveCreditCardPayment} />}
             {DebitCardPaymentModal && <DebitCardPayment handleClose={CloseDebitCardPayment} amountdue={RemainingAmountDue} debitcardpayment ={DebitCardPaymentOK}/>}
             {DebitCardPaymentEntryModal && <DebitCardPaymentEntry handleClose={CloseDebitCardPaymentEntryModal} amountdue={totalDue} amounttendered={SaveDebitCardPayment} />}
-           
+            {GiftCheckPaymentModal && <GiftCheckPaymentTransModal handleClose={CloseGiftCheckPayment} amountdue={RemainingAmountDue} GiftCheckPayment ={GiftCheckPaymentOK}/>}               
+            {OnlinePaymentModal && <OnlinePaymentTransModal handleClose={CloseOnlinePayment} amountdue={RemainingAmountDue} OnlinePayment ={OnlinePaymentOK}/>}               
+            {OtherPaymentModal && <OtherPaymentTransModal handleClose={CloseOtherPayment} amountdue={RemainingAmountDue} OtherPayment ={OtherPaymentOK}/>}               
+              
         </div>
         {isShowKeyboard && <OnScreenKeyboardNumeric  handleclose = {closekeyBoard}  currentv = {CashAmount ===null ? '':CashAmount} setvalue={setvalue}/>}
         </>

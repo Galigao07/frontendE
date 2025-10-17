@@ -122,7 +122,7 @@ const CloseButtonModal = () => {
         const fetchData = async () => {
             try {
   
-                const response = await axios.get(`${BASE_URL}/api/sales-order-list-cancelled/`);
+                const response = await axios.get(`${BASE_URL}/api/sales-order-list-cancelled/`,{withCredentials:true});
                 setSalesOrderList(response.data);
                 console.log(response.data)
                 
@@ -167,7 +167,7 @@ const CloseButtonModal = () => {
                         //   queno:queno,
                            document_no :documentNumbers
                             // Add other necessary parameters as needed
-                        }
+                        },withCredentials:true
                     });
                     // Handle response for sales-order-listing
                     setSalesOrderListing(response.data);
@@ -188,7 +188,7 @@ const CloseButtonModal = () => {
       settmpSO(null)
 
         try{
-          const response = await axios.get(`${BASE_URL}/api/sales-order-list-cancelled/`)
+          const response = await axios.get(`${BASE_URL}/api/sales-order-list-cancelled/`,{withCredentials:true})
             setSalesOrderList(response.data);
 
       } catch (error: unknown) {
@@ -293,7 +293,7 @@ const ShowOrderListing = async (index: number) => {
       params: {
         tableno :tableNo,
         so_no : so_no
-      }
+      },withCredentials:true
      // Use 'params' to include query parameters
     });
 
@@ -355,11 +355,10 @@ const UnCancellSO = () => {
       reverseButtons: true
     }).then( async (result) => {
       if (result.isConfirmed) {
-        const response = await axios.post(`${BASE_URL}/api/uncancel-sales-order/`, {
-          params: {
-            tableno:tmpTableNo,
+        const response = await axios.post(`${BASE_URL}/api/uncancel-sales-order/`, 
+          {tableno:tmpTableNo,
             so_no:tmpSO,
-          }
+          },{withCredentials:true
       });
       if (response.status ===200) {
         handleclose();

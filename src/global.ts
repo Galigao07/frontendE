@@ -79,7 +79,7 @@ if (response.status == 200){
   }
 }
 
-export async function GetCurrentDateOnly() {
+export async function GetCurrentDateOnly(): Promise<string> {
 const currentDate: Date = new Date();
 const year: number = currentDate.getFullYear();
 const month: number = currentDate.getMonth() + 1; // Month is zero-indexed, so add 1
@@ -107,17 +107,27 @@ export async function GetCurrentDateAndTime() {
 }
 
 export async function GetSettings(name:any) {
-
+  console.log('URL',BASE_URL)
   try{
-    const response = await axios.get(`${BASE_URL}/api/system-settings/`)
+    const response = await axios.get(`${BASE_URL}/api/system-settings/`, {
+      withCredentials: true // ✅ top-level option
+    });
       if (response.status == 200){
-
-        
-
-        return response.data[0][`${name}`]
-                 
+        return response.data[0][`${name}`]    
       }
-      }catch{
+      }catch(error){
       showErrorAlert(`Error while Fetching ${name}`)
     }      
+}
+
+export async function refreshToken() {
+  try {
+    const res = await axios.post(`${BASE_URL}/api/token/refresh/`, {}, {
+      withCredentials: true
+    });
+    const newAccessToken = res.data.access;
+    axios.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+  } catch (err) {
+    console.log(err)
+  }
 }

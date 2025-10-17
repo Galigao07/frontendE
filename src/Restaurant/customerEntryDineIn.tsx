@@ -11,7 +11,7 @@ import './css/keyboard.css'
 import OnScreenKeyboard from './KeyboardGlobal';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { isDesktop} from 'react-device-detect';
+import { isDesktop,isMobile,isTablet} from 'react-device-detect';
 import {  Button, Grid, Table, Typography } from '@mui/material';
 import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
 import OnScreenKeyboardNumericForCardNo from './KeyboardForCardNo';
@@ -111,7 +111,7 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
           const orderViewResponse = await axios.get(`${BASE_URL}/api/order/view/`, {
             params: {
               tableNo :tableNo
-            }
+            },withCredentials:true
         });
 
         if (orderViewResponse.data && Array.isArray(orderViewResponse.data) && orderViewResponse.data.length > 0) {
@@ -653,7 +653,7 @@ const handleCustomerTypeWalkIN = () => {
                           const result = await axios.get(`${BASE_URL}/api/customer-list/`,{
                             params: {
                               customer:e
-                            }
+                            },withCredentials:true
                           }); 
                           
                           if (result) {
@@ -666,7 +666,7 @@ const handleCustomerTypeWalkIN = () => {
                             const result = await axios.get(`${BASE_URL}/api/waiter-list/`,{
                               params: {
                                 waiter:e
-                              }
+                              },withCredentials:true
                             }); 
                             
                             if (result) {
@@ -677,9 +677,17 @@ const handleCustomerTypeWalkIN = () => {
                                 }
                             }}
                           
-                        }  catch (error) {
-                            console.error(error);
-                            }
+                        }  catch (error:any) {
+                            setSelectedOption('option2')
+                              Swal.fire({
+                                icon:'error',
+                                title:'Failed',
+                                text:"Request Failed",
+                                timer:2000
+                              })
+                              setcustomerType('Walk-in')
+                              setCustomerListModal(false)
+                      }
      }
 
 
@@ -692,7 +700,7 @@ const handleCustomerTypeWalkIN = () => {
         const result = await axios.get(`${BASE_URL}/api/customer-list/`, {
           params: {
             customer: customer // Assuming 'e' is defined elsewhere
-          }
+          },withCredentials:true
         });
     
         if (result && result.data && result.data.customers) {
@@ -714,7 +722,7 @@ const handleCustomerTypeWalkIN = () => {
         const result = await axios.get(`${BASE_URL}/api/waiter-list/`,{
           params: {
             waiter:waiter
-          }
+          },withCredentials:true
         }); 
         
         if (result) {
@@ -961,14 +969,14 @@ const closekeyBoard = () => {
   return (
     <div>
         <div className="modal">
-          <div className="modal-contentCustomerDine" style={{width:'50%', display:'flex',flexDirection:'row'}}>
+          <div className="modal-contentCustomerDine" style={{width: isDesktop  ? '50%':  '100%', display:'flex',flexDirection:'row'}}>
 
           <Grid container className="CreditCard-Container" spacing={2}>
 
             <Grid item xs={12} md={12} >
               <div   style={{width:'100%',height:'100%' ,  border:' 2px solid #ccc', borderRadius: '8px', padding: '10px',margin:'5px'}}>
                 <h2 style={{ color: 'blue', padding: '8px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', 
-                borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid',fontSize:'50px' }}
+                borderRadius: '5px', margin: '10px', fontWeight: 'bold', textAlign: 'center', border:'solid',fontSize: isDesktop ? '50px' :'25px' }}
                 >Sales Order  {typeandtable.OrderType} </h2>
                 <div className="customer-type">
                   <span className="customer-type-label">Customer Type:</span>
@@ -1090,7 +1098,7 @@ const closekeyBoard = () => {
                   </div>
                  
                     <button tabIndex={2} type="button" className ='button-cancel' ref={CloseBtnRef}
-                        // style={{margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}
+                    style={{width: isMobile ? "100%": "50%"}}
                       onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,CloseBtnRef,PaymentSaveBtnRef,2) } 
                       onClick={handleclose}>Exit</button>
 

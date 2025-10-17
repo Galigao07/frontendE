@@ -70,7 +70,7 @@ const formatDate = (date:any) => {
                 return;
             }
             const response = await axios.get(`${BASE_URL}/api/reprint-transaction/`, {
-                params: { datefrom: DateFrom, dateto: DateTo, TerminalNo: Terminal }
+                params: { datefrom: DateFrom, dateto: DateTo, TerminalNo: Terminal },withCredentials:true
             });
 
             if (response.status === 200) {

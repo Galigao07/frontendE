@@ -4,10 +4,10 @@ import electron from 'vite-plugin-electron/simple'
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
+
 // https://vitejs.dev/config/
 export default defineConfig({
     // Other Vite config options
-
   plugins: [
     react(),
     tsconfigPaths(), 
@@ -25,7 +25,6 @@ export default defineConfig({
           ])
         },
       },
-      
       preload: {
         // Shortcut of `build.rollupOptions.input`.
         // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
@@ -36,10 +35,30 @@ export default defineConfig({
       renderer: {},
     }),
   ],
+  base: './', // 👈 crucial for file:// protocol in Electron portable
+
+    build: {
+    outDir: 'dist',
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        extended: path.resolve(__dirname, 'extended.html'), // 👈 if you have another window
+      },
+    },
+  },
+  resolve: {
+    alias: {
+      // 'pdfjs-dist': path.resolve(__dirname, 'node_modules/pdfjs-dist/legacy/build/pdf.js'),
+       'pdfjs-dist': path.resolve(__dirname, 'node_modules/pdfjs-dist'),
+    },
+  },
+
+
 
   server: {
     // host: '0.0.0.0',
     // host: '192.168.68.112',
-    host: '192.168.68.116',
+    host: '0.0.0.0',
   },
+
 })

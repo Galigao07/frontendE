@@ -1,0 +1,166 @@
+.GiftCheck-Container label {
+    text-align: start;
+    width: 50%;
+}
+
+.GiftCheck-Container button {
+width: 49%;
+}
+
+.modal-content-GiftCheck {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    width: 600px;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-GiftCheck Button {
+    width: 100%;
+    margin-top: 15px;
+    padding: 8px 8px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .Table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  td {
+    border: 1px solid #ccc;
+    padding: 4px;
+    cursor: pointer;
+    caret-color: transparent;
+  }
+
+
+   th {
+    border: 1px solid #ccc;
+    padding: 4px;
+    text-align: center;
+  }
+
+
+
+  .alert-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding:50px;
+    border: 1px solid #d9534f; /* Red border color */
+    border-radius: 4px;
+    color: #d9534f; /* Red text color */
+    /* background-color: #f2dede; */
+    background-color:white;
+    font-size: 20px;
+
+    display: flex;
+    flex-direction: column;
+  }
+
+
+
+  .alert_box{
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    padding: 30px;
+    display: flex;
+    background: #fff;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 450px;
+    width: 100%;
+    border-radius: 5px;
+    z-index: 5;
+    pointer-events: none;
+    transform: translate(-50% , -50%) scale(0.97);
+    transition: all 0.3s ease;
+    border: 1px solid #f23b26;
+  }
+.alert_box .icon {
+  height: 100px;
+  width: 100px;
+  color: #f23b26;
+  border: 3px solid #f23b26;
+  border-radius: 50%;
+  line-height: 97px;
+  font-size: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+
+  /* 👇 animation */
+  animation: popIn 0.5s ease-out forwards;
+}
+
+/* 👇 define the animation */
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+  .alert_box header{
+    font-size: 35px;
+    font-weight: 500;
+    margin: 10px 0;
+  }
+  .alert_box p{
+    font-size: 20px;
+  }
+
+  .modal-content-GiftCheck Button {
+    width: 100%;
+    margin-top: 15px;
+    padding: 8px 8px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .GiftCheck-Container .btn-show{
+    width:100%;
+    background-color: blue;
+    color: white;
+    margin-top: 10px;
+    font-size: 1vh;
+    border-radius: 5px;
+    padding: 5px;
+    border: none;
+    }
+
+
+.Bank-Container{
+  display: flex;
+  flex-direction: row;
+}
+
+.Bank-Container .table-Bank{
+  margin: 5px;
+  height: fit-content;
+}
+

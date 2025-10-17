@@ -38,6 +38,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
 import showInfoAlert from '../SwalMessage/ShowInfoAlert';
+import { useDispatch, useSelector } from 'react-redux';
+import { setGlobalIsLoading } from '../globalSlice';
+import { RootState } from '../store';
+import { InProgressLoading } from '../Loader/Loader';
 // import TradeDiscount from './DiscountTrade';
 
 interface ListOfDineInSalesOrderProps {
@@ -76,9 +80,12 @@ const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handlec
     lineno :any;
     // Add other properties as needed
   }
+  
+    const dispatch = useDispatch()
     const [cartItems, setCartItems] = useState<any>([]);
     const [showIframe, setShowIframe] = useState<boolean>(false);
     const [SalesOrderList,setSalesOrderList] = useState<SalesOrderItem[]>([]);
+    const isLoading = useSelector((state:RootState)=> state.global.globalIsLoading)
 
     const [SalesOrderListing,setSalesOrderListing] =useState<SalesOrderListingItem[]>([]);
 
@@ -132,13 +139,15 @@ const CloseButtonModal = () => {
 }
     //***************PRODUCT***************** */
     useEffect(() => {
+       dispatch(setGlobalIsLoading(true))
         const fetchData = async () => {
+         
             try {
                 if (tableno !=''){
                   const response = await axios.get(`${BASE_URL}/api/sales-order-list/`, {
                     params: {
                         tableno: tableno // or use the dynamic value that you want
-                    }
+                    },withCredentials:true
                 });
                 setSalesOrderList(response.data);
                 console.log(response.data)
@@ -146,7 +155,7 @@ const CloseButtonModal = () => {
                   const response = await axios.get(`${BASE_URL}/api/sales-order-list/`, {
                     params: {
                         queno: queno // or use the dynamic value that you want
-                    }
+                    },withCredentials:true
                 });
                 setSalesOrderList(response.data);
                 }
@@ -193,13 +202,14 @@ const CloseButtonModal = () => {
                           queno:queno,
                            document_no :documentNumbers
                             // Add other necessary parameters as needed
-                        }
+                        },withCredentials:true
                     });
                     // Handle response for sales-order-listing
                     setSalesOrderListing(response.data);
                     setCartItems(response.data)
-                   
+                   dispatch(setGlobalIsLoading(false))
                 } catch (error) {
+                  dispatch(setGlobalIsLoading(false))
                     console.error('Error fetching sales-order-listing:', error);
                 }
             };
@@ -217,14 +227,14 @@ const CloseButtonModal = () => {
           const response = await axios.get(`${BASE_URL}/api/sales-order-list/`, {
             params: {
                 tableno: tableno // or use the dynamic value that you want
-            }
+            },withCredentials:true
         });
         setSalesOrderList(response.data);
         }else{
           const response = await axios.get(`${BASE_URL}/api/sales-order-list/`, {
             params: {
                 queno: queno // or use the dynamic value that you want
-            }
+            },withCredentials:true
         });
         setSalesOrderList(response.data);
         }
@@ -331,7 +341,7 @@ const ShowOrderListing = async (index: number) => {
       params: {
         tableno :tableNo,
         so_no : so_no
-      }
+      },withCredentials:true
      // Use 'params' to include query parameters
     });
 
@@ -408,7 +418,7 @@ const CancellSO = () => {
           params: {
             tableno:tableno,
             so_no:tmpSO,
-          }
+          },withCredentials:true
       });
       if (response.status ===200) {
         handleclose();
@@ -1125,6 +1135,7 @@ setViewCancelledSOModal(false)
 
   return (
     <div>
+      
             <iframe
               id="myIframe"
               style={{
@@ -1144,10 +1155,12 @@ setViewCancelledSOModal(false)
         {/* <iframe id="myIframe" style={{position:'absolute',display:'none',backgroundColor:'#ffff',height:'90%',marginTop:'10px',width:'30%',
           marginLeft:'35%',borderRadius:'10px',   zIndex: '9999'}} src="https://example.com">
         </iframe> */}
+      
         <div className="modal">
             
             <div className='modal-contentSO'>
             <Grid container className="CreditCard-Container" spacing={2}>
+
                 <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
                   <div style={{ border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px',height:'100%'}}>
                   <div style={{display:'flex',flexDirection:'row'}}>
@@ -1210,7 +1223,7 @@ setViewCancelledSOModal(false)
                       </tbody>
                       </Table>
                   </div>
-
+                
                   <div className="bottom-table-so">
                       {/* <h2>Bottom Table</h2> */}
                       <Table 
@@ -1286,6 +1299,7 @@ setViewCancelledSOModal(false)
                         </>
                           ))
                           ) : (
+                                // {isLoading && <InProgressLoading/>}
                           <tr>
                               <td colSpan={4}>No items in the transaction</td>
                           </tr>
@@ -1400,7 +1414,7 @@ setViewCancelledSOModal(false)
                       
                     </div>
               </div>
-            </Grid>
+                </Grid>
 
 
             <Grid item xs={12} md={5} style={{ height: '100%',width:'100%'}}>
@@ -1763,8 +1777,8 @@ setViewCancelledSOModal(false)
         </div>
         </div>
       )}
-
-
+ 
+                  {isLoading && <InProgressLoading/>}
                   {OpenVireficationModal && <Verification handleClose={CloseVerification} VerificationEntry={OKVerification}/>}
                   {OpenSeniorCitezenDiscountModal && <SeniorCitezenDiscount handleClose={CloseSeniorCitezenDiscount} SeniorData={SaveSeniorCitezenDiscount} 
                                               amountcover={TotalAmountD} SeniorOrderData={SalesOrderList}/>}

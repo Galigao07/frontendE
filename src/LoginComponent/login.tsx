@@ -4,7 +4,7 @@ import axios from 'axios';
 import './login.css';
 import logo from './logo.png';
 import Swal from 'sweetalert2';
-import {BASE_URL,SOCKET_URL} from '../config';
+import {BASE_URL,SOCKET_URL,SERIALNO,MACHINENO,TERMINALNO} from '../config';
 import { isDesktop, isMobile, isTablet, setUserAgent } from 'react-device-detect';
 import { Button, Typography } from '@mui/material';
 import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
@@ -12,14 +12,25 @@ import OnScreenKeyboard from '../Restaurant/KeyboardGlobal';
 import PackageInfo from '../PackageInfo';
 import showErrorAlert from '../SwalMessage/ShowErrorAlert';
 import showInfoAlert from '../SwalMessage/ShowInfoAlert';
-
+import { refreshToken } from '../global';
+import { LoginWebSocket,LogoutWebSocket } from '../websocket';
+import { useLoginSocket,useLogoutSocket } from '../Restaurant/websocketConnection';
+import { useDispatch, useSelector, UseSelector } from 'react-redux'
+import { UseDispatch } from 'react-redux'
+import { setGlobalIsLoading, setGlobalIsLogin } from '../globalSlice';
+import { RootState } from '../store';
+import { InProgressLoading } from '../Loader/Loader';
 
 
 
   const LoginForm: React.FC  = () => {
+    const dispatch = useDispatch()
     const usernameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const loginBtnRef = useRef<HTMLButtonElement>(null);
+    const { openSocket, sendMessage, closeSocket } = useLoginSocket();
+    const { openLogoutSocket, sendLogoutMessage, closeLogoutSocket } = useLogoutSocket();
+    const isLoading = useSelector((state:RootState)=> state.global.globalIsLoading)
 
     // const ulCodeRef = useRef(null);
     // const loginBtnRef = useRef(null);
@@ -75,30 +86,30 @@ import showInfoAlert from '../SwalMessage/ShowInfoAlert';
 
     
     //CHECK IF TERMINAL IS ALREADY LOGIN
-    useEffect (()=>{
+    // useEffect (()=>{
 
-      const CheckterminalLogin = async () => {
-          const response = await axios.get(`${BASE_URL}/api/check-login/`)
-         if (response.status == 200){
-          const { Info }: { Info?: any } = response.data; // Adjust 'Info' type as per the actual structure
-          if (Info) {
-            const { UserRank, FullName, UserID, UserName, TerminalNo, SiteCode,TransID }: any = Info; // Adjust types as per the actual structure
-            localStorage.setItem('isLogin', 'true');
-            localStorage.setItem('UserRank', UserRank);
-            localStorage.setItem('FullName', FullName);
-            localStorage.setItem('UserID', UserID);
-            localStorage.setItem('UserName', UserName);
-            localStorage.setItem('TerminalNo', TerminalNo);
-            localStorage.setItem('SiteCode', SiteCode);
-            localStorage.setItem('TransID', TransID);
-            window.location.reload();
-          }
-         }
-      }
+    //   const CheckterminalLogin = async () => {
+    //       const response = await axios.get(`${BASE_URL}/api/check-login/`)
+    //      if (response.status == 200){
+    //       const { Info }: { Info?: any } = response.data; // Adjust 'Info' type as per the actual structure
+    //       if (Info) {
+    //         const { UserRank, FullName, UserID, UserName, TerminalNo, SiteCode,TransID }: any = Info; // Adjust types as per the actual structure
+    //         localStorage.setItem('isLogin', 'true');
+    //         localStorage.setItem('UserRank', UserRank);
+    //         localStorage.setItem('FullName', FullName);
+    //         localStorage.setItem('UserID', UserID);
+    //         localStorage.setItem('UserName', UserName);
+    //         localStorage.setItem('TerminalNo', TerminalNo);
+    //         localStorage.setItem('SiteCode', SiteCode);
+    //         localStorage.setItem('TransID', TransID);
+    //         window.location.reload();
+    //       }
+    //      }
+    //   }
       
-      CheckterminalLogin();
+    //   CheckterminalLogin();
    
-       },[])
+    //    },[])
 
 
 
@@ -126,47 +137,67 @@ import showInfoAlert from '../SwalMessage/ShowInfoAlert';
   const onChange = (e: ChangeEvent<HTMLInputElement>) => setFormdata({ ...formData, [e.target.name]: e.target.value});
 
 
-  const handleLogin = async () => {
+const handleLogin = async () => {
+  try {
+    dispatch(setGlobalIsLoading(true))
+    localStorage.clear()
+    const response = await axios.post(
+      `${BASE_URL}/api/login/`,
+      {
+        username: formData.username,
+        password: formData.password,
+        SERIALNO,
+        TERMINALNO,
+        MACHINENO
+      },
+      { withCredentials: true } // ✅ send/receive HttpOnly cookies
+    );
 
-    try {
-      const response = await axios.get(`${BASE_URL}/api/login/`, {
-        params:{
-        username : formData.username,
-        password : formData.password
-        }
-      });
+    if (response.status === 200) {
+      const { Info } = response.data;
+      if (Info) {
+        const { UserRank, FullName, UserID, UserName, TerminalNo, SiteCode, TransID } = Info;
+        axios.defaults.withCredentials = true
+        // Store only non-sensitive info
+        dispatch(setGlobalIsLoading(false))
+        dispatch(setGlobalIsLogin(true))
+        localStorage.setItem('isLogin', 'true');
+        localStorage.setItem('UserRank', UserRank);
+        localStorage.setItem('FullName', FullName);
+        localStorage.setItem('UserID', UserID);
+        localStorage.setItem('UserName', UserName);
+        localStorage.setItem('TerminalNo', TerminalNo);
+        localStorage.setItem('SiteCode', SiteCode);
+        localStorage.setItem('TransID', TransID);
   
-      if (response.status === 200) {
-        console.log(response.data);
-        const { Info }: { Info?: any } = response.data; // Adjust 'Info' type as per the actual structure
-        if (Info) {
-          const { UserRank, FullName, UserID, UserName, TerminalNo, SiteCode,TransID }: any = Info; // Adjust types as per the actual structure
-          localStorage.setItem('isLogin', 'true');
-          localStorage.setItem('UserRank', UserRank);
-          localStorage.setItem('FullName', FullName);
-          localStorage.setItem('UserID', UserID);
-          localStorage.setItem('UserName', UserName);
-          localStorage.setItem('TerminalNo', TerminalNo);
-          localStorage.setItem('SiteCode', SiteCode);
-          localStorage.setItem('TransID', TransID);
-          window.location.reload();
-          // Process the extracted data as needed
-        }else{
-          showInfoAlert(response.data.message)
-        }
-  
-   
-        // channel.postMessage({ type: 'login' });
-      } 
-    } catch (error) {
-      Swal.fire({
-        title: 'Log in Error',
-        text: 'Error Username or Password',
-        icon: 'info',
-        confirmButtonText: 'OK'
-      });
+
+        // Reload or redirect
+        // window.location.reload();
+      } else {
+          dispatch(setGlobalIsLoading(false))
+        Swal.fire('Info', response.data.message || 'No user info returned', 'info');
+      }
     }
-  };
+  } catch (error: any) {
+    // Handle expired or invalid token gracefully
+      dispatch(setGlobalIsLoading(false))
+    let message = 'Unknown error';
+    if (error.response?.data?.messages?.[0]?.message) {
+      message = error.response.data.messages[0].message;
+    } else if (error.response?.data?.detail) {
+      message = error.response.data.detail;
+    }
+
+    Swal.fire({
+      title: 'Login Error',
+      text: `Username or password issue: ${message}`,
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+  }
+};
+
+
   
 const onSubmit = async (event:any) => {
   event.preventDefault();
@@ -177,7 +208,7 @@ const onSubmit = async (event:any) => {
  
 
 const closeApp = () => {
-  if (window.electronAPI) {
+  if (window.electronAPI?.closeApp) {
     window.electronAPI.closeApp();
   } else {
     console.error('electronAPI is not available');
@@ -188,10 +219,9 @@ const handleKeyDown = (event :any, BackRef : any, nextRef:any) => {
   if (event.key === 'Enter')  {
     event.preventDefault();
 
-
       if (nextRef.current) {
         nextRef.current.focus();
-        nextRef.current.select();
+      
       }
     
 
@@ -200,7 +230,7 @@ const handleKeyDown = (event :any, BackRef : any, nextRef:any) => {
     event.preventDefault();
     if (BackRef.current) {
       BackRef.current.focus();
-      BackRef.current.select();
+  
     }
   }
 
@@ -341,8 +371,9 @@ const handleSpecialButtonClick = (value:any) => {
 
   return (
 
-      
+  
   <div className="container" style={deviceType === 'Mobile' ? { width: '100%', height: '100vh' } : {}}>
+
   <div className="login-form" style={deviceType === 'Desktop' ? { width: '450px' } : { width: '320px',height: '100vh' }}>
     <div className="login-row" style={{display:'flex',flexDirection:'column'}}>
       {/* <div className="login-header">
@@ -363,7 +394,7 @@ const handleSpecialButtonClick = (value:any) => {
           }}/>
       </div>
     </div>
-      
+        
       <div className="login-body">
         <div className="header-name">
           <h3>Restaurant POS</h3>
@@ -432,7 +463,4 @@ const handleSpecialButtonClick = (value:any) => {
 
 
 export default LoginForm;
-function async() {
-  throw new Error('Function not implemented.');
-}
 

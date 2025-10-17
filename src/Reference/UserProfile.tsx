@@ -61,7 +61,7 @@ const UserProfile: React.FC = () => {
 
  const fetchData = async () => {
         try {
-            const response = await axios.get(`${BASE_URL}/api/view-users/`); // Replace 'API_ENDPOINT' with your actual endpoint
+            const response = await axios.get(`${BASE_URL}/api/view-users/`,{withCredentials:true}); // Replace 'API_ENDPOINT' with your actual endpoint
             if (response.status == 200){
                 setUsers(response.data.userList);
             }
@@ -95,7 +95,7 @@ const handleInputChange = (
             cancelButtonText: 'No',
             reverseButtons: true
 
-                  }).then(async (result) => {
+            }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
                     const response = await axios.post(`${BASE_URL}/api/add-users/`, user);
@@ -351,7 +351,7 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
             const result = await axios.get(`${BASE_URL}/api/employee-list/`,{
               params: {
                 employee:e
-              }
+              },withCredentials:true
             }); 
             
             if (result) {
@@ -547,7 +547,7 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
                             
                         </Grid>
                         </div>
-                        </div>
+                </div>
             )} 
         </Grid>
         

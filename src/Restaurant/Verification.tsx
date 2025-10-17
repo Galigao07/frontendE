@@ -10,6 +10,8 @@ import { isDesktop } from 'react-device-detect';
 import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
 import OnScreenKeyboard from './KeyboardGlobal';
 import showErrorAlert from '../SwalMessage/ShowErrorAlert';
+import { setGlobalIsLoading } from '../globalSlice';
+import { useDispatch } from 'react-redux';
 
 interface VerificationData {
     handleClose:() => void;
@@ -19,7 +21,7 @@ interface VerificationData {
 
 
 const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry}) => {
-
+    const dispatch = useDispatch();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
   
@@ -39,12 +41,13 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
     const ExitRef = useRef<HTMLButtonElement>(null)
   
     const handleVefication = async () => {
+      dispatch(setGlobalIsLoading(true));
         try {
             const response = await axios.get(`${BASE_URL}/api/verification/`, {
                 params:{
                 username : username,
                 password : password
-                }
+                },withCredentials:true
               });
               if (response.status==200){
                 const { Info }: { Info?: any } = response.data; // Adjust 'Info' type as per the actual structure
@@ -56,11 +59,16 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
                     VeriFullname:FullName
                 })
                 localStorage.setItem('Discounted_by',FullName)
+                   dispatch(setGlobalIsLoading(false));
                 } }else{
+                        dispatch(setGlobalIsLoading(false));
                   showErrorAlert('Wrong username or Password!!')
+                    
                 }
         } catch{
+              dispatch(setGlobalIsLoading(false));
           showErrorAlert('Wrong username or Password!!')
+              
         }
     };
 

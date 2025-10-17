@@ -143,7 +143,7 @@
     background-color: #fefefe;
     padding: 20px;
     border-radius: 10px;
-    max-width: 400px;
+    max-width: 600px;
     max-height: 90%;
     overflow-y: auto;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
@@ -614,6 +614,7 @@ h1 {
   height: 115px;
   display: flex;
   flex-direction: column;
+  justify-content: space-around;
   align-items: center;
   border-radius: 10px;
   cursor: pointer;
