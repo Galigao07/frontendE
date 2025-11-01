@@ -8,23 +8,28 @@ import App from "./App";
 import { UserContextProvider } from './GlobalState/GlobalContextProvider.tsx'
 import { setupUrls } from "./config.tsx"; // your setup function
 import React from "react";
+import { ScreenSizeProvider } from "./ScreenHeightContext.tsx";
 
 (async () => {
   await setupUrls();
 
   ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-    <React.StrictMode>
+    // <React.StrictMode>
+     
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <UserContextProvider>
+             <ScreenSizeProvider>
             <HashRouter>
               <App />
             </HashRouter>
+            </ScreenSizeProvider>
           </UserContextProvider>
 
         </PersistGate>
       </Provider>
-    </React.StrictMode>
+     
+    // </React.StrictMode>
   );
 })();
 

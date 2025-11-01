@@ -6,7 +6,10 @@ import './css/SystemSettings.css'
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 import {BASE_URL} from "../config";
 import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
-
+import { setGlobalIsLoading } from "../globalSlice";
+import { RootState } from "../store";
+import { useSelector,useDispatch } from "react-redux";
+import { InProgressLoading } from "../Loader/Loader";
 
 const SystemSettings = () => {
     const [withHotel,setWithHotel] = useState<boolean>(false);

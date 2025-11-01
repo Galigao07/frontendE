@@ -7,7 +7,7 @@ const { name, description, version, author } = packageJson;
       {/* <p>Name: {name}</p> */}
       <p>Description: {description}</p>
       <p>Version: {version}</p>
-      <p>Author: {author}</p>
+      <p>Developer: {author}</p>
     </div>
   );
 }

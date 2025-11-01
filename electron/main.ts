@@ -65,8 +65,8 @@ const config = await loadConfig(); // ⬅️ load system config first
     partition: 'persist:main', // ✅ persistent session
     
     },
-    fullscreen: true, 
-    frame:false,
+    fullscreen: false, 
+    frame:true,
     
   })
   // win.webContents.openDevTools();

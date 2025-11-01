@@ -43,6 +43,12 @@ import { setGlobalIsLoading } from '../globalSlice';
 import { RootState } from '../store';
 import { InProgressLoading } from '../Loader/Loader';
 // import TradeDiscount from './DiscountTrade';
+import getextendedAMTAPI from '../utils/getAmountTenderedAPI';
+import getextendedAPI from '../utils/ExtendedAPI';
+import PdfModal from './PdfModal';
+import { set, sub } from 'date-fns';
+import { ExtendedDataWebSocket,LoginWebSocket,LogoutWebSocket, SelectTableWebSocket } from '../websocket';
+
 
 interface ListOfDineInSalesOrderProps {
   handleclose: () => void; // Define the type for handleclose function
@@ -54,8 +60,9 @@ interface ListOfDineInSalesOrderProps {
 
 
 const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handleclose,  settlebillData, tableno, queno}) => {
+  const [pdfPath, setPdfPath] = useState<any>('');
 
-
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   interface SalesOrderItem {
     date_trans: string;
     description: string;
@@ -67,6 +74,7 @@ const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handlec
     waiter_id: string;
     guest_count: string;
     document_no : number;
+    terminal_no: number;
     // Add other properties as needed
   }
 
@@ -82,10 +90,13 @@ const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handlec
   }
   
     const dispatch = useDispatch()
+
     const [cartItems, setCartItems] = useState<any>([]);
     const [showIframe, setShowIframe] = useState<boolean>(false);
     const [SalesOrderList,setSalesOrderList] = useState<SalesOrderItem[]>([]);
     const isLoading = useSelector((state:RootState)=> state.global.globalIsLoading)
+    const VerifiedBy = useSelector((state:RootState)=> state.global.globalVerifiedBy)
+    const [hasLoaded,sethasLoaded] = useState<Boolean>(false)
 
     const [SalesOrderListing,setSalesOrderListing] =useState<SalesOrderListingItem[]>([]);
 
@@ -94,6 +105,7 @@ const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handlec
     const [selectedRowIndexListing, setselectedRowIndexListing] = useState<number | null>(null); // Ensure selectedRowIndex accepts null or number
     const [qtyTotal,setqtyTotal] =  useState<string>(''); 
     const [TotalAmountD,setTotalAmountD] =  useState<string>('');
+    const [ServiceChargeAmountD,setServiceChargeAmountD] =  useState<string>('10.00');
     const [OpenVireficationModal,setOpenVireficationModal] = useState<boolean>(false)
     const [OpenItemDiscountModal,setOpenItemDiscountModal] = useState<boolean>(false)
     const [OpenTradeDiscountModal,setOpenTradeDiscountModal] = useState<boolean>(false)
@@ -119,8 +131,37 @@ const ListOfDineInSalesOrder: React.FC<ListOfDineInSalesOrderProps>  = ({handlec
     const TransactionDSORef = useRef<HTMLDivElement>(null)
     const ItemDSORef = useRef<HTMLDivElement>(null)
     const CloseSORef = useRef<HTMLDivElement>(null)
-    
+      const [chatSocket, setChatSocket] = useState<WebSocket | null>(null);
+    const [ItemDiscountEntry,setItemDiscountEntry] = useState<any>([{
+            ItemCode:'',
+            LineNo:'',
+            Barcode:'',
+            Description:'',
+            Qty:'',
+            Price:'',
+            TotalAmount:0,
+            DiscountedPrice:0,
+            ByAmount:0,
+            D1:0,
+            D2:0,
+            D3:0,
+            D4:0,
+            D5:0,
+        }])
 
+        const [SeniorDiscountData,setSeniorDiscountData] = useState({
+                SeniorID:'',
+                SeniorFulnname:'',
+                SeniorTIN:'',
+                SeniorCount:'',
+                SGuestCount:'',
+                SAmountCovered:'',
+                SVatSales:'',
+                SLessVat12:'',
+                SNetOfVat:'',
+                SLess20SCDiscount:'',
+                SDiscountedPrice:'',
+            })
 
     const [isFocus,setisFocus] = useState<any>(0)
 
@@ -139,8 +180,15 @@ const CloseButtonModal = () => {
 }
     //***************PRODUCT***************** */
     useEffect(() => {
+        if (!hasLoaded){
        dispatch(setGlobalIsLoading(true))
-        const fetchData = async () => {
+          fetchData();
+        sethasLoaded(true)
+        }
+    }, [hasLoaded]);
+
+    const fetchData = async () => {
+      dispatch(setGlobalIsLoading(true))
          
             try {
                 if (tableno !=''){
@@ -149,8 +197,19 @@ const CloseButtonModal = () => {
                         tableno: tableno // or use the dynamic value that you want
                     },withCredentials:true
                 });
-                setSalesOrderList(response.data);
-                console.log(response.data)
+                if (response.status ===200){
+                  if (response.data.Message==='Close'){
+                    if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                      const message = {'message': '','TableNO':'', };
+                      chatSocket.send(JSON.stringify(message));
+                    }
+
+                  handleclose()
+                  }else{
+                    setSalesOrderList(response.data);
+                  }
+                 
+                }
                 }else{
                   const response = await axios.get(`${BASE_URL}/api/sales-order-list/`, {
                     params: {
@@ -158,11 +217,13 @@ const CloseButtonModal = () => {
                     },withCredentials:true
                 });
                 setSalesOrderList(response.data);
+                 dispatch(setGlobalIsLoading(false))
                 }
   
   
 
               } catch (error: unknown) {
+                 dispatch(setGlobalIsLoading(false))
                 if (axios.isAxiosError(error)) {
                   const axiosError = error as AxiosError;
             
@@ -182,17 +243,13 @@ const CloseButtonModal = () => {
                 }
               }
             };
-        fetchData();
-    }, []);
-
 
     useEffect(() => {
         if (SalesOrderList.length > 0) {
-
+         
            const documentNumbers = SalesOrderList.map(item => item.document_no);
-
-           
             const fetchSalesOrderListing = async () => {
+               dispatch(setGlobalIsLoading(true))
                 try {
                     const response = await axios.get(`${BASE_URL}/api/sales-order-listing/`, {
                         params: {
@@ -207,18 +264,132 @@ const CloseButtonModal = () => {
                     // Handle response for sales-order-listing
                     setSalesOrderListing(response.data);
                     setCartItems(response.data)
-                   dispatch(setGlobalIsLoading(false))
+                    const data = response.data;
+
+                    data.map((item:any) => {
+                      if (item.is_SC == 'YES'){
+                          setDiscountType('SC')
+                          setSeniorDiscountData({
+                            SeniorID:item.senior_id,
+                            SeniorFulnname:item.senior_fullname,
+                            SeniorTIN:item.senior_tin,
+                            SeniorCount:item.senior_count,
+                            SGuestCount:item.senior_guest_count,
+                            SAmountCovered:item.senior_amount_covered,  
+                            SVatSales:item.senior_vat_sales,
+                            SLessVat12:item.senior_less_vat12,
+                            SNetOfVat:item.senior_net_of_vat,
+                            SLess20SCDiscount:item.senior_less_20sc_discount,
+                            SDiscountedPrice:item.senior_discounted_price,
+                          })
+                        
+
+                      }else{
+                       
+                      if (item.item_disc !=0){
+                         setDiscountType('ITEM')
+                          setDisEntry((prevEntries:any) => [
+                            ...prevEntries,     
+                         { ItemCode:item.barcode,
+                          LineNo:item.line_no,
+                          Barcode:item.barcode,
+                          Description:item.description,
+                          Qty:item.quantity,
+                          Price:item.price,
+                          TotalAmount:item.quantity * item.price,
+                          DiscountedPrice:0,
+                          ByAmount:item.item_disc,
+                          D1:item.desc_rate,
+                          D2:0,
+                          D3:0,
+                          D4:0,
+                          D5:0,}] )
+                      }}
+                        
+                    });
+                    setTimeout(() => {
+                       dispatch(setGlobalIsLoading(false))
+                    }, 100);
+                  
                 } catch (error) {
                   dispatch(setGlobalIsLoading(false))
                     console.error('Error fetching sales-order-listing:', error);
                 }
             };
-    
             fetchSalesOrderListing();
-
         }
     }, [SalesOrderList]);
     
+    useEffect(()=>{
+      const initiate = async () =>{
+        const socket = await SelectTableWebSocket()
+        setChatSocket(socket)
+    }
+    initiate()
+    },[])
+
+
+        //************GET SENIOR discount*************** */
+     
+             useEffect(()=>{
+              if (SalesOrderList.length > 0)  {
+
+                const so_no = SalesOrderList[0].SO_no || undefined
+                const terminal_no = SalesOrderList[0].terminal_no || undefined
+              
+                 const fecthSC =async () =>{
+                   try{
+                    dispatch(setGlobalIsLoading(true))
+                     const response = await axios.get(`${BASE_URL}/api/tmp-sc-discount/`,{
+                       params:{
+                         so_no :so_no,
+                         terminal_no : terminal_no,
+                       },withCredentials:true
+                     })
+     
+                     if (response.status===200){
+                      dispatch(setGlobalIsLoading(false))
+                      if (response.data.summary ){
+                        const summary = response.data?.summary?.[0] || {};
+
+                        const seniorDiscountData = {
+                               SeniorID:'',
+                              SeniorFulnname:'',
+                              SeniorTIN:'',
+                          SeniorCount: summary.SeniorCount != null ? String(summary.SeniorCount) : '',
+                          SGuestCount: summary.SGuestCount != null ? String(summary.SGuestCount) : '',
+                          SAmountCovered: summary.SAmountCovered != null ? String(summary.SAmountCovered) : '',
+                          SVatSales: summary.SVatSales != null ? String(summary.SVatSales) : '',
+                          SLessVat12: summary.SLessVat12 != null ? String(summary.SLessVat12) : '',
+                          SNetOfVat: summary.SNetOfVat != null ? String(summary.SNetOfVat) : '',
+                          SLess20SCDiscount: summary.SLess20SCDiscount != null ? String(summary.SLess20SCDiscount) : '',
+                          SDiscountedPrice: summary.SDiscountedPrice != null ? String(summary.SDiscountedPrice) : '',
+                        };
+
+                        setSeniorDiscountData(seniorDiscountData);
+                     
+                      // setSeniorDiscountData(response.data.summary[0])
+                     const  SeniorNameList= response.data.details
+                     setDiscountType('SC')
+                     setDis(true)
+                     const x = {
+                      SeniorDiscountData:seniorDiscountData,
+                      SeniorNameList:SeniorNameList
+                     }
+
+                     setDisEntry(x)
+                     } }
+     
+                   
+                 }catch(error){
+                  dispatch(setGlobalIsLoading(false))
+                    console.log('')
+               }
+               }
+
+               fecthSC()
+              }
+             },[SalesOrderList]) 
 
     const ShowAllInListing = async() => {
       settmpSO(null)
@@ -283,7 +454,8 @@ const CloseButtonModal = () => {
         maximumFractionDigits: 2,
       }));
     }, [SalesOrderListing]); // Re-calculate totals when SalesOrderListing changes
-  
+    
+
 
     useEffect(() => {
         const handleKeyPress = (e: { keyCode: number; preventDefault: () => void; }) => {
@@ -374,7 +546,7 @@ const ClickShowOrderListing = async (index: number) => {
     const selectedItem:any = SalesOrderListing[index];
     setselectedRowIndexListing(index); 
     setSelectedItemDiscount(selectedItem)
-    console.log('xx',SelectedItemDiscount)
+
     OpenItemDiscountEntry(index);
   }
 
@@ -388,6 +560,7 @@ const handleSettleOrder = () => {
     'tableno': tableno,
     'DiscountData':DisEntry,
     'DiscountType':DiscountType,
+    'ServiceChargeAmountD':ServiceChargeAmountD,
     
   });
 };
@@ -470,7 +643,11 @@ const OKVerification = (data:any) => {
   }
   if (TypeofDisCount == 'Transaction'){
     OpenTransactionDiscountEntry();
-  }
+  }  if (TypeofDisCount == 'Delete SO'){
+    DeleteSO()
+  }  if (TypeofDisCount == 'Delete SO Listing'){
+   DeleteSOListing()
+  } 
 
 }
 
@@ -619,15 +796,25 @@ setDiscountType('TRANSACTION')
 
 
 useEffect(() => {
-  if (!isNaN(parseFloat(DisEntry.SLessVat12))) {
-    setSubTotal(parseFloat(TotalAmountD.replace(',','')) - (parseFloat(DisEntry.SLessVat12) + parseFloat(DisEntry.SLess20SCDiscount)));
+  if (DisEntry.SeniorDiscountData !==undefined) {
+    setSubTotal(parseFloat(TotalAmountD.replace(',','')) -
+    (parseFloat(DisEntry.SeniorDiscountData.SLessVat12) + 
+    parseFloat(DisEntry.SeniorDiscountData.SLess20SCDiscount) + parseFloat(ServiceChargeAmountD)
+  ));
   } else {
-    setSubTotal('0.00')
+    setSubTotal(TotalAmountD)
+  
   }
   
-}, [DisEntry.SLessVat12, TotalAmountD, DisEntry.SLess20SCDiscount,isFocusIndex]);
+}, [TotalAmountD,DisEntry,isFocusIndex]);
 
+const calculateDue = () => {
 
+  const x = String(SubTotal).replace(',','')
+
+  const total = parseFloat(x) + parseFloat(ServiceChargeAmountD);
+  return total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
 
 const PaymentModalHandleKeydown = (event:any,BackRef:any,CurrentRef:any,NextRef:any,index:any) => {
   event.preventDefault();
@@ -770,15 +957,79 @@ useEffect(() => {
 }, [isFocusIndex]);
 
 
-const PrintBill = () => {
-  console.log('print BIll')
-  printReceipt()
+const PrintBill = async () => {
+  dispatch(setGlobalIsLoading(true))
+  // console.log('print BIll')
+  // printReceipt()
+   try {
+    const response = await axios.get(`${BASE_URL}/api/print-bill/`, {
+    params: { tableno, queno },
+    responseType: 'arraybuffer',
+  });
+  const blob = new Blob([response.data], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  dispatch(setGlobalIsLoading(false))
+  setIsPdfModalOpen(true);
+  // show in iframe
+  setPdfPath(url);
+
+  // user can click "Print" button, which calls:
+  if (window.electronPDFPrint) {
+    const buffer = await fetch(url).then(res => res.arrayBuffer());
+      await window.electronPDFPrint.printPDF(buffer);
+  } else {
+    const win = window.open(url);
+    if (win) win.onload = () => win.print();
+  }
+
+}catch (error) {
+   dispatch(setGlobalIsLoading(false))
+    console.error('Error fetching print-bill:', error);
+}
+
 
 }
+
+
+const ClosePdfModal = () => {
+  setIsPdfModalOpen(false);
+}
+
+  const fetchPdfReceiptData = async (or:any) => {
+  try {
+
+    const response = await axios.get(`${BASE_URL}/api/receipt-pdf/`, {
+    params: { or },
+    responseType: 'arraybuffer',
+  });
+  const blob = new Blob([response.data], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+
+  // show in iframe
+  setPdfPath(url);
+
+  // user can click "Print" button, which calls:
+  if (window.electronPDFPrint) {
+    // const pdfBuffer = await fetch(pdfPath).then(res => res.arrayBuffer());
+    // const result = await window.electronAPI.printPDF(pdfBuffer);
+    // const buffer = await fetch(url).then(res => res.arrayBuffer());
+    //   await window.electronPDFPrint.printPDF(buffer);
+  } else {
+    const win = window.open(url);
+    if (win) win.onload = () => win.print();
+  }
+
+} catch (error) {
+  console.error("Error fetching PDF:", error);
+}
+  };
 
 const ViewCancelledSO = () => {
   console.log('View Cancelled SO')
 }
+
+///************* PRINT BILL****************** */
+
 
 
 
@@ -1133,6 +1384,66 @@ setViewCancelledSOModal(false)
 }
 
 
+const handleRemoveSO = async(index:any) =>{
+setSelectedRowIndex(index)
+setOpenVireficationModal(true)
+setTypeofDisCount('Delete SO')
+
+
+}
+
+const DeleteSO = async() =>{
+  if (selectedRowIndex !== null){
+  const list = SalesOrderList[selectedRowIndex]
+  dispatch(setGlobalIsLoading(true))
+
+  try{
+    const response = await axios.post(`${BASE_URL}/api/void-so/`,{
+      list :list,
+      tableno:tableno,
+      VerifiedBy,
+    },{withCredentials:true})
+    if (response.status===200){
+      dispatch(setGlobalIsLoading(false))
+      showSuccessAlert('SO Successfully Deleted')
+        fetchData()
+    }
+  }catch(error){
+    dispatch(setGlobalIsLoading(false))
+    showErrorAlert(error)
+  }}
+}
+const handleRemoveSOWithCode = (index:any) =>{
+  setTypeofDisCount('Delete SO Listing')
+  setselectedRowIndexListing(index)
+  setOpenVireficationModal(true)
+
+
+}
+
+const DeleteSOListing = async() =>{
+
+  if (selectedRowIndexListing !==null){
+  const list = SalesOrderListing[selectedRowIndexListing]
+    dispatch(setGlobalIsLoading(true))
+  try{
+    const response = await axios.post(`${BASE_URL}/api/void-so-listing/`,{
+      list :list,
+      tableno:tableno,
+      VerifiedBy
+    },{withCredentials:true})
+    if (response.status===200){
+      dispatch(setGlobalIsLoading(false))
+      showSuccessAlert('SO Successfully Deleted')
+      fetchData()
+    }
+  }catch(error){
+    dispatch(setGlobalIsLoading(false))
+    showErrorAlert(error)
+  }}
+
+}
+
   return (
     <div>
       
@@ -1161,7 +1472,7 @@ setViewCancelledSOModal(false)
             <div className='modal-contentSO'>
             <Grid container className="CreditCard-Container" spacing={2}>
 
-                <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
+                <Grid item xs={12} md={8} style={{ height: '100%',width:'100%'}}>
                   <div style={{ border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px',height:'100%'}}>
                   <div style={{display:'flex',flexDirection:'row'}}>
                   <h2 style={{ color: '#ffffff', backgroundColor: '#007bff',
@@ -1190,6 +1501,7 @@ setViewCancelledSOModal(false)
                           <th>Customer</th>
                           <th>Waiter</th>
                           <th>Guest</th>
+                          <th>#</th>
                       </tr>
                       </thead>
                       <tbody>
@@ -1209,6 +1521,14 @@ setViewCancelledSOModal(false)
                           <td style={{textAlign:'center'}} >{item.customer_name}</td>
                           <td style={{textAlign:'center'}} >{item.waiter_id}</td>
                           <td style={{textAlign:'center'}} >{item.guest_count}</td>
+                          <td style={{ textAlign: 'center'}}>
+                              <FontAwesomeIcon
+                                icon={faTrash}
+                                title='Remove Item'
+                                onClick={() => handleRemoveSO(index)} // Handle delete action
+                                style={{ cursor: 'pointer', color: 'red' }}
+                                />
+                            </td>
 
                               </tr>
                           ))
@@ -1238,76 +1558,93 @@ setViewCancelledSOModal(false)
                           <th>Description</th>
                           <th>Unit Cost</th>
                           <th>Total Amount</th>
+                          <th>#</th>
                     
                       </tr>
                       </thead>
                       <tbody>
-                      {Array.isArray(SalesOrderListing) && SalesOrderListing.length > 0 ? (
-                      SalesOrderListing.map((item, index :number) => (
-                         <>
-                  
-                        <tr key={index} onDoubleClick={() => OpenButtonModal} onClick={() => ClickShowOrderListing(index)} style={{
-                            backgroundColor: selectedRowIndexListing === index ? ' #007bff' : 'transparent',
-                          }}> 
-                          <td style={{textAlign:'center'}} >{item.so_no}</td>
-                          <td style={{textAlign:'center'}} >{item.quantity *1}</td>
-                          <td style={{textAlign:'start'}} title={item.description}>{item.description}</td>
-                          <td style={{textAlign:'end'}}>{item.price}</td>
-                          <td style={{ textAlign: 'end' }}>
-                              {(item.quantity * item.price).toLocaleString(undefined, {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                              })}
-                        </td>
-                        </tr>
-                        {DiscountType === 'ITEM' && (
-                            <>
-                              {DisEntry && DisEntry.map((item1: any, index: number) => {
-                                    let line_no = 0
-                                    if (item.line_no === undefined){
-                                      line_no = item.lineno
-                                    }else{
-                                      line_no = item.line_no
-                                    }
+                            {Array.isArray(SalesOrderListing) && SalesOrderListing.length > 0 ? (
+                            SalesOrderListing.map((item, index: number) => (
+                              <React.Fragment key={index}>
+                                <tr
+                                  onDoubleClick={() => OpenButtonModal()} // ✅ must call the function
+                                  onClick={() => ClickShowOrderListing(index)}
+                                  style={{
+                                    backgroundColor: selectedRowIndexListing === index ? '#007bff' : 'transparent',
+                                  }}
+                                >
+                                  <td style={{ textAlign: 'center' }}>{item.so_no}</td>
+                                  <td style={{ textAlign: 'center' }}>{item.quantity * 1}</td>
+                                  <td style={{ textAlign: 'start' }} title={item.description}>
+                                    {item.description}
+                                  </td>
+                                  <td style={{ textAlign: 'end' }}>{item.price}</td>
+                                  <td style={{ textAlign: 'end' }}>
+                                    {(item.quantity * item.price).toLocaleString(undefined, {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
+                                  </td>
+                                  <td style={{ textAlign: 'center' }}>
+                                    <FontAwesomeIcon
+                                      icon={faTrash}
+                                      title="Remove Item"
+                                      onClick={() => handleRemoveSOWithCode(index)}
+                                      style={{ cursor: 'pointer', color: 'red' }}
+                                    />
+                                  </td>
+                                </tr>
 
-                                  if (item.barcode === item1.Barcode && line_no === item1.LineNo) {
-                                  return (
-                                    <tr key={item1.id} style={{ border: 'none', color: 'red', fontWeight: 'bold' }}>
-                                      <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>
-                                        <FontAwesomeIcon
-                                          icon={faTrash}
-                                          onClick={() => onDeleteItem(index)} // Handle delete action
-                                          style={{ cursor: 'pointer', color: 'red' }}
-                                        />
-                                      </td>
-                                      <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}>
-                                        {item1.D1}% DISC: {item1.Description}
-                                      </td>
-                                      <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>
-                                        -{parseFloat(item1.ByAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                      </td>
-                                    </tr>
-                                  );
-                                } else {
-                                  // Return null (or any placeholder) if the barcode does not exist in SalesOrderListing
-                                  return null;
-                                }
-                              })}
-                            </>
+                                {DiscountType === 'ITEM' && Array.isArray(DisEntry) && DisEntry.length > 0 && (
+                                  <>
+                                    {DisEntry.map((item1: any) => {
+                                      // ✅ safer variable resolution
+                                      const line_no = item.line_no ?? item.lineno;
 
-                          )}
-                        </>
-                          ))
-                          ) : (
-                                // {isLoading && <InProgressLoading/>}
-                          <tr>
-                              <td colSpan={4}>No items in the transaction</td>
-                          </tr>
-                      )}
+                                      if (item.barcode === item1.Barcode && line_no === item1.LineNo) {
+                                        return (
+                                          <tr
+                                            key={`discount-${item1.id}-${index}`}
+                                            style={{ border: 'none', color: 'red', fontWeight: 'bold' }}
+                                          >
+                                            <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>
+                                              <FontAwesomeIcon
+                                                icon={faTrash}
+                                                onClick={() => onDeleteItem(index)}
+                                                style={{ cursor: 'pointer', color: 'red' }}
+                                              />
+                                            </td>
+                                            <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}>
+                                              {item1.D1}% DISC: {item1.Description}
+                                            </td>
+                                            <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>
+                                              -
+                                              {parseFloat(item1.ByAmount).toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                              })}
+                                            </td>
+                                          </tr>
+                                        );
+                                      }
+                                      return null; // skip if no match
+                                    })}
+                                  </>
+                                )}
+                              </React.Fragment>
+                            ))
+                            ) : (
+                              <tr>
+                                <td colSpan={6} style={{ textAlign: 'center' }}>
+                                  No items in the transaction
+                                </td>
+                              </tr>
+                            )}                    
 
-                        { Dis && (
+
+                      
                           <>
-                           { DiscountType === 'SC' && (
+                           { (DisEntry.SeniorDiscountData && DiscountType === 'SC') && (
                             <>
                               <tr style={{ border: 'none', borderCollapse: 'collapse' }}>
                                 <td colSpan={5}></td>
@@ -1336,33 +1673,10 @@ setViewCancelledSOModal(false)
 
                           )}
                           
-                          {/* {DiscountType === 'ITEM' && (
-                            <>
-                              <tr style={{ border: 'none', borderCollapse: 'collapse' }}>
-                                <td colSpan={5}></td>
-                              </tr>
-                              {DisEntry && DisEntry.map((item: any,index:number) => (
-                              <tr key={item.id} style={{ border: 'none', color: 'red', fontWeight: 'bold' }}>
-                                  <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>
-                                    <FontAwesomeIcon
-                                      icon={faTrash}
-                                      onClick={() => onDeleteItem(index)} // Handle delete action
-                                      style={{ cursor: 'pointer', color: 'red' }}
-                                    />
-                                  </td>
-                                <td colSpan={3} style={{ textAlign: 'center', border: 'none' }}>{item.D1}% DISC: {item.Description}</td>
-                                <td colSpan={1} style={{ textAlign: 'center', border: 'none' }}>-{parseFloat(item.ByAmount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-
-                              </tr>
-                            ))}
-                            
-                            </>
-
-                          )} */}
-
+                         
 
                           </>
-                        )}
+                       
                       </tbody>
                       </Table>
 
@@ -1385,7 +1699,7 @@ setViewCancelledSOModal(false)
 
                             <Typography sx={{  fontSize: { xs: '0.5rem', sm: '0.5rem', md: '0.6rem', lg: '0.7rem', xl: '0.8rem' },
                               fontWeight: 'bold', margin: '1px', width:'90%',  color: 'blue', textAlign:'end',
-                              padding: '2px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  }}> {SubTotal} </Typography>
+                              padding: '2px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  }}> {SubTotal}</Typography>
                           </div>
 
                           <div style={{display:'flex',flexDirection:'row',width:'90%'}}>
@@ -1396,7 +1710,7 @@ setViewCancelledSOModal(false)
 
                             <Typography sx={{  fontSize: { xs: '0.5rem', sm: '0.5rem', md: '0.6rem', lg: '0.7rem', xl: '0.8rem' },
                               fontWeight: 'bold', margin: '1px', width:'90%',  color: 'blue', textAlign:'end',
-                              padding: '2px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  }}>0.00 </Typography>
+                              padding: '2px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  }}>{ServiceChargeAmountD}</Typography>
                           </div>
 
                           <div style={{display:'flex',flexDirection:'row',width:'90%'}}>
@@ -1407,7 +1721,7 @@ setViewCancelledSOModal(false)
 
                             <Typography sx={{  fontSize: { xs: '0.5rem', sm: '0.5rem', md: '0.6rem', lg: '0.7rem', xl: '0.8rem' },
                               fontWeight: 'bold', margin: '1px', width:'90%',  color: 'blue', textAlign:'end',
-                              padding: '2px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  }}>{TotalAmountD}
+                              padding: '2px', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',  borderRadius: '5px'  }}>{calculateDue()}
                               </Typography>
                           </div>
                           </div>
@@ -1417,7 +1731,7 @@ setViewCancelledSOModal(false)
                 </Grid>
 
 
-            <Grid item xs={12} md={5} style={{ height: '100%',width:'100%'}}>
+            <Grid item xs={12} md={4} style={{ height: '100%',width:'100%'}}>
 
               <div style={{width:'100%' , border: '2px solid #4a90e2', borderRadius: '10px', padding: '10px'}}>
                 <div className="Payment">
@@ -1498,7 +1812,16 @@ setViewCancelledSOModal(false)
                       <img src= {ViewCancellSOImage} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
                     </div>
 
-                      
+                      <div     
+                        style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
+                        alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                        borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                        }}>
+
+                        <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+                        Remove Discounts</p>
+                        <img src= {credit} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                      </div>
 
                   </div>
 
@@ -1648,6 +1971,9 @@ setViewCancelledSOModal(false)
             </div>
               
 
+        
+
+
             <div     
               style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
               alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
@@ -1679,6 +2005,18 @@ setViewCancelledSOModal(false)
               <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
                Settle Bill</p>
               <img src= {Multiple} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+            </div>
+
+
+                <div     
+              style={{border: '1px solid #4a90e2',padding: '5px',height: '115px', display: 'flex',flexDirection: 'column',
+              alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+              }}>
+
+              <p style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,height:'70px' ,fontSize:'15px' ,fontWeight:'bold' ,color:'blue',textAlign:'center'}}>
+              Remove Discounts</p>
+              <img src= {credit} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
             </div>
               
 
@@ -1786,6 +2124,10 @@ setViewCancelledSOModal(false)
                   {ViewCancelledSOModal && <ViewCancelledSOData handleclose={CloseViewCancelledSO} />}
                   {OpenTradeDiscountModal && <TradeDiscountList handleClose={CloseTradeDiscountsEntry} SalesOrderListings ={SalesOrderListing} TradeData={SaveTradessDiscountEntry}/>}
                   {OpenTransactionDiscountModal && <TransactionDiscount handleClose={CloseTransactionDiscountsEntry} SalesOrderListings ={SalesOrderListing} TransactionData={SaveTransactionDiscountEntry}/>}
+    
+                    {pdfPath && (
+                            <PdfModal open={isPdfModalOpen} handleClose={ClosePdfModal} pdfPath={pdfPath} />
+                          )}
     </div>
   );
 };

@@ -13,6 +13,12 @@ import { isDesktop } from 'react-device-detect';
 import Swal from 'sweetalert2';
 import { AnyComponent } from 'styled-components/dist/types';
 
+import { setGlobalIsLoading } from "../globalSlice";
+import { RootState } from "../store";
+import { useSelector,useDispatch } from "react-redux";
+import { InProgressLoading } from "../Loader/Loader";
+import { useScreenSize } from '../ScreenHeightContext';
+
 const swalWithBootstrapButtons = Swal.mixin({
     customClass: {
       confirmButton: 'btn btn-success',
@@ -29,10 +35,14 @@ interface User {
 
 
 const WaiterProfile: React.FC = () => {
+    const { width, height, orientation } = useScreenSize();
+    const dispatch = useDispatch()
+    const isLoading = useSelector((state:RootState)=>state.global.globalIsLoading)
     const [OpenEmployeeModal,setOpenEmployeeModal] = useState<boolean>(false)
     const [OpenaddUsermodal,setOpenaddUsermodal] = useState<boolean>(false)
     const [users, setUsers] = useState<any[]>([]);
     const [Employee, setEmployee] = useState<any[]>([]);
+    const [TmpEmployee, setTmpEmployee] = useState<any[]>([]);
     const [user, setUser] = useState<User>({
         waiter_id:'',
         waiter_name: '',
@@ -45,23 +55,40 @@ const WaiterProfile: React.FC = () => {
     // const idCodeRef = useRef<HTMLInputElement>(null);
     const EmployeeRef = useRef<HTMLUListElement>(null);
     const [selectedItemIndex, setSelectedItemIndex] = useState<any>(0);
+
+
     useEffect(() => {
-        // Fetch data when the component mounts
+
         fetchData();
-    }, []); // Empty dependency array to run this effect only once
+        fetchEmployee();
+    }, []); 
 
  const fetchData = async () => {
+
         try {
+
+            dispatch(setGlobalIsLoading(true))
             const response = await axios.get(`${BASE_URL}/api/view-waiter/`); // Replace 'API_ENDPOINT' with your actual endpoint
             if (response.status == 200){
-                setUsers(response.data.userList);
+               dispatch(setGlobalIsLoading(false))
+               setUsers(response.data.userList);
             }
 
         } catch (error) {
+            dispatch(setGlobalIsLoading(false))
             console.error('Error fetching data:', error);
         }
     };
 
+    const fetchEmployee =async () =>{
+      const result = await axios.get(`${BASE_URL}/api/employee-list/`,{withCredentials:true }); 
+        if (result) {
+            // setOpenEmployeeModal(true);
+            setEmployee(result.data.EmployeeList);
+            setTmpEmployee(result.data.EmployeeList)
+        }}
+
+    
 const handleInputChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, 
         fieldName: keyof User
@@ -76,6 +103,8 @@ const handleInputChange = (
 
     const handleSubmit = async () => {
 
+      if(user.waiter_id==='') return
+
         swalWithBootstrapButtons.fire({
             title: 'Confirmation',
             text: "Do you want Add Waiter?",
@@ -88,6 +117,7 @@ const handleInputChange = (
                   }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
+                  dispatch(setGlobalIsLoading(true))
                     const response = await axios.post(`${BASE_URL}/api/add-waiter/`, user);
 
                     if (response.status !== 200) {
@@ -115,7 +145,7 @@ const handleInputChange = (
                     }
 
                 } catch (error: any) {
-
+                dispatch(setGlobalIsLoading(false))
                     Swal.fire({
                         title: 'Error',
                         text: 'Error creating Waiter Duplication is Not Allowed: ' + error,
@@ -243,19 +273,27 @@ const handleInputChange = (
 
 
 
-const AddUser =() => {
+const AddUser = async() => {
         setOpenaddUsermodal(true)
+ 
+       
         setUser({
             waiter_id:'',
             waiter_name: '',
         });
         setisEdit(false)
 
+      setTimeout(() => {
+    if (fullnameRef.current) {
+        fullnameRef.current.focus();
     }
-    const CloseModal =() => {
-        setOpenaddUsermodal(false)
-        setisEdit(false)
-            }
+        }, 100);
+
+    }
+const CloseModal =() => {
+    setOpenaddUsermodal(false)
+    setisEdit(false)
+    }
 
 const handleRetrieveUserData = (index: number) => {
                 if (users[index]) {
@@ -270,8 +308,6 @@ const handleRetrieveUserData = (index: number) => {
                   console.error('Index out of range or user not found');
                 }
     };
-
-
 
 
 const ClickEmployeeList = (index:any) => {
@@ -308,13 +344,14 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
         }
       
         if (nextIndex !== undefined && listItems && nextIndex >= 0 && nextIndex < listItems.length) {
-          const prevSelectedItem = document.querySelector('.ul-list .selected');
+          const prevSelectedItem = document.querySelector('.selected');
           if (prevSelectedItem) {
             prevSelectedItem.classList.remove('selected');
           }
       
           const nextListItem = listItems[nextIndex] as HTMLElement;
           if (nextListItem) {
+            
             nextListItem.focus();
       
             setSelectedItemIndex(nextListItem);
@@ -325,6 +362,7 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
             })
             // Add the 'selected' class to the newly selected item
             nextListItem.classList.add('selected');
+
           }
         }
       }
@@ -349,44 +387,72 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
 
   };
 
+  
+useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+
+  if (e.key === 'Escape') {
+        e.preventDefault();
+        if (OpenEmployeeModal){
+          setOpenEmployeeModal(false)
+          fullnameRef.current?.focus()
+        }else if(OpenaddUsermodal) {
+           setOpenaddUsermodal(false)
+
+        }
+        
+    }else if (e.key ==='F5'){
+      e.preventDefault()
+    }else   if (e.ctrlKey && e.key.toLowerCase() === 's') {
+      e.preventDefault()
+      if(OpenaddUsermodal && !OpenEmployeeModal) {
+             handleSubmit()
+        }
+    
+    }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [OpenEmployeeModal,OpenaddUsermodal]);
+
+
+
   const handleSearchInputChange = async (e:any, inputIdentifier :any) => {
     try {
-        if (e===''){
-            setOpenEmployeeModal(false)
-            return;
+        if (e==='') return
+      const filtered = TmpEmployee.filter((item:any)=>String(item.last_name).toLocaleLowerCase().includes(e.toLocaleLowerCase()) ||
+        String(item.first_name).toLocaleLowerCase().includes(e.toLocaleLowerCase()) )
+      
+        if (filtered){
+          setSelectedItemIndex(0)
+          setOpenEmployeeModal(true)
+          setEmployee(filtered)
         }
-        if (inputIdentifier === 'Waiter') {
-            const result = await axios.get(`${BASE_URL}/api/employee-list/`,{
-              params: {
-                employee:e
-              }
-            }); 
             
-            if (result) {
-                setOpenEmployeeModal(true);
-                setEmployee(result.data.EmployeeList);
-            
-            }}
+    }catch (error) {
+       console.error(error);
+    }
+  }
 
-            
-          }  catch (error) {
-              console.error(error);
-              }
-        }
 
     return (
         <>
         <Grid container style={{justifyContent:'start',}}>
         
-            <Grid item xs={12} sm={8} md={6} lg={6} style={{margin:'10px',padding: '5px',
+            <Grid item lg={12} style={{margin:'10px',padding: '5px',
                 alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                 borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                height:height-80
                 }}>
 
                 <div style={{display:'flex',flexDirection:'row',width:'100%',textAlign:'end'}}>
 
                         
-                <div style={{width:'100%'}}>
+                <div style={{display:'flex',flexDirection:'row',width:'100%' }}>
                 <Typography
                             variant="h2" // Adjust variant as needed (h1, h2, h3, etc.)
                             sx={{
@@ -394,17 +460,22 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
                             textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
                             borderRadius: '10px',
                             color: 'blue',
-                            fontWeight:'bold'
+                            fontWeight:'bold',
+                            textAlign:'center',
+                            width:'100%',
                             }} > Waiter Profile
-                        </Typography>
+                </Typography>
+
+
+             
+                <FontAwesomeIcon icon={faPlus} style={{display:'flex',fontSize:'25px',
+                  color:'blue',justifyContent:'flex-end'}} 
+                  onClick={AddUser}></FontAwesomeIcon>
                 </div>
 
-                <div style={{margin:'5px',textAlign:'end',width:'70%'}}>
-                <FontAwesomeIcon icon={faPlus} style={{fontSize:'25px',marginRight:'20px',color:'blue'}} onClick={AddUser}></FontAwesomeIcon>
-                <FontAwesomeIcon icon={faPrint} style={{fontSize:'25px',marginRight:'20px',color:'blue'}} onClick={AddUser}></FontAwesomeIcon>
+           
             </div>
-            </div>
-            <div className="Transaction" style={{ overflow: 'auto' ,height:'250px',width:'100%', border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '1px' }}>
+            <div style={{ height:height -140,overflow: 'auto', border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '1px' }}>
 
                 <Table className="Waiter list" sx={{
                                 fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
@@ -438,8 +509,8 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
 
             {OpenaddUsermodal && (
                  <div className="modal">
-                 <div className="modal-content">
-                            <Grid item xs={12} sm={12} md={12} lg={12} style={{margin:'0px',padding: '0px', display: 'flex',flexDirection: 'column',width:'300px',
+                 <div className="modal-content" style={{width:'500px'}}>
+                            <Grid item xs={12} sm={12} md={12} lg={12} style={{margin:'0px',padding: '0px', display: 'flex',flexDirection: 'column',
                             alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                             borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
                             }}>
@@ -451,17 +522,17 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
                                 textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
                                 borderRadius: '10px',
                                 padding: '10px',
-                                color: 'red !important',
+                                color: 'blue',
                                 fontWeight:'bold'
                                 }} > Waiter Profile
                             </Typography>
                                
-                                <form onSubmit={handleSubmit} style={{margin:'10px',width:'90%'}}>
+                                <div style={{margin:'10px',width:'90%'}}>
                                     <div>
+                                      <label>Employee Name:</label>
                                     <TextField
-                                    label="Full Name"
                                         placeholder="Full Name"
-                                        ref={fullnameRef}
+                                        inputRef={fullnameRef}
                                         value={user.waiter_name}
                                         onInput={(e: React.ChangeEvent<HTMLInputElement>)=> handleSearchInputChange(e.target.value, 'Waiter')}
                                         onChange={(e) => handleInputChange(e, 'waiter_name')}
@@ -469,32 +540,75 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
                                         onKeyDown={(event) => handleKeys(event, 'Waiter')}
                                         variant='outlined'
                                         autoComplete='off'
-                                        style={{
-                               
-                                            borderRadius: '4px',
-                                            fontSize: '16px',
-                                            marginBottom: '10px',
-                                        }}
-                                    />
 
-                                            {OpenEmployeeModal && (
-                                            <div className='Waiter-Container' style={{ height: '25%' ,zIndex:'1',overflow:'auto',top:'400px'}}>
-                                                <ul id="list" className='ul-list Waiter' onKeyDown={(event) => handleKeys(event, 'Waiter')}  ref={EmployeeRef}>
-                                                {Employee.map((result,index) => (
-                                                    <li tabIndex={0} key={index} className={selectedItemIndex === index ? 'selected' : ''}
-                                                    onKeyDown={(event) => handleKeys(event, 'Waiter')} 
-                                                    onClick={() => ClickEmployeeList(index)}
-                                                    >{result.id_code} - {result.first_name} {result.middle_name} {result.last_name}</li>
-                                                        ))}
-                                                    </ul>
-                                                    </div>
-                                                    )}
-            
-                                                 </div>
+                                    />
+                                    </div>
+                                      {OpenEmployeeModal && (
+                                              <div
+                                                  style={{
+                                                    position: 'fixed',
+                                                    top: '53%',
+                                                    left: '50%',
+                                                    transform: 'translateX(-50%)',
+                                                    width: '400px',
+                                                    maxHeight: '300px',
+                                                    zIndex: 1000,
+                                                    backgroundColor: '#fff',
+                                                    borderRadius: '8px',
+                                                    boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                                                    overflow: 'hidden',
+                                                  }}
+                                                >
+                                                  <div
+                                                    style={{
+                                                      padding: '10px',
+                                                      borderBottom: '1px solid #ccc',
+                                                      display: 'flex',
+                                                      justifyContent: 'space-between',
+                                                      alignItems: 'center',
+                                                    }}
+                                                  >
+                                                    <h3 style={{color:'blue'}}>Employee List</h3>
+                                                    <a className='fas fa-times'
+                                                    onClick={()=>{setOpenEmployeeModal(false)}}
+                                                    style={{color:'blue',cursor:'pointer'}}/>
+                                                  </div>
+                                                  <ul
+                                                    ref={EmployeeRef}
+                                                    style={{
+                                                      listStyle: 'none',
+                                                      margin: 0,
+                                                      padding: 0,
+                                                      maxHeight: '250px',
+                                                      overflowY: 'auto',
+                                                    }}
+                                                    tabIndex={0}
+                                                    onKeyDown={(event) => handleKeys(event, 'Waiter')}
+                                                  >
+                                                    {Employee.map((emp:any, index) => (
+                                                      <li
+                                                        key={index}
+                                                        tabIndex={0}
+                                                        style={{
+                                                          padding: '8px 12px',
+                                                          cursor: 'pointer',
+                                                          // backgroundColor: selectedItemIndex === index + 1 ? '#007bff' : 'transparent',
+                                                          // color: selectedItemIndex === index ? '#fff' : '#000',
+                                                        }}
+                                                        className={selectedItemIndex === index + 1 ? 'selected':''}
+                                                        onClick={() => ClickEmployeeList(index)}
+                                                        onKeyDown={(event) => handleKeys(event, 'Waiter')}
+                                                      >
+                                                        {emp.id_code} - {emp.first_name} {emp.middle_name ? emp.middle_name + ' ' : ''}
+                                                        {emp.last_name}
+                                                      </li>
+                                                    ))}
+                                                  </ul>
+                                                </div>
+                                              )} 
+                                  
                                
-                    
-                        
-                                    
+
                                     <div style={{display:'flex',flexDirection:'row'}}>
                                       {isEdit ? (
                                     <><Button type="button" variant="contained" color="primary" fullWidth style={{ margin: '5px', backgroundColor: '#007bff' }}
@@ -514,7 +628,7 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
                                     <Button type="button" variant="contained" color="primary" fullWidth style={{margin:'5px',backgroundColor:'red'}} onClick={CloseModal}> Close</Button>
                                     </div>
 
-                                </form>
+                                </div>
             
                                 
                             
@@ -522,6 +636,9 @@ const handleKeys = (event :any,  inputIdentifier :any) => {
                         </div>
                         </div>
             )}
+
+          
+
                
         </Grid></>
     );

@@ -10,6 +10,10 @@ import { isDesktop } from "react-device-detect";
 import OnScreenKeyboard from "./KeyboardGlobal";
 import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";
 import Verification from "./Verification";
+import { motion } from "framer-motion";
+import { CircleHelp } from "lucide-react"; // question mark icon
+import axios from "axios";
+import { BASE_URL } from "../config";
 
 
 interface SeniorCitezenDiscountData{
@@ -39,6 +43,10 @@ const SeniorCitezenDiscount: React.FC<SeniorCitezenDiscountData> = ({handleClose
     const SaveButtonRef = useRef<HTMLButtonElement>(null)
     const ViewListRef = useRef<HTMLButtonElement>(null)
     const CloseRef = useRef<HTMLButtonElement>(null)
+    const NoRef = useRef<HTMLButtonElement>(null)
+    const YesRef = useRef<HTMLButtonElement>(null)
+
+  
 
     const [isdisabled,setisdisabled] = useState<boolean>(false)
     const [isdisabledOveride,setisdisabledOveride] = useState<boolean>(true)
@@ -125,7 +133,7 @@ useEffect(() => {
 const ComputeDisCount = (e:any) => {
     if (e){
         const tmp : any =   parseInt(e)  / parseInt(SeniorDiscountData.SGuestCount)
-    
+        
         const SAmountCoveredTotal  =  parseFloat(amountcover.replace(',','')) * tmp 
         const NetSale  =  SAmountCoveredTotal / (0.12 + 1 )
         const NetSale12 =  SAmountCoveredTotal - NetSale
@@ -147,7 +155,7 @@ const ReComputeDisCount = (e:any) => {
     if (e){
         const tmp : any =   parseInt(e)  / parseInt(SeniorDiscountData.SGuestCount)
     
-        const SAmountCoveredTotal  =  parseFloat(SeniorDiscountData.SAmountCovered.replace(',','')) * tmp 
+        const SAmountCoveredTotal  =  parseFloat(amountcover.replace(',','')) * tmp 
         const NetSale  =  SAmountCoveredTotal / (0.12 + 1 )
         const NetSale12 =  SAmountCoveredTotal - NetSale
         const DisCount  = (SAmountCoveredTotal - NetSale12 ) * 0.2
@@ -251,6 +259,10 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
     
                 setmessage("Do you want to AddNew Senior?")
                 setInfoModal(true)
+
+                setTimeout(() => {
+                    YesRef.current?.focus()
+                }, 100);
             }else{
                 showErrorAlert('Total Senior Count Exceeds Guest Count')
             }
@@ -322,9 +334,39 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
     showOnScreenKeybaord('SAmountCovered')
     
     }
+
+
+    const SaveDiscount = async (list:any,listing_details:any,data:any)=>{
+        try{
+            const so_no = SeniorOrderData[0].SO_no
+            const sales_trans_id = SeniorOrderData[0].document_no
+            const response = await axios.post(`${BASE_URL}/api/tmp-sc-discount/`,
+                    {list:list,
+                    listing:listing_details,so_no:so_no,
+                    sales_trans_id:sales_trans_id}
+                ,{withCredentials:true}
+            )
+
+            if(response.status===200){
+                return 
+            }
+
+        }catch(error){
+            Swal.fire({
+                icon:'error',
+                title:'Failed',
+                text:'Failed Request!',
+                timer:2000
+            })
+        }
+    }
+
     
-    const HandleSave = () => {
+    const HandleSave = async() => {
+        if (SeniorNameList.length === 0) return
+        await SaveDiscount(SeniorDiscountData,SeniorNameList,SeniorOrderData)
         SeniorData({SeniorDiscountData,SeniorNameList})
+     
     }
 
     // useEffect(() => {
@@ -397,8 +439,13 @@ const handleKeyDown = (event :any, currentRef : any, nextRef:any) => {
          if (index == 1){
           HandleSave()
          }
-         if (index == 2){
+         if (index == 2){0
           handleClose()
+         } if (index == 99){
+          SaveNewSenior('YES')
+         }
+          if (index == 100){
+              SaveNewSenior('NO')
          }
   
       }
@@ -657,7 +704,7 @@ const OpenVireficationEntry = (type:any) => {
 
         {OpenlistModal && 
           <div className="modal">
-          <div className="modal-content-senior">
+          <div className="modal-content-senior" >
             <div>
 
             <h2 style={{ textAlign: 'center', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', border: '2px solid #4a90e2',
@@ -687,19 +734,60 @@ const OpenVireficationEntry = (type:any) => {
                         </tbody>
             </Table>
             </div>
-            <button onClick={CloseModalList} style={{backgroundColor:'red',width:'90%' ,margin:'10PX'}}>CLOSE</button>
+            <Button onClick={CloseModalList} style={{backgroundColor:'red',width:'100%'}}>CLOSE</Button>
          </div>
          </div>
         }
          {InfoModal && <div className="modal">
-                <div className="modal-content">
-                    <p style={{fontSize:'20px',fontWeight:'bold'}}>{message}</p>
-                    <div className="Button-Container" style={{marginTop:'20px'}}>
-                        <button  style={{backgroundColor:'blue'}} className="btn-ok" onClick={()=>SaveNewSenior('YES')}>Yes</button>
-                        <button  className="btn-No" onClick={()=>SaveNewSenior('NO')}>No</button>
+                 <div className="modal-content" style={{ textAlign: "center", padding: "20px",width:'400px' }}>
+                    <div style={{ border: "1px solid blue", borderRadius: "10px", padding: "20px" }}>
+                        {/* Animated Question Icon */}
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
+                            transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 1 }}
+                            style={{ display: "inline-block", marginBottom: "10px" }}
+                        >
+                            <CircleHelp size={60} color="#6edf86ff" strokeWidth={1} />
+                        </motion.div>
+
+                        {/* Message */}
+                        <p
+                            style={{
+                            fontSize: "20px",
+                            fontWeight: "bold",
+                            color: "red",
+                            padding: "10px",
+                            }}
+                        >
+                            {message}
+                        </p>
+
+                        {/* Buttons */}
+                        <div className="Button-Container" style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
+                            <Button
+                            ref= {YesRef}
+                            onKeyDown={(e)=> HandleKeydownButton(e,NoRef,YesRef,NoRef,99)}
+                            tabIndex={99}
+                            style={{ backgroundColor: "blue", color: "white", padding: "8px 20px", borderRadius: "8px" }}
+                            className="btn-ok"
+                            onClick={() => SaveNewSenior("YES")}
+                            >
+                            Yes
+                            </Button>
+                            <Button
+                            tabIndex={20}
+                            ref= {NoRef}
+                             onKeyDown={(e)=> HandleKeydownButton(e,YesRef,NoRef,YesRef,100)}
+                            className="btn-No"
+                            style={{ backgroundColor: "red", color: "white", padding: "8px 20px", borderRadius: "8px" }}
+                            onClick={() => SaveNewSenior("NO")}
+                            >
+                            No
+                            </Button>
+                        </div>
+                        </div>
                     </div>
-                   
-                </div>
             </div>}
             {OpenVireficationModal && <Verification handleClose={CloseVerification} VerificationEntry={OKVerification}/>}
             {isShowKeyboardNumeric && < OnScreenKeyboardNumeric handleclose = {closekeyBoard}   currentv={''} setvalue={setvalue}/>}

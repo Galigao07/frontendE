@@ -149,6 +149,16 @@
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
   }
 
+   .modal-content-select-payment {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 800px;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+
   .modal-content-Addcart{
     background-color: #fefefe;
     padding: 20px;
@@ -258,6 +268,7 @@
 }
 
   .modal-contentTable {
+    position: relative;
     background-color: #fefefe;
     padding: 10px;
     border-radius: 10px;
@@ -570,6 +581,7 @@ font-weight:900px ;
   border-style: solid;
   border-width: 2px;
   border-color: #4a90e2 #86b7ff #86b7ff #4a90e2;
+ transition: background-color 0.3s ease, color 0.3s ease, filter 0.3s ease;
 }
 
 .otherCommandButton p {
@@ -587,6 +599,17 @@ font-weight:900px ;
   max-height: 60px;
   margin-bottom: 10px;
   flex: 0 0 auto;
+}
+
+
+.otherCommandButton:hover {
+  background-color: blue;
+
+}
+
+/* make image inside the button turn white */
+.otherCommandButton:hover p {
+  filter: brightness(0) invert(1);
 }
 
 h1 {

@@ -9,12 +9,12 @@
   "description": "TERMINAL 21",
   "dateIssue": "2024-09-01",
   "dateValid": "2030-12-31",
-  "host": "http://192.168.68.115:5173",
-  "ipaddress": "http://localhost",  
-  "ws": "ws://localhost",       
-  "port": "8000",                        
-  "socketport": "8001",                     
-  "printer":"Brother DCP-T420W Printer",
-  "pdf":"C:\\Users\\User\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe",
-  "pdfWorker": "pdf.worker.min.js"
+  "host": "https://192.168.68.115:5173",
+  "ipaddress": "https://192.168.68.110",
+  "ws": "wss://192.168.68.110",
+  "port": "",
+  "socketport": "",
+  "printer": "Brother DCP-T420W Printerxxxx",
+  "pdf": "C:\\Users\\User\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe",
+  "pdfWorker": "/pdf.worker.min.js"
 }

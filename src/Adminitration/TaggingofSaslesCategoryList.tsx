@@ -7,9 +7,17 @@ import {BASE_URL} from "../config";
 import { Table } from "@mui/material";
 import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
 import AcctTileSLName from "./AcctTileGlobal";
+import { setGlobalIsLoading } from "../globalSlice";
+import { RootState } from "../store";
+import { useSelector,useDispatch } from "react-redux";
+import { InProgressLoading } from "../Loader/Loader";
+import { useScreenSize } from '../ScreenHeightContext';
 
 
 const TaggingofSaslesCategoryList:React.FC = () => {
+    const { width, height, orientation } = useScreenSize();
+    const dispatch = useDispatch()
+    const isLoading = useSelector((state:RootState)=>state.global.globalIsLoading)
     const [OpenNonVatTable,setOpenNonVatTable] = useState<boolean>(false)
     const [OpenVatTable,setOpenVatTable] = useState<boolean>(true)
     const [OpenZeroRatedVatTable,setOpenZeroRatedVatTable] = useState<boolean>(false)
@@ -22,14 +30,17 @@ useEffect(()=> {
 
     const fetchdata = async () =>{
         try{
+            dispatch(setGlobalIsLoading(true))
 
             const response = await axios.get(`${BASE_URL}/api/tagging-sales-category/`)
             
             if (response.status == 200){
                 setlistOfdata(response.data)
+                 dispatch(setGlobalIsLoading(false))
             }
             
         }catch{
+                dispatch(setGlobalIsLoading(false))
             showErrorAlert('Error While Fetching Data')
         }
     }
@@ -93,14 +104,16 @@ const fetchdata = async () =>{
         }
 
         try{
-    
+        dispatch(setGlobalIsLoading(true))
             const response = await axios.post(`${BASE_URL}/api/tagging-sales-category/`,{data:listOfdata,vat_type:vat_type})
             
             if (response.status == 200){
                     showSuccessAlert(`Successfully Save`)
+                        dispatch(setGlobalIsLoading(false))
             }
     
         }catch{
+                dispatch(setGlobalIsLoading(false))
             showErrorAlert(`Error while Saving`)
         }
     }
@@ -303,7 +316,7 @@ const DataSend = (data:any) => {
                     <button tabIndex={2}  onClick={()=>ClickZeroRated()} style={{backgroundColor: isSelectedTable === 2 ? 'Red':'Blue'}}>Zero Rated</button>
                     <button tabIndex={3}  onClick={()=>ClickVatExcempt()} style={{backgroundColor: isSelectedTable === 3 ? 'Red':'Blue'}}>VAT Excempt</button>
                 </div>
-                <div className="table-container">
+                <div className="table-container" style={{height:height -250,overflow:'auto'}}>
                     {OpenVatTable && 
                     <Table>
                         <thead>

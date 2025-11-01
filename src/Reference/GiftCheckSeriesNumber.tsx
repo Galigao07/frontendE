@@ -19,6 +19,8 @@ import { RootState } from '../store';
 import { setGlobalIsLoading } from '../globalSlice';
 import DeleteIcon from "@mui/icons-material/Delete";
 import { GetCurrentDateAndTime, GetCurrentDateOnly } from '../global';
+import { useScreenSize } from '../ScreenHeightContext';
+
 const swalWithBootstrapButtons = Swal.mixin({
     customClass: {
       confirmButton: 'btn btn-success',
@@ -35,6 +37,7 @@ const swalWithBootstrapButtons = Swal.mixin({
     amount:number
   }
 const GiftCehckSeriesNumber = () =>{
+    const { width, height, orientation } = useScreenSize();
     const dispatch = useDispatch()
     const [TransNo,setTransNo] = useState<any>(0)
     const isLoading = useSelector((state:RootState)=>state.global.globalIsLoading)
@@ -276,11 +279,12 @@ useEffect(() => {
     return(
         <>
          <Grid container style={{justifyContent:'start',}}>
-                    <Grid item xs={12} style={{margin:'10px',padding: '5px',
+                    <Grid item lg={12} style={{margin:'10px',padding: '5px',
                         alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                         borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                        height:height -80
                         }}>
-                        <div style={{display:'flex',flexDirection:'row',textAlign:'end'}}>
+                        <div style={{display:'flex',flexDirection:'row'}}>
                             
                                 <Typography
                                         variant="h2" // Adjust variant as needed (h1, h2, h3, etc.)
@@ -304,7 +308,7 @@ useEffect(() => {
                            
                         </div>
         
-                        <div className="Transaction" style={{ overflow: 'auto' ,height:'500px',width:'100%', border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '1px' }}>
+                        <div className="Transaction" style={{ overflow: 'auto' , height:height -140,width:'100%', border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '1px' }}>
                             <Table className="Userlist" sx={{
                                         fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
                                         overflow: 'auto'

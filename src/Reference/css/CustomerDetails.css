@@ -2,13 +2,20 @@
 .right{
     border:1px solid #dee2e6;
     padding: 10px;
-  border-radius: 5px;}
+     border-radius: 5px;}
   .contact-primary {
+    
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    gap:'10px';
+
 }
 
+  .contact-primary .form-group{
+    width: '28%';
+    padding: 2px;
+  }
 
 .PrimarySub{
     border:1px solid #dee2e6;
@@ -21,7 +28,6 @@
 .form-group {
     display: flex;
     flex-direction: column;
-    /* padding-bottom: 5px; */
 }
 .contact{
     margin: 5px;
@@ -71,10 +77,9 @@ width: 50%;
 }
 
 
-/* .btn-tools{
-    width: 10%;
+.btn-tools.customer{
     height: 30px;
-} */
+}
 
 .status{
     margin-bottom: 10px;
@@ -221,14 +226,18 @@ ul li {
 }
 .customer-ul-list li:hover{
     outline: none;
-    background-color: var(--second-color);
+    background-color: blue;
+    color: white;
 }
 
 .customer-ul-list li:focus{
     outline: none;
-    background-color: var(--second-color);
+    background-color: blue;
+    color: white;
 }
 
 .input[disabled],.textarea[disabled],.select[disabled]{
     background-color: #f2f2f2 !important;
 }
+
+

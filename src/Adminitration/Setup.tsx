@@ -8,12 +8,20 @@ import { Table } from "@mui/material";
 import './css/Setup.css'
 import AcctTileSLName from "./AcctTileGlobal";
 import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
+import { setGlobalIsLoading } from "../globalSlice";
+import { RootState } from "../store";
+import { useSelector,useDispatch } from "react-redux";
+import { InProgressLoading } from "../Loader/Loader";
+import { useScreenSize } from "../ScreenHeightContext";
 interface TransTypeData {
     Transaction :string,
     TransType :string,
 }
 
 const Setup: React.FC<TransTypeData> = ({Transaction,TransType}) => {
+    const { width, height, orientation } = useScreenSize();
+    const dispatch = useDispatch()
+    const isLoading = useSelector((state:RootState)=>state.global.globalIsLoading)
     // const [type,setType] = useState<any>('')
     const [listOfdata,setlistOfdata] = useState<any>([])
     const [DebitTable ,setDebitTable] = useState<boolean>(false)
@@ -74,6 +82,7 @@ useEffect(()=> {
 
         const FecthData = async() => {
             try {
+                dispatch(setGlobalIsLoading(true))
                 HideTable()
                 let tpmType = ''
                 if (Transaction == 'Event Setup - Debit'){
@@ -108,9 +117,11 @@ useEffect(()=> {
                 if (response.status==200){
                     const data = response.data
                    setlistOfdata(data)
+                    dispatch(setGlobalIsLoading(false))
                 }
     
             }catch{
+                dispatch(setGlobalIsLoading(false))
                 showErrorAlert(`Error while Fetching Data in Transtype ${TransType}`)
             }
     
@@ -191,14 +202,16 @@ const DataSend = (data:any) => {
 
 const HandleClickConfigure = async() => {
     try{
-
+        dispatch(setGlobalIsLoading(true))
         const response = await axios.post(`${BASE_URL}/api/setup-configure/`,{data:listOfdata})
         
         if (response.status == 200){
+            dispatch(setGlobalIsLoading(false))
                 showSuccessAlert(`Successfully Save ${Transaction}`)
         }
 
     }catch{
+        dispatch(setGlobalIsLoading(false))
         showErrorAlert(`Error while Saving ${Transaction}`)
     }
 }
@@ -211,11 +224,11 @@ const HandleClickConfigure = async() => {
     };
     return (
         <div className="card">
-            <div className="card-body">
+            <div className="card-body" >
                 <h1>{Transaction}</h1>
-                <div className="card">
+                <div className="card" style={{height:height -250,overflow:'auto'}}>
 
-
+                {/* {isLoading && <InProgressLoading/>} */}
                 {DebitTable &&
                     <Table>
                         <thead>

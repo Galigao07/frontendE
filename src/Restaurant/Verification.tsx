@@ -10,8 +10,9 @@ import { isDesktop } from 'react-device-detect';
 import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
 import OnScreenKeyboard from './KeyboardGlobal';
 import showErrorAlert from '../SwalMessage/ShowErrorAlert';
-import { setGlobalIsLoading } from '../globalSlice';
+import { setGlobalIsLoading,setGlobalVerifiedBy } from '../globalSlice';
 import { useDispatch } from 'react-redux';
+import { info } from 'pdfjs-dist/types/src/shared/util';
 
 interface VerificationData {
     handleClose:() => void;
@@ -58,6 +59,8 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
                     VeriuserRank:UserRank,
                     VeriFullname:FullName
                 })
+                const x = [Info]
+                dispatch(setGlobalVerifiedBy(x))
                 localStorage.setItem('Discounted_by',FullName)
                    dispatch(setGlobalIsLoading(false));
                 } }else{
@@ -191,7 +194,7 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
 
     
       <div className="modal">
-        <div className="modal-content">
+        <div className="modal-content" style={{width:'500px'}}>
           <div className="Verification-Container" style={{display:'flex',flexDirection:'column'}}>
             <div style={{margin:'10px'}}>
             <Typography      
@@ -218,7 +221,7 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
                         ref={UserRef}
                         type="text"
                         autoComplete="off"
-                        style={{ width: '100%' }}
+                        style={{ width: '100%' ,height:'50px'}}
                         value={username}
                         onChange={handleUsernameChange}
                         onKeyDown={(e)=> HandleKeydown(e,UserRef,PasswordRef)}
@@ -233,7 +236,7 @@ const Verification: React.FC<VerificationData> = ({handleClose,VerificationEntry
                           ref={PasswordRef}
                           type="password"
                           autoComplete="off"
-                          style={{ width: '100%' }}
+                          style={{ width: '100%',height:'50px' }}
                           value={password}
                           // onFocus={()=> showOnScreenKeybaord('password')}
                           onClick={()=> showOnScreenKeybaord('password')}

@@ -64,45 +64,18 @@ import axios from 'axios'
 
 import { useDispatch, useSelector, UseSelector } from 'react-redux'
 import { UseDispatch } from 'react-redux'
-import { setGlobalIsLogin ,setGlobalIsLoading} from './globalSlice'
+import { setGlobalIsLogin ,setGlobalIsLoading,setGlobalSettings} from './globalSlice'
 import { RootState } from './store'
 import { useLoginSocket } from './Restaurant/websocketConnection'
 import { ReconnectingLoading } from './Loader/Reconnecting'
+import { GetSettingsGlobal } from './global'
 
 
 const history = createBrowserHistory();
  function App() {
   const navigate = useNavigate();
   const dispatch = useDispatch()
-   const { openSocket, sendMessage, closeSocket,isConnected } = useLoginSocket();
-
-  // const [count, setCount] = useState(0)
-
-  // return (
-  //   <>
-  //     <div>
-  //       <a href="https://electron-vite.github.io" target="_blank">
-  //         <img src={viteLogo} className="logo" alt="Vite logo" />
-  //       </a>
-  //       <a href="https://react.dev" target="_blank">
-  //         <img src={reactLogo} className="logo react" alt="React logo" />
-  //       </a>
-  //     </div>
-  //     <h1>Vite + React</h1>
-  //     <div className="card">
-  //       <button onClick={() => setCount((count) => count + 1)}>
-  //         count is {count}
-  //       </button>
-  //       <p>
-  //         Edit <code>src/App.tsx</code> and save to test HMR
-  //       </p>
-  //     </div>
-  //     <p className="read-the-docs">
-  //       Click on the Vite and React logos to learn more
-  //     </p>
-  //   </>
-  // )
-// }
+  const { openSocket, sendMessage, closeSocket,isConnected } = useLoginSocket();
 
 const [show,setShow] =  useState<boolean>(false)
 const [active,setActive] =  useState<string>("")
@@ -114,9 +87,6 @@ const isLoading = useSelector((state:RootState)=> state.global.globalIsLoading)
 const PrintSO = localStorage.getItem('PrintSO') === 'true';
 const userRank = localStorage.getItem('UserRank');
 const [openReports,setopenReports] = useState<boolean>(false)
-useEffect(()=>{
-  console.log('isLoading',isLoading)
-},[isLoading])
 
 // if (userRank === 'Cashier') {
 //   // Perform actions specific to the 'Admin' user rank
@@ -398,15 +368,54 @@ const logoutClick = async () => {
   }, [show]);
   
 
+useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+
+  if (e.key === 'Escape') {
+        e.preventDefault();
+        
+    }else if (e.key ==='F5'){
+      e.preventDefault()
+    }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, []);
+
+    const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const formattedDate = now.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        timeZoneName: 'short',
+      });
+      setCurrentDate(formattedDate);
+    };
+
+    updateTime(); // Set initial value immediately
+    const interval = setInterval(updateTime, 1000); // Update every second
+
+    return () => clearInterval(interval); // Clean up on unmount
+  }, []);
 
   return (
-
     <>
     
     <div> 
       {/* {isLogin && !isConnected && <ReconnectingLoading/>} */}
 
-     {isLoading && <InProgressLoading /> }
+     {isLoading &&  <InProgressLoading /> }
       {isLogin ? (
         userRank === 'Cashier' || userRank === 'Salesman' ? (
             <Restaurant/>
@@ -491,7 +500,7 @@ const logoutClick = async () => {
                                   }   to="/Product-Print-Category">Product Print Category</NavLink>
                      <NavLink  className={({ isActive }) =>
                                     isActive ? "nav-link1 active" : ""
-                                  }   to="/chartofaccounts" target="_blank">POS Site Code</NavLink>
+                                  }   to="">POS Site Code</NavLink>
                      <NavLink   className={({ isActive }) =>
                                     isActive ? "nav-link1 active" : ""
                                   }  to="/Video">Change Video</NavLink>
@@ -673,7 +682,8 @@ const logoutClick = async () => {
           <aside className={`sidebar ${show ? 'show' : null}`}>
               <nav className="nav">
                   <div>
-                      <span className={`nav-header-name ${show ? 'show' : null}`}>TASK PANE</span>
+                      <span className={`nav-header-name ${show ? 'show' : null}`}
+                      style={{display:show ? 'block':'none'}}>TASK PANE</span>
                       <div className="nav-list" >
                       <NavLink id='sidebutton' className={active === "1" ? "nav-link active" : "nav-link"} to="/Cash-Count" title="Sales Invoice">
                          <FontAwesomeIcon icon={faDollarSign} className="nav-link-icon" key={1} id={"icon1"}  />
@@ -695,19 +705,20 @@ const logoutClick = async () => {
                       </div>
                       
                       <br/><br/>
-                      <span className={`nav-header-name ${show ? 'show' : null}`}>USER LOGIN</span> <br /><br />
+                      <span className={`nav-header-name ${show ? 'show' : null}`}
+                       style={{display:show ? 'block':'none'}}>USER LOGIN</span> <br /><br />
                       <div className={`nav-details ${show ? null : 'show'}`}>
                           <div className="nav-col-user-details">
-                              <i className="fas fa-user nav-user-icon"></i>
-                              <span className="nav-user-details">{localStorage.username}</span>
+                              <i className="fas fa-user nav-user-icon" style={{color:'Blue'}}></i>
+                              <span className="nav-user-details">{localStorage.FullName}</span>
                           </div>
-                          <div className="nav-col-user-details">
+                          <div className="nav-col-user-details" style={{gap:'15px'}}>
                               <i className="fas fa-map-marker-alt custom-icon"></i>
-                              <span className="nav-user-details"> {localStorage.uldesc}</span>
+                              <span className="nav-user-details" > {localStorage.location}</span>
                           </div>
                           <div className="nav-col-user-details">
-                              <i className="fas fa-calendar-alt nav-user-icon"></i>
-                              <span className="nav-user-details">{localStorage.currentDate}</span>
+                              <i className="fas fa-calendar-alt nav-user-icon" style={{color:'blue'}}></i>
+                              <span className="nav-user-details" >{currentDate}</span>
                           </div>
                       </div>
                       

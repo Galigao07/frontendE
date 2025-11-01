@@ -2,6 +2,9 @@
 import { Button, Grid, Typography } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import './css/DiscountItems.css'
+import axios from "axios";
+import configAPI from "../utils/configAPI";
+import {BASE_URL, SOCKET_URL } from '../config';
 
 
 
@@ -33,8 +36,20 @@ const ItemDiscounts: React.FC<ItemDiscountsData> = ({handleClose,SelectedItemDis
         D5:0,
     })
 
-    const HandleClickSave = () => {
-        DiscountedData({...ItemDiscountEntry})
+    const HandleClickSave = async() => {
+        try{
+            const response = await axios.post(`${BASE_URL}/api/update-item-discount/`,
+            {...ItemDiscountEntry,SelectedItemDiscount
+            },
+            {withCredentials:true}
+            ) //dummy axios to use try catch
+            if (response.status==200){
+                DiscountedData({...ItemDiscountEntry})
+            }
+        }catch(error){
+            console.error('Error updating item discount:', error);
+        }
+        
 }
 
     useEffect(() => {

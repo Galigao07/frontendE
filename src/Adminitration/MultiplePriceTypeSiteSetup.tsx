@@ -8,25 +8,34 @@ import { Table } from "@mui/material";
 import './css/MultiplePriceTypeSiteSetup.css'
 import AcctTileSLName from "./AcctTileGlobal";
 import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
+import { setGlobalIsLoading } from "../globalSlice";
+import { RootState } from "../store";
+import { useSelector,useDispatch } from "react-redux";
+import { InProgressLoading } from "../Loader/Loader";
 
 const MultiplePriceTypeSiteSetup = () => {
+    const dispatch = useDispatch()
+    const isLoading = useSelector((state:RootState)=>state.global.globalIsLoading)
     const [listOfdata,setlistOfdata] = useState<any>([])
     const [listOfdata2,setlistOfdata2] = useState<any>([])
 
     useEffect(() => {
         const fectdata = async() => {
+            dispatch(setGlobalIsLoading(true))
             try {
-                const response = await axios.get(`${BASE_URL}/api/allowed-price-type/`)
+                const response = await axios.get(`${BASE_URL}/api/allowed-price-type/`,{withCredentials:true})
 
                 if (response.status==200){
                 const data = response.data.data
                 // const data2 = response
 
                 setlistOfdata(data)
+                 dispatch(setGlobalIsLoading(false))
                 // setlistOfdata2(data2)
                 }
     
             }catch{
+                dispatch(setGlobalIsLoading(false))
                 showErrorAlert('Error While Fetching Data')
             }
         }
@@ -40,14 +49,16 @@ const OnclickSiteCode = async (index:any) => {
     const site_code = selected.site_code;
     const site_desc = selected.site_desc;
     try {
+        dispatch(setGlobalIsLoading(true))
         const response = await axios.get(`${BASE_URL}/api/allowed-price-type/`,{
             params:{
                 site_code:site_code,
                 site_desc:site_desc,
-            }
+            },withCredentials:true
         })
 
         if (response.status==200){
+            dispatch(setGlobalIsLoading(false))
         const data = response.data.data
         // const data2 = response
 
@@ -56,6 +67,7 @@ const OnclickSiteCode = async (index:any) => {
         }
 
     }catch{
+        dispatch(setGlobalIsLoading(false))
         showErrorAlert('Error While Fetching Data')
     }
 }
@@ -66,6 +78,7 @@ const OnclickSiteCode = async (index:any) => {
             <div className="card-body">
                 <h1>Allowed Price Type Setup</h1>
                 <div className="card">
+                    {/* {isLoading &&  <InProgressLoading/>} */}
                     <div className="multiplePriceType">
                     <Table className="table 1">
                         <thead>
@@ -99,7 +112,7 @@ const OnclickSiteCode = async (index:any) => {
                             listOfdata2.map((item:any, index:any) => (
                                 <tr key={index}>
                                     <td >{String(item.pricetype).padStart(6,'0')}</td>
-                                    <td >{item.price_name}</td>
+                                    <td >{item.pricetype_name}</td>
                                 </tr>
                             )) }
                            

@@ -156,7 +156,7 @@ const handleLogin = async () => {
     if (response.status === 200) {
       const { Info } = response.data;
       if (Info) {
-        const { UserRank, FullName, UserID, UserName, TerminalNo, SiteCode, TransID } = Info;
+        const { UserRank, FullName, UserID, UserName, TerminalNo, SiteCode, TransID ,location} = Info;
         axios.defaults.withCredentials = true
         // Store only non-sensitive info
         dispatch(setGlobalIsLoading(false))
@@ -169,6 +169,7 @@ const handleLogin = async () => {
         localStorage.setItem('TerminalNo', TerminalNo);
         localStorage.setItem('SiteCode', SiteCode);
         localStorage.setItem('TransID', TransID);
+      localStorage.setItem('location',location)
   
 
         // Reload or redirect
@@ -453,7 +454,19 @@ const handleSpecialButtonClick = (value:any) => {
   
   </div>
   {isShowKeyboard && <OnScreenKeyboard  handleclose = {closekeyBoard}  currentv ={formData[focusedInput]} setvalue={setvalue}/>}
+<div style={{
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+  width: '100%',
+  backgroundColor: 'white', // optional
+  textAlign: 'center', // optional
+  zIndex: 1000 // keeps it above other elements
+}}>
   <PackageInfo />
+</div>
+
+ 
 </div>
 
 

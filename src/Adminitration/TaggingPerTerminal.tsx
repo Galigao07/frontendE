@@ -7,8 +7,14 @@ import { Table } from "@mui/material";
 import { Tab } from "react-tabs";
 import AcctTileSLName from "./AcctTileGlobal";
 import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
+import { setGlobalIsLoading } from "../globalSlice";
+import { RootState } from "../store";
+import { useSelector,useDispatch } from "react-redux";
+import { InProgressLoading } from "../Loader/Loader";
 
 const TaggingPerTerminal: React.FC = () => {
+       const dispatch = useDispatch()
+    const isLoading = useSelector((state:RootState)=>state.global.globalIsLoading)
     const [listOfdata,setlistOfdata] = useState<any>([])
     const [selectedindex,setselectedindex] = useState<any>(null)
     const [showAcctTitleModal,setshowAcctTitleModal] = useState<boolean>(false)
@@ -18,11 +24,14 @@ const TaggingPerTerminal: React.FC = () => {
     useEffect(()=> {
         const FecthData  = async () =>{
             try{
+                dispatch(setGlobalIsLoading(true))
                 const response = await axios.get(`${BASE_URL}/api/tagging-per-terminal/`)
                 if (response.status == 200){
                     setlistOfdata(response.data)
+                    dispatch(setGlobalIsLoading(false))
                 }
             }catch{
+                dispatch(setGlobalIsLoading(false))
                 showErrorAlert('Error While Fetching the Data')
             }
         }
@@ -128,14 +137,16 @@ const DataSend = (data:any) => {
 
 const HandleClickConfigure = async() => {
         try{
-    
+            dispatch(setGlobalIsLoading(true))
             const response = await axios.post(`${BASE_URL}/api/tagging-per-terminal/`,{data:listOfdata})
             
             if (response.status == 200){
+                  dispatch(setGlobalIsLoading(false))
                     showSuccessAlert(`Successfully Save`)
             }
     
         }catch{
+              dispatch(setGlobalIsLoading(false))
             showErrorAlert(`Error while Saving`)
         }
     }

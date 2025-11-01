@@ -522,8 +522,9 @@ nav ul li .page-item:active {
     background-color: var(--second-color);
 }
 
-.selectedItemIndex.selected{
-    background-color: var(--second-color);
+.selected{
+    background-color:blue;
+    color: white;
 }
 
 #list:empty{

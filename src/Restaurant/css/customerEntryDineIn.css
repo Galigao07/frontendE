@@ -237,9 +237,15 @@ height: 100%;
   padding: 20px;
   border-radius: 10px;
   width: 500px;
-  height: 500px;
+  height: 570px;
   overflow-y: auto;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+.waiter-header{
+display: flex;
+flex-direction: column  ;
+justify-content: space-between;
+gap: 10px;
 
 }
 
@@ -317,12 +323,15 @@ height: 100%;
 }
 
 .selectedItemIndex.selected{
-    background-color: var(--second-color);
+   background-color:blue;
+    color: white;
 }
 
 .selected{
-  background-color: var(--second-color);
+   background-color:blue;
+    color: white;
 }
+
 
 #list:empty{
     display: none;

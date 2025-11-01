@@ -45,6 +45,10 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
     const [CardSearch,setCardSearch] = useState<string>('')
     const [CardList,setCardList] = useState<any>([])
     const [BankList,setBankList] = useState<any>([])
+
+    const [TmpCardList,setTmpCardList] = useState<any>([])
+    const [TmpBankList,setTmpBankList] = useState<any>([])
+
     const [BankList1,setBankList1] = useState<any>([])
     const [BankList2,setBankList2] = useState<any>([])
     // totalAmountDue
@@ -119,7 +123,9 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
 
     useEffect(() => {
       let amount: string = amountdue.toString().replace(',', '');
+        LoadBank()
 
+        LoadCard()
         setCreditCardPaymentData({...CreditCardPaymentData,AmountDue:parseFloat(amount)})
         settotalAmountDue(0)
         setviewSave(true)
@@ -141,12 +147,6 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
       setindexYear2(null)
     }, [CreditCardPaymentList]);
 
-    // const CheckIfListHaveData = async () => {
-  //     if (CreditCardPaymentList.length === 0) {
-  //         await setCreditCardPaymentList((prevList:any) => [...prevList, CreditCardPaymentData]);
-  //     }
-  //     return Promise.resolve();
-  // };
 
     const validateCreditCardData = () => {
     const {
@@ -185,7 +185,7 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
   
   const SaveCreditPayment = async () => {
 
-           if (CreditCardPaymentList.length > 0) {
+           if (CreditCardPaymentList.length > 0 || validateCreditCardData()) {
 
         swalWithBootstrapButtons.fire({
             title: 'Confirmation',
@@ -215,8 +215,6 @@ const CreditCardPayment: React.FC<CreditCardPaymentTrans> = ({handleClose,amount
             
             }
              
-            
-         
                 setCreditCardPaymentData({
                     CardNo:'',
                     AcquireBank:'',
@@ -764,33 +762,71 @@ useEffect(()=>{
   setBankList1(BankList.slice(0,mid))
   setBankList2(BankList.slice(mid))
 
-},[BankList])
+},[BankList]) 
 
-  const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
-    try {
-        if (inputIdentifier === 'Bank') {
-  
-
-            const result = await axios.get(`${BASE_URL}/api/bank-company/`,{
+const LoadBank = async() =>{
+      const result = await axios.get(`${BASE_URL}/api/bank-company/`,{
               params: {
-                customer:e
+                customer:''
               },withCredentials:true
             }); 
             
             if (result) {
                 setBankList(result.data);
-                setBankModal(true);
-            }}else if (inputIdentifier =='Card'){
-              const result = await axios.get(`${BASE_URL}/api/bank-card/`,{
-                params: {
-                  customer:e
-                },withCredentials:true
-              }); 
+                setTmpBankList(result.data);
+                // setBankModal(true);
+     }
+}
+
+const LoadCard = async() =>{
+  const result = await axios.get(`${BASE_URL}/api/bank-card/`,{
+          params: {
+            customer:''
+          },withCredentials:true
+        });
+
+        if (result) {
+            setCardList(result.data);
+            setTmpCardList(result.data);
+        } }
+
+  const handleSearchInputChange = async (e: any, inputIdentifier: string) => {
+    try {
+        if (inputIdentifier === 'Bank') {
+
+          const filteredBanks = TmpBankList.filter((bank: any) =>
+            bank.company_description.toLowerCase().includes(e.toLowerCase())
+          );
+          setBankList(filteredBanks);
+          setBankModal(true);
+
+            // const result = await axios.get(`${BASE_URL}/api/bank-company/`,{
+            //   params: {
+            //     customer:e
+            //   },withCredentials:true
+            // }); 
+            
+            // if (result) {
+            //     setBankList(result.data);
+            //     setBankModal(true);
+            // }
+          
+          }else if (inputIdentifier =='Card'){
+            const filteredCards = TmpCardList.filter((card: any) =>
+            card.card_description.toLowerCase().includes(e.toLowerCase())
+          );
+          setCardList(filteredCards);
+          setCardModal(true);
+              // const result = await axios.get(`${BASE_URL}/api/bank-card/`,{
+              //   params: {
+              //     customer:e
+              //   },withCredentials:true
+              // }); 
               
-              if (result) {
-                  setCardList(result.data);
-                  setCardModal(true);
-              }
+              // if (result) {
+              //     setCardList(result.data);
+              //     setCardModal(true);
+              // }
             }
             
           }  catch (error) {

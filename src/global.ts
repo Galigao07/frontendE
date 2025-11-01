@@ -39,6 +39,7 @@ if (response.status == 200){
 
 export async function GetAccountTitle(str:any) {
   try {
+    
     // Assuming you're fetching the waiter name from some API
     const response = await axios.get(`${BASE_URL}/api/account-title/`,{
       params: {
@@ -107,13 +108,25 @@ export async function GetCurrentDateAndTime() {
 }
 
 export async function GetSettings(name:any) {
-  console.log('URL',BASE_URL)
   try{
     const response = await axios.get(`${BASE_URL}/api/system-settings/`, {
       withCredentials: true // ✅ top-level option
     });
       if (response.status == 200){
         return response.data[0][`${name}`]    
+      }
+      }catch(error){
+      showErrorAlert(`Error while Fetching ${name}`)
+    }      
+}
+
+export async function GetSettingsGlobal() {
+  try{
+    const response = await axios.get(`${BASE_URL}/api/system-settings/`, {
+      withCredentials: true // ✅ top-level option
+    });
+      if (response.status == 200){
+        return response.data[0]  
       }
       }catch(error){
       showErrorAlert(`Error while Fetching ${name}`)

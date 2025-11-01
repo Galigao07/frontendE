@@ -58,8 +58,10 @@ import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import configAPI from '../utils/configAPI';
+import { useDispatch, UseDispatch } from 'react-redux';
+import { UseSelector } from 'react-redux';
 
-
+import { setGlobalIsLoading } from '../globalSlice';
 interface PdfModalProps {
     open: boolean;
     handleClose: () => void;
@@ -67,7 +69,9 @@ interface PdfModalProps {
 }
 
 const PdfModal: React.FC<PdfModalProps> = ({ open, handleClose, pdfPath }) => {
+    const dispatch = useDispatch()
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
+    const [isLoaded, setIsLoaded] = useState(false);
     // const defaultLayoutPluginInstance = defaultLayoutPlugin({
     //     sidebarTabs: () => [], // hide sidebar
     //     renderToolbar: () => <></>, // hide toolbar completely
@@ -77,6 +81,7 @@ const PdfModal: React.FC<PdfModalProps> = ({ open, handleClose, pdfPath }) => {
         useEffect(() => {
             const loadWorkerUrl = async () => {
             try {
+                // dispatch(setGlobalIsLoading(true));
                 if ((window as any).electronPDFPrint) {
                 // Running inside Electron
                 const confir = await configAPI.get();
@@ -84,16 +89,21 @@ const PdfModal: React.FC<PdfModalProps> = ({ open, handleClose, pdfPath }) => {
                 const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
                 
                 if (isDev){
-                   console.log(`'path1',${confir.pdfWorker}`.replace(/\\/g, '/'))
+                    try{
+                        console.log(`'path1',${confir.pdfWorker}`.replace(/\\/g, '/'))
                     setWorkerUrl(`${confir.pdfWorker}`.replace(/\\/g, '/'));
-                    
+                    }catch(e){
+                        console.error('Error in Dev mode detection:', e);
+                    }
+                   
+                                // setWorkerUrl('/pdf.worker.min.js');
                     // console.log(`'path2',file://${appPath}/${confir.pdfWorker}`.replace(/\\/g, '/'))
                 }else{
                         const resourcesPath = (window as any).electronAPI.getAppPath?.() || '';
                         // Construct full path to worker
                         const pdfWorkerPath = `${resourcesPath}/${confir.pdfWorker}`.replace(/\\/g, '/');
 
-                        console.log(`'path1',${pdfWorkerPath}`)
+                        console.log(`'path1s',${pdfWorkerPath}`)
                         setWorkerUrl(`file://${pdfWorkerPath}`);
                 }
 
@@ -102,12 +112,18 @@ const PdfModal: React.FC<PdfModalProps> = ({ open, handleClose, pdfPath }) => {
                 // Web/Dev mode
                 setWorkerUrl('/pdf.worker.min.js');
                 }
+                dispatch(setGlobalIsLoading(false));
             } catch (err) {
+                dispatch(setGlobalIsLoading(false));
                 console.error('Failed to load worker URL:', err);
             }
             };
-            loadWorkerUrl();
-        }, []);
+            if (!isLoaded) { 
+                loadWorkerUrl();
+                setIsLoaded(true);
+            }
+            
+        }, [isLoaded]);
 
     return (
         <Modal open={open} onClose={handleClose}>

@@ -16,6 +16,8 @@ import {  Button, Grid, Table, Typography } from '@mui/material';
 import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
 import OnScreenKeyboardNumericForCardNo from './KeyboardForCardNo';
 import showInfoAlert from '../SwalMessage/ShowInfoAlert';
+import showErrorAlert from '../SwalMessage/ShowErrorAlert';
+import { set } from 'date-fns';
 
 
 
@@ -46,6 +48,7 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
   }
   
   
+    const [QueNoList, setQueNoList] = useState<any>(typeandtable.QueNoList || []);
 
     const [customer, setCustomer] = useState<string>('');
     const [guestCount, setGuestCount] = useState<string>('');
@@ -58,8 +61,9 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
     const [QueNo, setQueNo] = useState<any>('0');
 
     const [WaiterList, setWaiterList] = useState<Waiter[]>([]);
-    
     const [CustomerList, setCustomerList] = useState<Customer[]>([]);
+    const [TmpWaiterList, setTmpWaiterList] = useState<Waiter[]>([]);
+    const [TmpCustomerList, setTmpCustomerList] = useState<Customer[]>([]);
 
     const QueNoRef = useRef<HTMLInputElement>(null)
     const CustomerRef = useRef<HTMLInputElement>(null)
@@ -93,8 +97,7 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
             CustomerRef.current.focus();
           }
         }, 100);
-      
-        // Cleanup function to clear the timeout
+
         return () => {
           clearTimeout(timeoutId);
         };
@@ -103,53 +106,56 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
 
 
       useEffect(() => {
-    const fetchData = async () => {
-      const tableNo = typeandtable.tableNo; // Accessing TableNo
-  
-      if (tableNo) {
-        try {
-          const orderViewResponse = await axios.get(`${BASE_URL}/api/order/view/`, {
-            params: {
-              tableNo :tableNo
-            },withCredentials:true
-        });
+              const fetchData = async () => {
+                const tableNo = typeandtable.tableNo; // Accessing TableNo
+            
+                if (tableNo) {
+                  try {
+                    const orderViewResponse = await axios.get(`${BASE_URL}/api/order/view/`, {
+                      params: {
+                        tableNo :tableNo
+                      },withCredentials:true
+                  });
 
-        if (orderViewResponse.data && Array.isArray(orderViewResponse.data) && orderViewResponse.data.length > 0) {
-          const customer = orderViewResponse.data[0]; // Accessing the first object in the array
-          // Accessing individual properties of the first object
-          if (customer && typeof customer === 'object') {
-            setGuestCount(customer.guest_count);
-            setCustomer(customer.customer_name);
-        
-            const timeoutId = setTimeout(() => {
-              if (WaiterRef.current) {
-                WaiterRef.current.focus();
-              }
-            }, 100);
-        
-            return () => {
-              clearTimeout(timeoutId);
-            };
-          }
-        } 
-  
+                  if (orderViewResponse.data && Array.isArray(orderViewResponse.data) && orderViewResponse.data.length > 0) {
+                    const customer = orderViewResponse.data[0]; // Accessing the first object in the array
+                    // Accessing individual properties of the first object
+                    if (customer && typeof customer === 'object') {
+                      setGuestCount(customer.guest_count);
+                      setCustomer(customer.customer_name);
+                  
+                      const timeoutId = setTimeout(() => {
+                        if (WaiterRef.current) {
+                          WaiterRef.current.focus();
+                        }
+                      }, 100);
+                  
+                      return () => {
+                        clearTimeout(timeoutId);
+                      };
+                    }
+                  } 
+            
 
-        } catch (error: any) {
-            if (error.response) {
-                // The request was made and the server responded with a status code
-                console.error('Server responded with a non-2xx status:', error.response.data);
-            } else if (error.request) {
-                // The request was made but no response was received
-                console.error('No response received:', error.request);
-            } else {
-                // Something else happened while setting up the request
-                console.error('Error setting up the request:', error.message);
-            }
-        }
-      }
+                  } catch (error: any) {
+                      if (error.response) {
+                          // The request was made and the server responded with a status code
+                          console.error('Server responded with a non-2xx status:', error.response.data);
+                      } else if (error.request) {
+                          // The request was made but no response was received
+                          console.error('No response received:', error.request);
+                      } else {
+                          // Something else happened while setting up the request
+                          console.error('Error setting up the request:', error.message);
+                      }
+                  }
+                }
 
-    };
-    fetchData();
+              };
+          fetchData();
+          LoadCustomer();
+          LoadWaiter();
+          fecthQueList();
       }, []);
 
 
@@ -202,6 +208,11 @@ const CustomerDineIn: React.FC<CustomerDineInData> = ({ handleclose, typeandtabl
 
 
 const sendDataToMain = () => {
+  if ((!isDineIn && QueNo === '0') || QueNo === ''  ) {
+    showInfoAlert('Please select Que No..!');
+    return;
+
+  }
   if (customer === '' || guestCount === '' || waiter === '' || waiterID === '') {
     if (guestCount === ''){
       Swal.fire({
@@ -289,6 +300,7 @@ const sendDataToMain = () => {
         Waiter: waiter,
         PaymentType:'Order and Pay',
         waiterID:waiterID,
+        QueNO:QueNo,
 
       });
     }
@@ -639,57 +651,74 @@ const handleCustomerTypeWalkIN = () => {
         }
 
       }
-
-
     };
     
-    const handleSearchInputChange = async (e:any, inputIdentifier :any) => {
-                  try {
-                      if (inputIdentifier === 'Customer') {
 
-                          if (customerType==='Walk-in'){
-                            return;
-                          }
-                          const result = await axios.get(`${BASE_URL}/api/customer-list/`,{
-                            params: {
-                              customer:e
-                            },withCredentials:true
-                          }); 
-                          
-                          if (result) {
-                              setCustomerList(result.data.customers);
-                              setCustomerListModal(true);
-                          }}
-                      if (inputIdentifier === 'Waiter') {
+  const LoadCustomer = async() =>{
+    try{
+         const result = await axios.get(`${BASE_URL}/api/customer-list/`,{withCredentials:true}); 
+                if (result) {
+                  setCustomerList(result.data.customers);
+                  setTmpCustomerList(result.data.customers);
+     
+                 }
+    }catch{
+          Swal.fire({
+            icon:'error',
+            title:'Failed',
+            text:'Failed request',
+            timer:2000
+          })
+    }
+  }
 
-                  
-                            const result = await axios.get(`${BASE_URL}/api/waiter-list/`,{
-                              params: {
-                                waiter:e
-                              },withCredentials:true
-                            }); 
-                            
-                            if (result) {
-                                setWaiterList(result.data.waiter);
-                                setWaiterListModal(true);
-                                if(WaiterListRef.current){
-                                  WaiterListRef.current.focus()
-                                }
-                            }}
-                          
-                        }  catch (error:any) {
-                            setSelectedOption('option2')
-                              Swal.fire({
-                                icon:'error',
-                                title:'Failed',
-                                text:"Request Failed",
-                                timer:2000
-                              })
-                              setcustomerType('Walk-in')
-                              setCustomerListModal(false)
-                      }
-     }
+  const LoadWaiter = async() =>{
+    try{
+      const result = await axios.get(`${BASE_URL}/api/waiter-list/`,{withCredentials:true }); 
+        if (result) {
+            setWaiterList(result.data.waiter);
+            setTmpWaiterList(result.data.waiter);
+              if(WaiterListRef.current){
+                WaiterListRef.current.focus()}
+                }
+    }catch(error){
+      Swal.fire({
+        icon:'error',
+        title:'Failed',
+        text:'Failed request',
+        timer:2000
+      })
+    }
+  }
 
+   const handleSearchInputChange = async (e:any, inputIdentifier :any) => {
+      if (inputIdentifier === 'Customer') {
+
+        if (customerType==='Walk-in'){
+                 return;
+        }
+
+        const check_list:any = TmpCustomerList.filter(item => item.trade_name.toLocaleLowerCase().includes(e.toLocaleLowerCase()))
+
+        if (check_list.length >0){
+          setCustomerList(check_list)
+        }else{
+          setCustomerList(TmpCustomerList)
+        }
+        setCustomerListModal(true)
+   }else if (inputIdentifier==='Waiter'){
+    
+        const check_list:any = TmpWaiterList.filter(item => item.waiter_name.toLocaleLowerCase().includes(e.toLocaleLowerCase()))
+
+        if (check_list.length > 0){
+          setWaiterList(check_list)
+        }else{
+          setWaiterList(TmpWaiterList)
+        }
+        setWaiterListModal(true)
+   }
+  
+  }
 
      const fetchCustomer = async (customer : any) => {
       if (customerType === 'Walk-in') {
@@ -715,7 +744,7 @@ const handleCustomerTypeWalkIN = () => {
     
     
     
-    const fetchWaiter = async (waiter :any) => {
+const fetchWaiter = async (waiter :any) => {
       
       try {
     
@@ -749,21 +778,19 @@ const ClickCustomerList = (index: number): void => {
     
 
  const ClickWaiterList = (index :any) => {
-setWaiterListModal(false)
-const selectedItem = WaiterList[index];
-setWaiter(selectedItem.waiter_name)
-setWaiterID(selectedItem.waiter_id)
-setTimeout(() => {
-  if (SaveBtnRef.current) {
-    SaveBtnRef.current.focus();
-    SaveBtnRef.current.style.backgroundColor = 'darkblue'
-  }
-}, 100);
-
-
-
+    setWaiterListModal(false)
+    const selectedItem = WaiterList[index];
+    setWaiter(selectedItem.waiter_name)
+    setWaiterID(selectedItem.waiter_id)
+    setTimeout(() => {
+      if (SaveBtnRef.current) {
+        SaveBtnRef.current.focus();
+        SaveBtnRef.current.style.backgroundColor = 'darkblue'
+      }
+    }, 100);
  }
 
+ 
  const handleKeys2 = (event:any, category:any) => {
   if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
     event.preventDefault(); // Prevent scrolling on arrow key press
@@ -865,6 +892,7 @@ if (event.key == 'Enter'){
 
 
 const OpenWaiterModal = (category:any) => {
+
 if (category==='Waiter'){
   setWaiterListModal(true);
   handleSearchInputChange('e','Waiter')
@@ -917,7 +945,6 @@ const showOnScreenKeybaord = (ref:any) => {
         setFocusedInput2(guestCount)
       }
    
-
       setFocusedInput(ref)
     }
   }
@@ -965,7 +992,54 @@ const closekeyBoard = () => {
   setisShowKeyboard(false)
   setisShowKeyboardNumeric(false)
 }
+ const fecthQueList = () => {
+    if (QueNoList.length != 0){
 
+    }
+        const apiUrl = `${BASE_URL}/api/que-list/`; // Replace with your actual site code
+        fetch(apiUrl, {
+            method: 'GET',
+            credentials: 'include', // ✅ include cookies in the request
+            headers: {
+              'Content-Type': 'application/json',
+              // 'Authorization': `Bearer ${token}` // not needed if using HttpOnly cookie
+            }
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            setQueNoList(data.que);
+   
+            // console.log('TaBLE LIST',data.que)
+          })
+          .catch(error => {
+            console.error('There was a problem fetching the data:', error);
+          });
+  };
+
+const CheckQueNoifExist = () => {
+  if (!isDineIn){
+    if (QueNo !== '' && QueNo !== '0'){
+        const isExist = QueNoList.some((item:any) => item.q_no === parseInt(QueNo));
+        if (isExist){
+          setQueNo('')
+          showErrorAlert('Que No already exist..!')
+          setTimeout(() => {
+            if (QueNoRef.current){
+              QueNoRef.current.focus()
+            }
+          }, 500);
+        }
+    }}}
+
+    useEffect(() => {
+         if (QueNo !== '' && QueNo !== '0'){
+      CheckQueNoifExist();}
+    }, [QueNo]);
   return (
     <div>
         <div className="modal">
@@ -1010,7 +1084,7 @@ const closekeyBoard = () => {
                     </div>
                     
                     <div className= "Customer-DineIn" style={{display:'flex',flexDirection:'row'}}>
-                      {isDineIn ? (
+                      {isDineIn && typeandtable.tableNo !==''? (
                         <><label>
                             Table Number
                           </label>
@@ -1065,12 +1139,12 @@ const closekeyBoard = () => {
                               value={waiter}
                               onFocus={(event) => {
                                 WaiterF();
-                                OpenWaiterModal('Waiter');
+                             
                               }}
                               onKeyDown={(e) =>handleKeys(e, 'Waiter')}
                               onInput={() => OpenWaiterModal('Waiter')}
                               // onInput={(e: React.ChangeEvent<HTMLInputElement>)=> handleSearchInputChange(e.target.value, 'Waiter')}
-                              onClick={() => handleClick(WaiterRef)}
+                              onClick={() => {handleClick(WaiterRef),OpenWaiterModal('Waiter')}}
                               required/>
                             
                   </div>
@@ -1089,18 +1163,18 @@ const closekeyBoard = () => {
                     style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}
                     >Order & Pay</button>
               )}
-                      
+                    {isDineIn && typeandtable.tableNo !=='' &&
                     <button tabIndex={1} onClick={sendDataToMain} ref={SaveBtnRef} 
                       onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,SaveBtnRef,CloseBtnRef,1) } 
                     className='button-ok' style={{width:'100%',margin:'5px',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', fontWeight: 'bold' }}
-                    >Save Order</button>
+                    >Save Order</button>}
                   
                   </div>
-                 
+                 <div style={{display:'flex',flexDirection:'row'}} >
                     <button tabIndex={2} type="button" className ='button-cancel' ref={CloseBtnRef}
-                    style={{width: isMobile ? "100%": "50%"}}
+                    style={{width: "100%",margin:'5px'}}
                       onKeyDown={(e) => SelectButtonHandleKeydown(e,PaymentSaveBtnRef,CloseBtnRef,PaymentSaveBtnRef,2) } 
-                      onClick={handleclose}>Exit</button>
+                      onClick={handleclose}>Exit</button></div>
 
                    
 
@@ -1125,10 +1199,10 @@ const closekeyBoard = () => {
         <div className='modal'>
           <div className='modal-content-waiter'>
 
-            <div className='card'>
-              <h1>Select Waiter</h1>
-            <div className='Waiterlist-Container'>
-            <input
+            <div className='waiter-container'>
+              <div className='waiter-header'>
+                <h1>Select Waiter</h1>
+                <input
                 ref={WaiterSearchRef}
                 value={WaiterSearch}
                 onChange={(e) => setWaiterSearch(e.target.value)}
@@ -1136,6 +1210,11 @@ const closekeyBoard = () => {
                 onKeyDown={(e) => handleKeys2(e, 'Waiter')}
                 onClick={()=> showOnScreenKeybaord('Waiter')}
               />
+              </div>
+             
+
+            <div className='Waiterlist-Container'>
+          
               <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Waiter')} ref={WaiterListRef}>
                 <thead>
                   <tr>
@@ -1181,10 +1260,10 @@ const closekeyBoard = () => {
                           <div className='modal'>
                             <div className='modal-content-waiter'>
                       
-                              <div className='card'>
-                                <h1>Select Customer</h1>
-                              <div className='Waiterlist-Container'>
-                              <input
+                              <div className='waiter-container'>
+                                <div className='waiter-header'>
+                                  <h1>Select Customer</h1>
+                                  <input
                                   ref={CustomerSearchRef}
                                   value={CustomerSearch}
                                   onChange={(e) => setCustomerSearch(e.target.value)}
@@ -1192,6 +1271,10 @@ const closekeyBoard = () => {
                                   onKeyDown={(e) => handleKeys2(e, 'Customer')}
                                   onClick={()=> showOnScreenKeybaord('Customer')}
                                 />
+                                </div>
+                                
+                              <div className='Waiterlist-Container'>
+                              
                                 <Table id="table-list" className='table-list Waiter' onKeyDown={(event) => handleKeys2(event, 'Customer')} ref={CustomerListRef}>
                                   <thead>
                                     <tr>

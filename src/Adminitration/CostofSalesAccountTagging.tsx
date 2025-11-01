@@ -10,8 +10,15 @@ import showSuccessAlert from "../SwalMessage/ShowSuccessAlert";
 import './css/CostofSalesAccountTagging.css'
 import { constants } from "node:original-fs";
 import AcctTileSLName from "./AcctTileGlobal";
+import { setGlobalIsLoading } from "../globalSlice";
+import { RootState } from "../store";
+import { useSelector,useDispatch } from "react-redux";
+import { InProgressLoading } from "../Loader/Loader";
+
 
 const CostofSalesAccountTagging: React.FC = () => {
+       const dispatch = useDispatch()
+    const isLoading = useSelector((state:RootState)=>state.global.globalIsLoading)
     const [isOpenModal,setisOpenModal] = useState<boolean>(false)
     const [listOfdata,setlistOfdata] = useState<any>(null)
     const [isNew,setisNew] = useState<boolean>(false)
@@ -50,17 +57,20 @@ const CostofSalesAccountTagging: React.FC = () => {
 
         const fetchData = async () => {
             try{
+                dispatch(setGlobalIsLoading(true))
                 const response = await axios.get(`${BASE_URL}/api/cost-of-sales/`)
                 if (response.status == 200){
                     setlistOfdata(response.data)
 
                     const data = response.data;
                     const lastItem = data[data.length - 1];
-                    console.log(lastItem)
+  
                     setlatest_code(parseInt(lastItem.category_code) + 1)
+                    dispatch(setGlobalIsLoading(false))
                 }
     
             }catch{
+                dispatch(setGlobalIsLoading(false))
                 showErrorAlert('Error while Fetching data in Cost of Sales Account Tagging')
             }
         }

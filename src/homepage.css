@@ -60,7 +60,7 @@ main{
     width: var(--nav-width);
     background-color:#5B9BD5;
 
-    transition: 0.5s;
+    transition: 0.2s;
     box-shadow: 1px 1px 20px #575555;
     
 }
@@ -85,9 +85,9 @@ main{
 }
 
 .nav-details{
- 
+    margin-top: -20px;
     align-items: center;
-    width: 90%;
+    width: 240px;
     padding: 1rem 0 1rem 1.5rem;
     margin-left: 1rem;
     border: 1.5px solid var(--third-color);
@@ -96,12 +96,27 @@ main{
 
 }
 
+.nav-user-details {
+    font-size: 12px;
+    width: 100%; /* remove quotes */
+    color: white;
+    font-family: monospace; /* monospace font */
+    text-shadow: 1px 1px 2px black; /* shadow */
+}
+
+
+
+
+
 .nav-user-icon{
     padding: 0 1rem 0 0;
     color: nav-main-header;
 }
 
 .nav-col-user-details{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
     padding-bottom: .5rem;
     color: var(--first-color-alt)
 }

@@ -14,6 +14,7 @@ import { isDesktop } from "react-device-detect";
 import OnScreenKeyboardNumeric from "./KeyboardNumericGlobal";
 import showErrorAlert from "../SwalMessage/ShowErrorAlert";
 import getextendedAMTAPI from "../utils/getAmountTenderedAPI";
+import Swal from "sweetalert2";
 interface MultiplepaymentsData {
     handleclose:()=> void;
     totalDue:any;
@@ -327,7 +328,9 @@ const OpenCreditCardPayment = () => {
         
         };
 
-        
+
+     
+    
 
     useEffect(() => {
         localStorage.setItem('MULTIPLE','true')
@@ -484,12 +487,15 @@ const OpenCreditCardPayment = () => {
                         <label>Cash</label>
                         <input ref={CashAmountRef} value={(CashAmount)}  placeholder="0.00"
                         onClick={()=> showOnScreenKeybaord('Cash')}
+                        type='number'
                         onKeyDown={(e) => Handlekeydown(e,CashAmountRef,CashAmountRef,CurrentCheckAmountRef)}
-                        onChange={(e) => {
-                        const value = e.target.value;
-                         const isNumber = /^[0-9]*$/;
-                          if (isNumber.test(value)) {
-                           setCashAmount(value); } }}
+                        onChange={(e)=>setCashAmount(e.target.value)}
+                        // onChange={(e) => {
+                        // const value = e.target.value;
+                        //  const isNumber = /^[0-9]*$/;
+                        //   if (isNumber.test(value)) {
+                        //    setCashAmount(value); } 
+                        //   }}
                            style={{width:'77%'}}
                         />
                     </div>

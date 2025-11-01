@@ -13,12 +13,18 @@ import Swal from 'sweetalert2';
 import { Grid } from '@mui/material';
 import {BASE_URL} from '../config';
 
-
+import { setGlobalIsLoading } from "../globalSlice";
+import { RootState } from "../store";
+import { useSelector,useDispatch } from "react-redux";
+import { InProgressLoading } from "../Loader/Loader";
+import { useScreenSize } from '../ScreenHeightContext';
 
 
 
  const SupplierDetails = () => {
-
+  const dispatch = useDispatch()
+  const isLoading = useSelector((state:RootState)=>state.global.globalIsLoading)
+  const { width, height, orientation } = useScreenSize();
     //#region 
     const [tabVisible, setTabVisible] = useState(true);
     const [imagePreview, setImagePreview] = useState<any>('');
@@ -41,7 +47,8 @@ import {BASE_URL} from '../config';
     const [Trade, setTrade] = useState<any>('');;
     const [SL, setSL] = useState<any>('');
     const [Remarks, setRemarks] = useState<any>('');
-    const [CustomerList, setCustomerList] = useState<any>('');
+    const [CustomerList, setCustomerList] = useState<any>([]);
+    const [TmpCustomerList, setTmpCustomerList] = useState<any>([]);
     const [SearchDataVisible, setSearchDataVisible] = useState(false);
     const [selectedItemIndex, setSelectedItemIndex] = useState(0);
     const [searchInput, setSearchInput] = useState<any>('');
@@ -79,16 +86,10 @@ import {BASE_URL} from '../config';
     const [isEditMode, setIsEditMode] = useState(false);
     const [isNewMode, setIisNewMode] = useState(false);
     const [SaveDisableButton, setSaveDisableButton] = useState(true);
-    // const [vatOptions, setVatOptions] = useState([
-    //     { value: 'V', label: 'VAT' },
-    //     { value: 'N', label: 'Non VAT' },
-    //     { value: 'E', label: 'VAT Exempt' },
-    //     { value: 'Z', label: 'Zero Rated' }
-    // ]);
 
     const [VAT, setVat] = useState('V');
-
-    const HandleNewClick = async () => {
+  const HandleNewClick = async () => {
+        setSearchInput('')
         setSaveDisableButton(false)
         setIdCode(parseInt(ID_Code)+1)
         setTradeName('');
@@ -146,6 +147,7 @@ import {BASE_URL} from '../config';
                 reverseButtons: true
               }).then(async (result) => {
                 if (result.isConfirmed) {
+                  dispatch(setGlobalIsLoading(true))  
                     const formData = new FormData();
                     formData.append('ID_Code', ID_Code);
                     formData.append('Tradename', Tradename);
@@ -167,12 +169,17 @@ import {BASE_URL} from '../config';
                     formData.append('Trade', Trade);
                     formData.append('Remarks', Remarks);
                     formData.append('image', imagePreview);
-                    await axios.put(`${BASE_URL}/api/supplier-details`, formData ,{
+                    try{
+
+                   
+                    await axios.put(`${BASE_URL}/api/supplier-details/`, formData ,{
                         headers: {
+                            
                             'Content-Type': 'multipart/form-data',
-                          },
+                          },withCredentials:true
                       
                       })
+                      dispatch(setGlobalIsLoading(false))  
                      setIsEditMode(false)
                     Swal.fire({
                       icon: 'success',
@@ -181,8 +188,11 @@ import {BASE_URL} from '../config';
                       showConfirmButton: false,
                       timer: 3000  
                     });
-                }})
-        }
+                    fetchSupplier();
+                setSaveDisableButton(true)
+                }catch (error) {
+                  dispatch(setGlobalIsLoading(false))
+                }} }) }
 
         else if(isNewMode){
 
@@ -197,7 +207,7 @@ import {BASE_URL} from '../config';
               }).then(async(result) => {
                 if (result.isConfirmed) {
 
-
+                dispatch(setGlobalIsLoading(true))  
                 const formData = new FormData();
                 formData.append('ID_Code', ID_Code);
                 formData.append('Tradename', Tradename);
@@ -220,12 +230,17 @@ import {BASE_URL} from '../config';
                 // formData.append('KOB', KOB);
                 formData.append('Remarks', Remarks);
                 formData.append('image', imagePreview);
-                await axios.put(`${BASE_URL}/api/supplier-details`, formData ,{
+
+                try{
+
+              
+                await axios.post(`${BASE_URL}/api/supplier-details/`, formData ,{
                     headers: {
                         'Content-Type': 'multipart/form-data',
-                      },
+                      },withCredentials:true
                   
                   })
+                  dispatch(setGlobalIsLoading(false))  
                 setIisNewMode(false)
                 Swal.fire({
                 icon: 'success',
@@ -234,13 +249,18 @@ import {BASE_URL} from '../config';
                 showConfirmButton: false,
                 timer: 3000  
                 });    
-        }})}
-                setTimeout(() => {
-                  window.location.reload();
-                }, 3000);
+
+                
+                 fetchSupplier();
+      
                 setSaveDisableButton(true)
+        }catch (error) { 
+          dispatch(setGlobalIsLoading(false))
+        }}})}
+               
    
-            }catch (error) {
+        }catch (error) {
+        dispatch(setGlobalIsLoading(false))  
         console.error('Error saving data:', error);
       }
     };
@@ -281,12 +301,14 @@ import {BASE_URL} from '../config';
                         setSearchDataVisible(false);     
                     }
                     else {
-                        axios.delete(`${BASE_URL}/api/supplier-search`, {
+                      dispatch(setGlobalIsLoading(true))  
+                        axios.delete(`${BASE_URL}/api/supplier-details/`, {
                         params: {
                           id_code: ID_Code,
-                        },
+                        },withCredentials:true
                       })
                     .then(response => {
+                      dispatch(setGlobalIsLoading(false))  
                         Swal.fire({
                             icon: 'success',
                             title: 'Delete!',
@@ -295,12 +317,13 @@ import {BASE_URL} from '../config';
                             timer: 3000  
                           });
                               setTimeout(() => {
-                                window.location.reload();
-                              }, 3000);
+                                fetchSupplier();
+                              }, 1000);
                     })
                     }
                     
                 } catch (error) {
+                  dispatch(setGlobalIsLoading(false))  
                 console.error(error);
                 }
             }})
@@ -309,58 +332,69 @@ import {BASE_URL} from '../config';
 
 
     useEffect(() => {
-        setSaveDisableButton(true)
+  
+        fetchSupplier()
         // Make the API request when the component mounts
-    axios.get(`${BASE_URL}/api/supplier-details`)
-          .then(response => {
-            const data = response.data.latest_customer;
-            setIdCode(data.id_code);
-            setTradeName(data.trade_name);
-            setLname(data.last_name);
-
-            setFname(data.first_name);
-            setMI(data.middle_name);
-            setPhone(data.business_phone_no);
-            setMobile(data.mobile_no);
-            setFax(data.fax_no);
-            setAddress(data.address);
-            setCity(data.city_municipality);
-            setProvince(data.province);
-            setZipCode(data.zip_code);
-            setTrade(data.trade)
-
-            const selectElement = vatidRef.current;
-            if (selectElement){
-              selectElement.value = data.vat_registration_type;
-              const changeEvent = new Event('change', { bubbles: true });
-              selectElement.dispatchEvent(changeEvent);
-            }
-
-
-
-            // setVat(data.vat_registration_type)
-
-            setTax(data.tax_id_no);
-            setStatus(data.active_status);
-            setGroup(data.group_name);
-            // setArea(data.area_name);
-            // setAgent(data.agent_name);
-            // setCollector(data.collector_name);
-            setSL(data.sl_sub_category_description);
-            // setKOB(data.kob_name)
-            setRemarks(data.remarks);
-
-            const imageBase64 = `data:image/gif;base64,${data.supplier_image}`;
-            setImagePreview(imageBase64);
-            // console.log('fsdfsdfm',data.customer_image)
-
-
-            
-          })
-          .catch(error => {
-            console.error('Error fetching data:', error);
-          });
+       
       }, []);
+
+    const fetchSupplier = () =>{
+            setSaveDisableButton(true)
+            dispatch(setGlobalIsLoading(true))
+          axios.get(`${BASE_URL}/api/supplier-details/`,{withCredentials:true})
+            .then(response => {
+              dispatch(setGlobalIsLoading(false))
+              const data = response.data.latest_customer;
+              setCustomerList(response.data.all_customers);
+              setTmpCustomerList(response.data.all_customers);
+              setIdCode(data.id_code);
+              setTradeName(data.trade_name);
+              setLname(data.last_name);
+
+              setFname(data.first_name);
+              setMI(data.middle_name);
+              setPhone(data.business_phone_no);
+              setMobile(data.mobile_no);
+              setFax(data.fax_no);
+              setAddress(data.address);
+              setCity(data.city_municipality);
+              setProvince(data.province);
+              setZipCode(data.zip_code);
+              setTrade(data.trade)
+
+              const selectElement = vatidRef.current;
+              if (selectElement){
+                selectElement.value = data.vat_registration_type;
+                const changeEvent = new Event('change', { bubbles: true });
+                selectElement.dispatchEvent(changeEvent);
+              }
+
+
+
+              // setVat(data.vat_registration_type)
+
+              setTax(data.tax_id_no);
+              setStatus(data.active_status);
+              setGroup(data.group_name);
+              // setArea(data.area_name);
+              // setAgent(data.agent_name);
+              // setCollector(data.collector_name);
+              setSL(data.sl_sub_category_description);
+              // setKOB(data.kob_name)
+              setRemarks(data.remarks);
+
+              const imageBase64 = `data:image/gif;base64,${data.supplier_image}`;
+              setImagePreview(imageBase64);
+              // console.log('fsdfsdfm',data.customer_image)
+
+
+              
+            })
+            .catch(error => {
+               dispatch(setGlobalIsLoading(false))
+              console.error('Error fetching data:', error);
+            });
+    }
 
       ///-----image button------
 //#region
@@ -403,21 +437,27 @@ const handleTradeNameChange = (event:any) => {
 const handleSearchInputChange = async (e:any) => {
     setSearchInput(e)
     try {
-        if (e ===''){
-            setSearchDataVisible(false);     
+         const filteredResults = TmpCustomerList.filter((customer:any) =>customer.trade_name.toLowerCase().includes(e.toLowerCase()));
+        if (filteredResults.length > 0){
+            setCustomerList(filteredResults);
+            setSearchDataVisible(true);
+            setSelectedItemIndex(0);
         }
-        else {
-            axios.get(`${BASE_URL}/api/supplier-details`, {
-            params: {
-              trade_name: e,
-            },
-          })
-        .then(response => {
+        // if (e ===''){
+        //     setSearchDataVisible(false);     
+        // }
+        // else {
+        //     axios.get(`${BASE_URL}/api/supplier-details`, {
+        //     params: {
+        //       trade_name: e,
+        //     },withCredentials:true
+        //   })
+        // .then(response => {
  
-          setCustomerList(response.data);
-          setSearchDataVisible(true);    
-        })
-        }
+        //   setCustomerList(response.data);
+        //   setSearchDataVisible(true);    
+        // })
+        // }
         
         
     } catch (error) {
@@ -453,7 +493,7 @@ const handleEscape = (event:any) => {
                 if (result.isConfirmed) {
                    
                     setIsEditMode(false)
-                    window.location.reload();
+                   fetchSupplier();
                 }})
             
 
@@ -472,7 +512,7 @@ const handleEscape = (event:any) => {
                     if (result.isConfirmed) {
                        
                         setIsEditMode(false)
-                        window.location.reload();
+                         fetchSupplier();
                     }})
             }
 
@@ -480,71 +520,133 @@ const handleEscape = (event:any) => {
     }
   };
 
+const handleSearch = async (e: string) => {
+const searchTerm = e; // assuming `e` is the string you are searching for
+const filteredCustomer = TmpCustomerList.filter((item: any) =>
+  item.trade_name.toLowerCase().includes(String(searchTerm).toLowerCase())
+);
 
-const handleSearch= async (e:any) => {
-    setSearchInput(e)
-    try {
-        if (e ===''){
-            setSearchDataVisible(false);     
-        }
-        else {
-            axios.get(`${BASE_URL}/api/supplier-search`, {
-            params: {
-              trade_name: e,
-            },
-          })
-        .then(response => {
-          const data = response.data.customersSearch;
+// Get the first match
+const customer = filteredCustomer[0];
 
-          setIdCode(data[0].id_code);
-        
-          setTradeName(data[0].trade_name);
-          setLname(data[0].last_name);
-          console.log(data[0].id_code)
-  
-          setFname(data[0].first_name);
-          setMI(data[0].middle_name);
-          setPhone(data[0].business_phone_no);
-          setMobile(data[0].mobile_no);
-          setFax(data[0].fax_no);
-          setAddress(data[0].address);
-          setCity(data[0].city_municipality);
-          setProvince(data[0].province);
-          setZipCode(data[0].zip_code);
-          setTrade(data[0].trade)
-         
-          const selectElement = vatidRef.current;
-          if (selectElement){
-            selectElement.value = data[0].vat_registration_type;
-            const changeEvent = new Event('change', { bubbles: true });
-            selectElement.dispatchEvent(changeEvent);
-          }
+  if (!customer) return;
 
+  // --- Set form state ---
+  setIdCode(customer.id_code);
+  setTradeName(customer.trade_name);
+  setLname(customer.last_name);
+  setFname(customer.first_name);
+  setMI(customer.middle_name);
+  setPhone(customer.business_phone_no);
+  setMobile(customer.mobile_no);
+  setFax(customer.fax_no);
+  setAddress(customer.address);
+  setCity(customer.city_municipality);
+  setProvince(customer.province);
+  setZipCode(customer.zip_code);
+  setTax(customer.tax_id_no);
+  setStatus(customer.active_status);
+  setGroup(customer.group_name);
 
+  setSL(customer.sl_sub_category_description);
 
-        //   setVat(data.vat_registration_type);
-          setTax(data[0].tax_id_no);
-          setStatus(data[0].active_status);
-          setGroup(data[0].group_name);
-        //   setArea(data[0].area_name);
-        //   setAgent(data[0].agent_name);
-        //   setCollector(data[0].collector_name);
-          setSL(data[0].sl_sub_category_description);
-        //   setKOB(data[0].kob_name)
-          setRemarks(data[0].remarks);
+  setRemarks(customer.remarks);
 
-          const imageBase64 = `data:image/gif;base64,${data[0].supplier_image}`;
-          setImagePreview(imageBase64);
+  // --- Update select element ---
+  const selectElement = vatidRef.current;
+  if (selectElement) {
+    selectElement.value = customer.vat_registration_type;
+    const changeEvent = new Event('change', { bubbles: true });
+    selectElement.dispatchEvent(changeEvent);
+  }
 
+  // --- Update image preview ---
+  const imageBase64 = `data:image/gif;base64,${customer.supplier_image}`;
+  setImagePreview(imageBase64);
 
-        })
-        }
-        
-        
-    } catch (error) {
-    console.error(error);
-    }
+  // --- Disable only specific fields ---
+  const container = containerRef.current;
+  if (container) {
+    const inputElements = container.querySelectorAll('input, select, textarea');
+    const readonlyFields = ['idCode', 'tradeName', 'status']; // IDs of fields to disable
+
+    inputElements.forEach((el: any) => {
+      if (readonlyFields.includes(el.id)) {
+        el.setAttribute('readonly', 'true');
+        el.setAttribute('disabled', 'true');
+        el.style.backgroundColor = '#e9ecef';
+      } else {
+        el.removeAttribute('readonly');
+        el.removeAttribute('disabled');
+        el.style.backgroundColor = '';
+      }
+    });
+  }
 };
+// const handleSearch= async (e:any) => {
+//     setSearchInput(e)
+//     try {
+//         if (e ===''){
+//             setSearchDataVisible(false);     
+//         }
+//         else {
+//             axios.get(`${BASE_URL}/api/supplier-search`, {
+//             params: {
+//               trade_name: e,
+//             },withCredentials:true
+//           })
+//         .then(response => {
+//           const data = response.data.customersSearch;
+
+//           setIdCode(data[0].id_code);
+        
+//           setTradeName(data[0].trade_name);
+//           setLname(data[0].last_name);
+//           console.log(data[0].id_code)
+  
+//           setFname(data[0].first_name);
+//           setMI(data[0].middle_name);
+//           setPhone(data[0].business_phone_no);
+//           setMobile(data[0].mobile_no);
+//           setFax(data[0].fax_no);
+//           setAddress(data[0].address);
+//           setCity(data[0].city_municipality);
+//           setProvince(data[0].province);
+//           setZipCode(data[0].zip_code);
+//           setTrade(data[0].trade)
+         
+//           const selectElement = vatidRef.current;
+//           if (selectElement){
+//             selectElement.value = data[0].vat_registration_type;
+//             const changeEvent = new Event('change', { bubbles: true });
+//             selectElement.dispatchEvent(changeEvent);
+//           }
+
+
+
+//         //   setVat(data.vat_registration_type);
+//           setTax(data[0].tax_id_no);
+//           setStatus(data[0].active_status);
+//           setGroup(data[0].group_name);
+//         //   setArea(data[0].area_name);
+//         //   setAgent(data[0].agent_name);
+//         //   setCollector(data[0].collector_name);
+//           setSL(data[0].sl_sub_category_description);
+//         //   setKOB(data[0].kob_name)
+//           setRemarks(data[0].remarks);
+
+//           const imageBase64 = `data:image/gif;base64,${data[0].supplier_image}`;
+//           setImagePreview(imageBase64);
+
+
+//         })
+//         }
+        
+        
+//     } catch (error) {
+//     console.error(error);
+//     }
+// };
 
 ///// keydown every in in Every Input////
 const handleKeyDown = (event:any, currentRef:any, nextRef:any) => {
@@ -558,8 +660,8 @@ const handleKeyDown = (event:any, currentRef:any, nextRef:any) => {
     ///// KEY UP AND KEY DOWN////
   const handleKeys = (event:any) => {
     const key = event.key;
-    if (resultsContainerRef.current) {
-      const customerItems = Array.from(resultsContainerRef.current.querySelectorAll('li'));
+    if (customerRef.current) {
+      const customerItems = Array.from(customerRef.current.querySelectorAll('li'));
  
 
 
@@ -616,13 +718,93 @@ const handleKeyDown = (event:any, currentRef:any, nextRef:any) => {
 
 //#endregion
 
+  const KeyDownEscape = async() =>{
+          if (isEditMode){
 
-return <section className="content" onKeyDown={handleEscape}>
+  
+                swalWithBootstrapButtons.fire({
+                title: 'Confirmation',
+                text: "Do you want to abort Editing of transaction?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No',
+                reverseButtons: true
+              }).then((result) => {
+                if (result.isConfirmed) {
+                    setSaveDisableButton(true)
+                    setIsEditMode(false)
+                    fetchSupplier();
+                }})
+            
+
+            
+        }
+            else{
+                swalWithBootstrapButtons.fire({
+                    title: 'Confirmation',
+                    text: "Do you want to abort this transaction?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes',
+                    cancelButtonText: 'No',
+                    reverseButtons: true
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                        setSaveDisableButton(true)
+                        setIisNewMode(false)
+                        fetchSupplier();
+                    }})
+            }
+
+  }
+
+      //Handle keydown 
+useEffect(() => {
+  const handleKeyPress = (e: KeyboardEvent) => {
+    // Prevent F5 refresh
+    if (e.key === 'F5') {
+      e.preventDefault();
+    }
+
+    // Prevent Ctrl+N (new window/tab)
+    if (e.shiftKey && e.key.toLowerCase() === 'n') {
+      e.preventDefault();
+      HandleNewClick()
+    }
+
+    // Prevent Ctrl+S (save)
+    if (e.shiftKey && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      HandleSaveClick();
+      // Add your custom save logic here if needed
+    }
+
+    // Handle Escape
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (isEditMode || isNewMode) {
+        KeyDownEscape();
+      }else if(SearchDataVisible){
+        setSearchDataVisible(false);
+      }
+    }
+  };
+
+  window.addEventListener('keydown', handleKeyPress);
+
+  return () => {
+    window.removeEventListener('keydown', handleKeyPress);
+  };
+}, [isEditMode, isNewMode,SearchDataVisible]);
+
+  
+return <section className="content">
 <Fragment>
-    <div className="card-container"  onKeyDown={handleEscape} >
-        <div className="card">
+    <div className="card-container"  >
+        <div className="card" style={{height:height - 115}}> 
 
-            <div className="card-body" ref={containerRef} onKeyDown={handleEscape} >
+            <div className="card-body"   >
                 <Tabs>
                     <TabList>   
                     {tabVisible && (
@@ -682,27 +864,27 @@ return <section className="content" onKeyDown={handleEscape}>
 
                             <Grid item xs={12} xl={4} className='Button-container'>
 
-                                    <button className='btn-tools customer' ref={NewRef}  onClick={HandleNewClick} ><i className="fas fa-plus"></i> New</button> &nbsp;
+                                    <button className='btn-tools customer' ref={NewRef}  disabled={!SaveDisableButton}  onClick={HandleNewClick} ><i className="fas fa-plus"></i> New</button> &nbsp;
                                     <button className='btn-tools customer' ref={SaveRef} disabled={SaveDisableButton} onClick={HandleSaveClick}> <i className="fas fa-save" ></i> {isEditMode ? 'Update':'Save'}</button> &nbsp;
-                                    <button className='btn-tools customer' ref={EditRef} onClick={HandleEditClick}> <i className="fas fa-edit"></i> Edit</button> &nbsp;
-                                    <button className='btn-tools customer'  onClick={HandleDeleteClick}> <i className="fas fa-trash"></i> Delete</button> &nbsp;
-                                    <button className='btn-tools customer' disabled={true} ><i className="fas fa-ban"></i> Cancel</button> &nbsp;
+                                    <button className='btn-tools customer' ref={EditRef} disabled={!SaveDisableButton} onClick={HandleEditClick}> <i className="fas fa-edit"></i> Edit</button> &nbsp;
+                                    <button className='btn-tools customer' disabled={!SaveDisableButton} onClick={HandleDeleteClick}> <i className="fas fa-trash"></i> Delete</button> &nbsp;
+                                    <button className='btn-tools customer' ><i className="fas fa-ban"></i> Cancel</button> &nbsp;
                             </Grid>
 
    
                       </Grid>
                       <div className='container-fluid' >
-                        <div className='card'>
+                        <div className='card' style={{height:height - 230}}>
 
   
                                    {/* *************************ROW DATA ENTRY********************* */}
-                          <div className='card-body' onKeyDown={handleEscape}>
+                          <div className='card-body' ref={containerRef}>
                             <div className='Primary-Container' style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
                        
                               <Grid item xs={12} md={6}  className='PrimarySub' >
                                   <div className='form-group1 trade-name'>
                                       <label>Trade Name</label>
-                                      <input ref={tradenameidRef} onKeyDown={(e) => handleKeyDown(e, tradenameidRef, lnameidRef)} type='text' className='text-input'  defaultValue={Tradename}   onChange={handleTradeNameChange} readOnly/>
+                                      <input ref={tradenameidRef} onKeyDown={(e) => handleKeyDown(e, tradenameidRef, lnameidRef)} type='text' className='text-input'  value={Tradename}   onChange={handleTradeNameChange} readOnly/>
                                   </div>
 
                                   <div className='contact-primary'>
@@ -711,15 +893,15 @@ return <section className="content" onKeyDown={handleEscape}>
                                       <h3 style={{textAlign:'start'}}>Primary Contact</h3>
                                       <div className='form-group customer'>
                                           <label>Last Name:</label>
-                                          <input type='text'   ref={lnameidRef}  onKeyDown={(e) => handleKeyDown(e, lnameidRef, fnameidRef)} className='text-input' defaultValue={Lname}  onChange={(event) => setLname(event.target.value)} readOnly/>
+                                          <input type='text'   ref={lnameidRef}  onKeyDown={(e) => handleKeyDown(e, lnameidRef, fnameidRef)} className='text-input' value={Lname}  onChange={(event) => setLname(event.target.value)} readOnly/>
                                       </div>
                                       <div className='form-group customer'>
                                           <label>First Name:</label>
-                                          <input type='text' ref={fnameidRef} onKeyDown={(e) => handleKeyDown(e, fnameidRef, miidRef)} className='text-input' defaultValue={Fname} onChange={(event) => setFname(event.target.value)} readOnly/>
+                                          <input type='text' ref={fnameidRef} onKeyDown={(e) => handleKeyDown(e, fnameidRef, miidRef)} className='text-input' value={Fname} onChange={(event) => setFname(event.target.value)} readOnly/>
                                       </div>
                                       <div className='form-group customer'>
                                           <label>Middle Name:</label>
-                                          <input type='text' ref={miidRef} onKeyDown={(e) => handleKeyDown(e, miidRef, phoneidRef)} className='text-input' defaultValue={MI} onChange={(event) => setMI(event.target.value)} readOnly/>
+                                          <input type='text' ref={miidRef} onKeyDown={(e) => handleKeyDown(e, miidRef, phoneidRef)} className='text-input' value={MI} onChange={(event) => setMI(event.target.value)} readOnly/>
                                       </div>
                                   
                                       </div>
@@ -728,15 +910,15 @@ return <section className="content" onKeyDown={handleEscape}>
                                       <h3 style={{textAlign:'start'}}>Phone Contact</h3>
                                       <div className='form-group customer'>
                                           <label>Business Phone:</label>
-                                          <input type='text' ref={phoneidRef} onKeyDown={(e) => handleKeyDown(e, phoneidRef, mobileidRef)} className='text-input' defaultValue={Phone} onChange={(event) => setPhone(event.target.value)} readOnly/>
+                                          <input type='text' ref={phoneidRef} onKeyDown={(e) => handleKeyDown(e, phoneidRef, mobileidRef)} className='text-input' value={Phone} onChange={(event) => setPhone(event.target.value)} readOnly/>
                                       </div>
                                       <div className='form-group customer'>
                                           <label>Mobile phone:</label>
-                                          <input type='text' ref={mobileidRef} onKeyDown={(e) => handleKeyDown(e, mobileidRef, faxidRef)} className='text-input' defaultValue={Mobile} onChange={(event) => setMobile(event.target.value)} readOnly/>
+                                          <input type='text' ref={mobileidRef} onKeyDown={(e) => handleKeyDown(e, mobileidRef, faxidRef)} className='text-input' value={Mobile} onChange={(event) => setMobile(event.target.value)} readOnly/>
                                       </div>
                                       <div className='form-group customer'>
                                           <label>Fax Number:</label>
-                                          <input type='text' ref={faxidRef} onKeyDown={(e) => handleKeyDown(e, faxidRef, addressidRef)} className='text-input' defaultValue={Fax} onChange={(event) => setFax(event.target.value)} readOnly />
+                                          <input type='text' ref={faxidRef} onKeyDown={(e) => handleKeyDown(e, faxidRef, addressidRef)} className='text-input' value={Fax} onChange={(event) => setFax(event.target.value)} readOnly />
                                       </div>
 
                                       </div>
@@ -747,22 +929,22 @@ return <section className="content" onKeyDown={handleEscape}>
                                           {/* <h3 style={{textAlign:'start'}}>Address Contact</h3> */}
                                           <div className='form-group '>
                                               <label>Address:</label>
-                                              <input type='text' ref={addressidRef} onKeyDown={(e) => handleKeyDown(e, addressidRef, cityidRef)} className='text-input' defaultValue={Address} onChange={(event) => setAddress(event.target.value)} readOnly/>
+                                              <input type='text' ref={addressidRef} onKeyDown={(e) => handleKeyDown(e, addressidRef, cityidRef)} className='text-input' value={Address} onChange={(event) => setAddress(event.target.value)} readOnly/>
                                           </div>
                                           <div className='form-group '>
                                               <label>City/Municipality:</label>
-                                              <input type='text' ref={cityidRef} onKeyDown={(e) => handleKeyDown(e, cityidRef, provinceidRef)} className='text-input' defaultValue={City} onChange={(event) => setCity(event.target.value)} readOnly/>
+                                              <input type='text' ref={cityidRef} onKeyDown={(e) => handleKeyDown(e, cityidRef, provinceidRef)} className='text-input' value={City} onChange={(event) => setCity(event.target.value)} readOnly/>
                                           </div>
                                       </div>
 
                                       <div className='contact'>
                                           <div className='form-group '>
                                               <label>Province:</label>
-                                              <input type='text' ref={provinceidRef} onKeyDown={(e) => handleKeyDown(e, provinceidRef, zipcodeidRef)} className='text-input' defaultValue={Province} onChange={(event) => setProvince(event.target.value)} readOnly/>
+                                              <input type='text' ref={provinceidRef} onKeyDown={(e) => handleKeyDown(e, provinceidRef, zipcodeidRef)} className='text-input' value={Province} onChange={(event) => setProvince(event.target.value)} readOnly/>
                                           </div>
                                           <div className='form-group '>
                                               <label>ZIP/Postal Code:</label>
-                                              <input type='text' ref={zipcodeidRef} onKeyDown={(e) => handleKeyDown(e, zipcodeidRef, taxidRef)} className='text-input' defaultValue={ZipCode} onChange={(event) => setZipCode(event.target.value)} readOnly/>
+                                              <input type='text' ref={zipcodeidRef} onKeyDown={(e) => handleKeyDown(e, zipcodeidRef, taxidRef)} className='text-input' value={ZipCode} onChange={(event) => setZipCode(event.target.value)} readOnly/>
                                           </div>
                                       </div>
                                   </div>
@@ -774,7 +956,7 @@ return <section className="content" onKeyDown={handleEscape}>
                                 <div className='contact-primary'>
                                     <div className='form-group' >
                                       <label >Select Trade</label>
-                                      <select ref={tradeRef} onKeyDown={(e) => handleKeyDown(e, tradeRef, vatidRef)} defaultValue={Trade}  onChange={(event) => setTrade(event.target.value)} className='select' autoComplete='off' disabled>
+                                      <select ref={tradeRef} onKeyDown={(e) => handleKeyDown(e, tradeRef, vatidRef)} value={Trade}  onChange={(event) => setTrade(event.target.value)} className='select' autoComplete='off' disabled>
                                       <option value={'T'}>Trade</option>
                                       <option value={'N'}>Non Trade</option>
                                       </select>
@@ -782,7 +964,7 @@ return <section className="content" onKeyDown={handleEscape}>
                                     </div>
                                     <div className='form-group'>
                                       <label >Select Vat</label>
-                                      <select ref={vatidRef} onKeyDown={(e) => handleKeyDown(e, vatidRef, taxidRef)} defaultValue={VAT}  onChange={(event) => setVat(event.target.value)} className='select' autoComplete='off' disabled>
+                                      <select ref={vatidRef} onKeyDown={(e) => handleKeyDown(e, vatidRef, taxidRef)} value={VAT}  onChange={(event) => setVat(event.target.value)} className='select' autoComplete='off' disabled>
                                         <option value={'V'}>VAT</option>
                                         <option value={'N'}>Non VAT</option>
                                       </select>
@@ -790,31 +972,31 @@ return <section className="content" onKeyDown={handleEscape}>
 
                                     <div className='form-group'>
                                       <label>TAX ID No.</label>
-                                      <input type='text' ref={taxidRef} onKeyDown={(e) => handleKeyDown(e, taxidRef, statusidRef)}  className='text-input' defaultValue={TAX} onChange={(event) => setTax(event.target.value)} readOnly/>
+                                      <input type='text' ref={taxidRef} onKeyDown={(e) => handleKeyDown(e, taxidRef, statusidRef)}  className='text-input' value={TAX} onChange={(event) => setTax(event.target.value)} readOnly/>
                                     </div>
                                   </div>
 
                                  <div className='contact-primary'>
                                     <div className='form-group'>
                                       <label>Status</label>
-                                      <select ref={statusidRef} onKeyDown={(e) => handleKeyDown(e, statusidRef, groupidRef)} className='select'  defaultValue={Status} onChange={(event) => setStatus (event.target.value)} autoComplete='off' disabled>
+                                      <select ref={statusidRef} onKeyDown={(e) => handleKeyDown(e, statusidRef, groupidRef)} className='select'  value={Status} onChange={(event) => setStatus (event.target.value)} autoComplete='off' disabled>
                                         <option value={'Y'}>Active</option>
                                         <option value={'N'}>InActive</option>
                                       </select>
                                     </div>
                                     <div className='form-group'>
                                       <label>Group:</label>
-                                      <input type='text' ref={groupidRef} onKeyDown={(e) => handleKeyDown(e, groupidRef, slidRef)} className='text-input' defaultValue={Group} onChange={(event) => setGroup(event.target.value)} readOnly/>
+                                      <input type='text' ref={groupidRef} onKeyDown={(e) => handleKeyDown(e, groupidRef, slidRef)} className='text-input' value={Group} onChange={(event) => setGroup(event.target.value)} readOnly/>
                                     </div>
                                     <div className='form-group'>
                                       <label>SL Category</label>
-                                      <input type='text' ref={slidRef} onKeyDown={(e) => handleKeyDown(e, slidRef, remarksidRef)} className='text-input' defaultValue={SL} onChange={(event) => setSL(event.target.value)} readOnly/>
+                                      <input type='text' ref={slidRef} onKeyDown={(e) => handleKeyDown(e, slidRef, remarksidRef)} className='text-input' value={SL} onChange={(event) => setSL(event.target.value)} readOnly/>
                                     </div>
                                   </div>
 
                                   <div className='form-group'>
                                     <label>Remarks</label>
-                                    <textarea ref={remarksidRef}  className='text-input'defaultValue={Remarks} onChange={(event) => setRemarks(event.target.value)} style={{resize:'none',height:'80px'}} readOnly></textarea>
+                                    <textarea ref={remarksidRef}  className='text-input'value={Remarks} onChange={(event) => setRemarks(event.target.value)} style={{resize:'none',height:'80px'}} readOnly></textarea>
                                   </div>
 
                                   <div className='form-group image'>
@@ -868,25 +1050,35 @@ return <section className="content" onKeyDown={handleEscape}>
                                         <table className='table table-data'>
                                         <thead>
                                             <tr>
-                                                <th>Ref. No.</th>
-                                                <th>Date</th>
-                                                <th>Gross Amount</th>
-                                                <th>Terms</th>
-                                                <th>Payment Scheme</th>
-                                                <th>Due Date</th>
+                                                <th>ID Code</th>
+                                                <th>Trade Name</th>
+                                                <th>Primary Contact</th>
+                                                <th>Mobile No.</th>
+                                                <th>Business Address</th>
+                                                <th>Supplier Classification</th>
+                                                <th>Active/In active</th>
                                             </tr>
                                         </thead> 
                                         <tbody>
+                                          {CustomerList && CustomerList.length > 0 ? 
+                                            CustomerList.map((customer:any, index:any) => (
+                                              <tr key={index}>
+                                                <td>{customer.id_code}</td>
+                                                <td>{customer.trade_name}</td>
+                                                <td>{customer.business_phone_no}</td>
+                                                <td>{customer.mobile_no}</td>
+                                                <td>{customer.st_address}</td>
+                                                <td>{customer.supplier_class}</td>
+                                                <td>{customer.active_status === 'Y' ? 'Active' : 'InActive'}</td>
+                                              </tr>
+                                            
 
-                                            <tr>
-                                                <td>1</td>
-                                                <td>1</td>
-                                                <td>1</td>
-                                                <td>1</td>
-                                                <td>1</td>
-                                                <td>1</td>
-                                            </tr>
-                                    
+                                          )):(
+                                            <td valign='top' colSpan={11} className='dataTables_empty'>
+                                                No data available in the table
+                                            </td>
+                                          )}
+                                            
                                         </tbody>
 
                                     </table>

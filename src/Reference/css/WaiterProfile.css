@@ -15,9 +15,9 @@
     background-color: #f2f2f2;
   } */
   
-  .Waiter tbody tr:nth-child(even) {
+  /* .Waiter tbody tr:nth-child(even) {
     background-color: #f9f9f9;
-  }
+  } */
   
   /* .Waiter tbody tr:hover {
     background-color: #2109aa;
@@ -45,3 +45,7 @@ position: absolute;
 
   }
   
+  li.selected{
+    background-color: blue;
+    color: white;
+  }

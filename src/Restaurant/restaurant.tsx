@@ -50,9 +50,9 @@ import CashBreakDown from './CashBreakDown';
 import ChargeTo from './Charge';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt, faArrowAltCircleDown, faArrowDown, faExpand, faExpandArrowsAlt, faChevronDown, faChevronCircleDown, faArrowUp, faAnglesUp, faAnglesDown, faSliders, faAngleUp, faAngleDown, faAngleDoubleDown, faAngleDoubleUp} from '@fortawesome/free-solid-svg-icons';
+import {faPlus, faShoppingCart, faMinus, faClose, faTrashAlt, faArrowAltCircleDown, faArrowDown, faExpand, faExpandArrowsAlt, faChevronDown, faChevronCircleDown, faArrowUp, faAnglesUp, faAnglesDown, faSliders, faAngleUp, faAngleDown, faAngleDoubleDown, faAngleDoubleUp, faSearch} from '@fortawesome/free-solid-svg-icons';
 import QRCode from 'qrcode-generator';
-import { Button, Dialog, DialogContent, DialogTitle, Grid, Table, Typography } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogTitle, Grid, Table, TextField, Typography } from '@mui/material';
 import { createTheme, ThemeProvider,Theme,makeStyles, useTheme, responsiveFontSizes  } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -86,7 +86,7 @@ import ListOfTransaction from './ListofTransaction';
 import OnScreenKeyboard from './KeyboardGlobal';
 import OnScreenKeyboardNumeric from './KeyboardNumericGlobal';
 import PdfModal from './PdfModal';
-import { GetSettings } from '../global';
+import { GetSettings,GetSettingsGlobal } from '../global';
 import { pdfjs } from 'react-pdf';
 import { Link } from 'react-router-dom';
 
@@ -95,7 +95,7 @@ import { ExtendedDataWebSocket,LoginWebSocket,LogoutWebSocket, SelectTableWebSoc
 import { useLogoutSocket,useLoginSocket,useExtendedSocket } from './websocketConnection';
 import { set } from 'date-fns';
 ;
-import { setGlobalItems,setGlobalIsLogin,setGlobalIsLoading,setGlobalModal } from '../globalSlice';
+import { setGlobalItems,setGlobalIsLogin,setGlobalIsLoading,setGlobalModal,setGlobalSettings, setGlobalVerifiedBy } from '../globalSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {RootState} from '../store'
@@ -105,6 +105,8 @@ import GiftCheckPaymentModal from './GiftCheck';
 import GIftCheckPaymentEntry from './GiftCheckPayment';
 import OnlinePaymentEntryModal from './OnlinePaymentEntry';
 import { InProgressLoading } from '../Loader/Loader';
+import { styleEffect } from 'framer-motion';
+import { string32 } from 'pdfjs-dist/types/src/shared/util';
 
 
 const swalWithBootstrapButtons = Swal.mixin({
@@ -135,6 +137,7 @@ interface ProductData {
 
   
 const ProductGrid: React.FC<ProductData> = ({ products , addtocart ,selectedProductData,isSelected,OrderTypeModal}) => {
+   
     const [quantity, setQuantity] = useState<number | 1>(1); // Adjust the initial state value
     const [Price, setPrice] = useState<number>(1);
     const ProductRef = useRef<HTMLDivElement>(null)
@@ -150,29 +153,19 @@ const ProductGrid: React.FC<ProductData> = ({ products , addtocart ,selectedProd
     const inputRef = useRef<HTMLInputElement>(null);
     let isF1:boolean = false
     const [totalRow,setTotalRow] = useState<any>(0)
-  useEffect(()=>{
-    const fetchData = async() =>{
-      const data = await GetSettings('ProductColPerRows')
-      setProductColPerRows(data)
-      console.log('ProductColPerRows',data)
-    }
-    fetchData()
-  },[])
-
-  
-  useEffect(()=>{
-    const fetchData = async() =>{
-      const data = await GetSettings('ShowArrowUpAndDown')
-      if(data == 'True'){
-        setShowArrowUpAndDown(true)
-      }else{
-        setShowArrowUpAndDown(false)
+    const Settings:any = useSelector((state:RootState)=>state.global.globalSettings)
+    useEffect(()=>{
+      const fetchData = async() =>{
+        if (Settings){
+        setProductColPerRows(Settings.ProductColPerRows)
+        if(Settings.ShowArrowUpAndDown == 'True'){
+          setShowArrowUpAndDown(true)
+        }else{
+          setShowArrowUpAndDown(false)
+        }  }
       }
-   
-      console.log('ShowArrowUpAndDown',data)
-    }
-    fetchData()
-  },[])
+      fetchData()
+    },[Settings])
 
 
     useEffect(() => {
@@ -559,9 +552,10 @@ interface TransactionData {
   EditOrderList:any;
   DiscountData:any;
   DiscountType:any;
+  ServiceCharge:any
 }
 
-const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totaldue,EditOrderList,DiscountData,DiscountType  }) => {
+const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totaldue,EditOrderList,DiscountData,DiscountType,ServiceCharge  }) => {
     const [IsOpenTransModal, setIsOpenTransModal] = useState<boolean>(false);
     const [selectedItemIndex, setSelectedItemIndex] = useState<any>(null);
     const [quantity, setQuantity] = useState<number>(1);
@@ -573,62 +567,12 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
 
     const inputRef = useRef<HTMLInputElement>(null);
 
-    //#region 
-    // const openModaltrans = (index) => {
-    //     // setSelectedItemIndex(index);
-
-    //     // setIsOpenTransModal(true);
-
-        
-    //   };
-
-    // const openModaltrans = (index) => {
-    //     const selectedItem = cartItems[index]; // Access the item using the index
-    //     setQuantity(1)
-      
-    //     // Perform actions with the selected item
-    //     setSelectedItemIndex(selectedItem);
-    //     setPrice(selectedItem.price)
-    //     setIsOpenTransModal(true);
-    //   };
-
-    //   const closeModal = () => {
-    //     setIsOpenTransModal(false);
-    //     setSelectedItemIndex(null);
-    //   };
-
-    //   const onDelete = () => {
-    //     if (
-    //       selectedItemIndex !== null &&
-    //       selectedItemIndex >= 0 &&
-    //       selectedItemIndex < cartItems.length
-    //     ) {
-    //       const updatedItems = [...cartItems];
-    //       updatedItems.splice(selectedItemIndex, 1);
-    //       setCartItems(updatedItems);
-    //       closeModal();
-    //     } else {
-    //       // Handle invalid selectedItemIndex here (e.g., show an error message)
-    //       console.error('Invalid selectedItemIndex or out of range');
-    //     }
-    //   };
-      //#endregion
+ 
 
     const openModaltrans = (index: any) => {
       const selectedItem = cartitems[index];
       EditOrderList({selectedItem,index})
-      // setQuantity(selectedItem.quantity);
-      // setSelectedItemIndex(index); // Store the index directly, not the item itself
-      // setPrice(selectedItem.price);
-      // setDescription(selectedItem.description)
-      // setBarcode(selectedItem.barcode)
-      // // setLineNo(selectedItem.index)
-      // setIsOpenTransModal(true);
-      // setTimeout(() => {
-      //   if (inputRef.current) {
-      //     inputRef.current.focus();
-      //   }
-      // }, 100); // 1000 millisecond
+     
 
     };
     
@@ -861,6 +805,7 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
           </>
 
         )}
+
     </>
 
   ))
@@ -902,56 +847,24 @@ const Transaction: React.FC<TransactionData> = ({ cartitems ,setcartitems,totald
                               </tr>
                               </>
 
-                          )}        
+                          )}      
+
+                      {parseFloat(ServiceCharge) !== 0 && (
+                        <>
+                          <tr style={{ border: 'none', borderCollapse: 'collapse' }}>
+                            <td colSpan={5}></td>
+                          </tr>
+                          <tr style={{ border: 'none',color:'red',fontWeight:'bold'
+                            }}>
+                            <td colSpan={3} style={{ textAlign: 'start', border: 'none' }}> Service Charge</td>
+                            <td colSpan={2} style={{ textAlign: 'end', border: 'none'}}>{parseFloat(ServiceCharge).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+                          </tr>
+                        </>
+                      )}  
           </tbody>
         </Table>
       
-        {/* {IsOpenTransModal && (
-            <div className="modal">
-            <div className="modal-content">
-              
-            <h1 className="threeDText">{description}</h1>
-            <img src={image} style={{ maxWidth: '200px', maxHeight: '150px', marginBottom: '10px' }} />
-            <p className='Price'>Price: {parseFloat(Price).toFixed(2)}</p>
-            <div className="input-group">
-        
-            <button className="btn" style={{backgroundColor:'white',color:'red' ,border:'solid'}} onClick={MinusQuantity} >
-                <FontAwesomeIcon icon={faMinus}  />
-
-                </button>
-  
-                <input ref={inputRef}
-                      type="number"
-                      inputMode="numeric"
-                      placeholder="Quantity"
-                      value={quantity}
-                      onChange={(event) => handleQuantityChange(event.target.value)}
-                      style={{
-                        width: '60%',
-                        margin: '10px',
-                        fontSize: '20px',
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                      }}
-                    />
-                <button className="btn" style={{backgroundColor:'white',color:'blue' ,border:'solid'}} onClick={addQuantity}>
-                <FontAwesomeIcon icon={faPlus} />
-
-                </button>
-                
-            </div>
-            <p className='TotalDue'>Total Due: {calculateTotal()}</p>
-
-            <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'100%',textAlign:'center', display: 'inline-block'}} onClick={onUpdateToCart}> 
-                <FontAwesomeIcon icon={faShoppingCart} />Update to Cart </button>
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-              <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={onClose} className="btn-close"> <FontAwesomeIcon icon={faClose} /> Close</button>
-              <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={onDelete} className="btn-close"> <FontAwesomeIcon icon={faTrashAlt} /> Delete </button>
-            </div>
-            </div>
-        </div>
-        )} */}
-
+    
 
       </div>
       
@@ -968,74 +881,95 @@ interface CategoryData {
   category :any;
   onReceiveProducts:any;
   IsModalOpen:() => boolean;
+  ProductsList:any,
 }
-const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts,IsModalOpen }) => {
+const CategoryGrid: React.FC<CategoryData> = ({ category , onReceiveProducts,IsModalOpen ,ProductsList}) => {
   const isLogin = useSelector((state:RootState)=> state.global.globalIsLogin)
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [tmpProducts,settmpProducts] = useState<any>([])
   // const booleanValue = useSelector((state: any) => state.booleanValue);
   // const dispatch = useDispatch()
   const [selectedCategoryall, setSelectedCategoryall] = useState<boolean>(false);
 
     const [productscCat, setProducts] = useState([]);
-
     const [ShowArrowUpAndDown,setShowArrowUpAndDown] = useState<boolean>(false);
+    const Settings:any = useSelector((state:RootState)=>state.global.globalSettings)
     useEffect(()=>{
-      const fetchData = async() =>{
-        const data = await GetSettings('ShowArrowUpAndDown')
-        if(data == 'True'){
+      const fetchSettings = async() =>{
+       
+        if (Settings){
+        if(Settings.ShowArrowUpAndDown == 'True'){
           setShowArrowUpAndDown(true)
         }else{
           setShowArrowUpAndDown(false)
         }
-     
-        console.log('ShowArrowUpAndDown',data)
+        }
       }
-      fetchData()
-    },[])
-  
+      fetchSettings()
+    },[Settings])
+
+    useEffect(()=>{
+      if (ProductsList){
+        settmpProducts(ProductsList)
+      }
+    },[ProductsList])
 
     const fetchData = async (x: any,index:any) => {
+
+
       if (x == 'ALL'){
         setSelectedCategoryall(true)
+        setProducts(ProductsList)
+        onReceiveProducts(ProductsList)
+        setSelectedCategory(x)
+        setisSelectedIndexData(index)
 
       }else{
         setSelectedCategoryall(false)
-      }
     
-      try {
-        // const response = await axios.get(`${BASE_URL}/api/product/${x}`);
-        const response = await axios.get(`${BASE_URL}/api/product-category/`,{
-          params: {
-            category:x,
-          },withCredentials:true
-        });
 
+      const filtered = tmpProducts.filter((item:any)=> item.category === x)
+
+      if (filtered){
+        onReceiveProducts(filtered)
         setisSelectedIndexData(index)
         setSelectedCategory(x); // Assuming setSelectedCategory is defined elsewhere
-        setProducts(response.data); // Assuming setProducts is defined elsewhere
-        onReceiveProducts(response.data);
-        // if (onReceiveProducts) {
-        //   onReceiveProducts(response.data);
-        // }
-      } catch (error: unknown) {
-        if (axios.isAxiosError(error)) {
-          const axiosError = error as AxiosError;
+        setProducts(filtered); // Assuming setProducts is defined elsewhere
+      } }
+    
+      // try {
+      //   const response = await axios.get(`${BASE_URL}/api/product-category/`,{
+      //     params: {
+      //       category:x,
+      //     },withCredentials:true
+      //   });
 
-          if (axiosError.response) {
-            // The request was made and the server responded with a status code
-            console.error('Server responded with a non-2xx status:', axiosError.response.data);
-          } else if (axiosError.request) {
-            // The request was made but no response was received
-            console.error('No response received:', axiosError.request);
-          } else {
-            // Something else happened while setting up the request
-            console.error('Error setting up the request:', axiosError.message);
-          }
-        } else {
-          // Handle non-Axios errors here
-          console.error('Non-Axios error:', error);
-        }
-      }
+      //   setisSelectedIndexData(index)
+      //   setSelectedCategory(x); // Assuming setSelectedCategory is defined elsewhere
+      //   setProducts(response.data); // Assuming setProducts is defined elsewhere
+      //   onReceiveProducts(response.data);
+      //   // if (onReceiveProducts) {
+      //   //   onReceiveProducts(response.data);
+      //   // }
+      // } catch (error: unknown) {
+      //   if (axios.isAxiosError(error)) {
+      //     const axiosError = error as AxiosError;
+
+      //     if (axiosError.response) {
+      //       // The request was made and the server responded with a status code
+      //       console.error('Server responded with a non-2xx status:', axiosError.response.data);
+      //     } else if (axiosError.request) {
+      //       // The request was made but no response was received
+      //       console.error('No response received:', axiosError.request);
+      //     } else {
+      //       // Something else happened while setting up the request
+      //       console.error('Error setting up the request:', axiosError.message);
+      //     }
+      //   } else {
+      //     // Handle non-Axios errors here
+      //     console.error('Non-Axios error:', error);
+      //   }
+      // }
     };
 
     
@@ -1437,12 +1371,18 @@ const Restaurant: React.FC = () => {
   const [TotalDue, setTotalDue] = useState<any>(0);
   const [chatSocket, setChatSocket] = useState<WebSocket | null>(null);
   const [TableOnprocess,setTableOnprocess] = useState<any>(null)
+  const [ServiceChargeAmountD,setServiceChargeAmountD] =  useState<string>('0.00');
+
   
   // const dispatch = useDispatch();
   // const booleanValue = useSelector((state: any) => state.booleanValue);
   const inputRef = useRef<HTMLInputElement>(null);
   const TableNoRef = useRef<HTMLInputElement>(null);
   const QueNoRef = useRef<HTMLInputElement>(null);
+  const ProductSearchRef  = useRef<HTMLInputElement>(null);
+  const[isProductSearch,setisProductSearch] = useState<boolean>(false)
+  const[ProductSearch,setProductSearch] = useState<any>('')
+
   const [CashBreakDownModal, setCashBreakDownModal] = useState<boolean>(false);
   const [CloseTerminalModal, setCloseTerminalModal] = useState<boolean>(false);
   const [EditOrderModal, setEditOrderModal] = useState<boolean>(false);
@@ -1476,13 +1416,17 @@ const Restaurant: React.FC = () => {
   const [CashPaymentEntryModal,setCashPaymentEntryModal] = useState<boolean>(false);
   const [ReprintTransactionModal,setReprintTransactionModal] = useState<boolean>(false);
   const [OpenlistOfTransactionModal,setOpenlistOfTransactionModal] = useState<boolean>(false);
+  const [OpenChangePriceTypeModal,setOpenChangePriceTypeModal] = useState<boolean>(false);
+  const [NewPriceType,setNewPriceType] = useState<string>('')
   const [OpenLockModal,setOpenLockModal]= useState<boolean>(false)
   const [PrintReceiptModal,setPrintReceiptModal] = useState<boolean>(false);
   const [OpenVireficationModal,setOpenVireficationModal] = useState<boolean>(false)
   const [refreshCart, setRefreshCart] = useState(false);
   const [SalesOrderListOpenModal, setSalesOrderListOpenModal] = useState<boolean>(false);
   const [products, setProducts] = useState<any>([]);
+  const [tmpProducts,settmpProducts] = useState<any>([])
   const [category, setCategory] = useState<any>([]);
+  const [PricetypeList, setPricetypeList] = useState<any>([]);
   const [cartItems, setCartItems] = useState<any>([]);
   const [cartItems1, setCartItems1] = useState<any[]>([]);
   // const siteCode = useSiteCode();
@@ -1617,7 +1561,7 @@ const Restaurant: React.FC = () => {
 
   const fetchPdfReceiptData = async (or:any) => {
   try {
-
+    setPdfPath('')
     const response = await axios.get(`${BASE_URL}/api/receipt-pdf/`, {
     params: { or },
     responseType: 'arraybuffer',
@@ -1632,8 +1576,8 @@ const Restaurant: React.FC = () => {
   if (window.electronPDFPrint) {
     // const pdfBuffer = await fetch(pdfPath).then(res => res.arrayBuffer());
     // const result = await window.electronAPI.printPDF(pdfBuffer);
-    // const buffer = await fetch(url).then(res => res.arrayBuffer());
-    //   await window.electronPDFPrint.printPDF(buffer);
+    const buffer = await fetch(url).then(res => res.arrayBuffer());
+      await window.electronPDFPrint.printPDF(buffer);
   } else {
     const win = window.open(url);
     if (win) win.onload = () => win.print();
@@ -1647,59 +1591,54 @@ const Restaurant: React.FC = () => {
               chatSocket.send(JSON.stringify(message));
           
             }
-//   const response = await axios.get(`${BASE_URL}/api/receipt-pdf/`, {
-//     params: { or: or },
-//     responseType: 'blob',
-//   });
 
-//   const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-//   const pdfUrl = window.URL.createObjectURL(pdfBlob);
- 
-//   const printWindow = window.open(pdfUrl);
-
-//   if (printWindow) {
-//     printWindow.onload = function () {
-//       printWindow.focus();
-//       printWindow.print();
-
-//       // 🕓 Wait a short moment, then close automatically
-//       setTimeout(() => {
-//         printWindow.close();
-//       }, 1000); // adjust delay if needed (in ms)
-//     };
-//   } else {
-//     console.error("Popup blocked. Please allow popups for this site.");
-//   }
 } catch (error) {
   console.error("Error fetching PDF:", error);
 }
+  };
 
-      // try {
-      //     const response = await axios.get(`${BASE_URL}/api/receipt-pdf/`, {params: {
-      //         or: or, // Pass your query parameter (e.g. order number)
-      //       },
-      //         responseType: 'blob', // Important to get the response as a blob
-      //     });
-      //     const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-      //     setPdfPath(url);
 
-      //       if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
-   
-      //         const message = {
-      //           'message': "",
-      //           'TableNO':TableNo,
-      //         };
-      //         chatSocket.send(JSON.stringify(message));
+  const fetchPdfReprintReceiptData = async (or:any) => {
+  try {
+    setPdfPath('')
+    const response = await axios.get(`${BASE_URL}/api/reprint-receipt-pdf/`, {
+    params: { or },
+    responseType: 'arraybuffer',
+  });
+  const blob = new Blob([response.data], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+
+  // show in iframe
+  setPdfPath(url);
+
+  // user can click "Print" button, which calls:
+  if (window.electronPDFPrint) {
+    // const pdfBuffer = await fetch(pdfPath).then(res => res.arrayBuffer());
+    // const result = await window.electronAPI.printPDF(pdfBuffer);
+    const buffer = await fetch(url).then(res => res.arrayBuffer());
+      await window.electronPDFPrint.printPDF(buffer);
+  } else {
+    const win = window.open(url);
+    if (win) win.onload = () => win.print();
+  }
+
+        if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+              const message = {
+                'message': "",
+                'TableNO':TableNo,
+              };
+              chatSocket.send(JSON.stringify(message));
           
-      //       }
-      // } catch (error) {
-      //     console.error('Error fetching PDF:', error);
-      //     setError('Error fetching PDF. Please try again.');
-      // }
+            }
+
+} catch (error) {
+  console.error("Error fetching PDF:", error);
+}
   };
 
   const fetchPdfSalesorderData = async () => {
     const CashierID = localStorage.getItem('UserID');
+    setPdfPath('')
     try {
         const response = await axios.get(`${BASE_URL}/api/sales-order-pdf/`, {
           params:{
@@ -1708,6 +1647,7 @@ const Restaurant: React.FC = () => {
             responseType: 'blob', // Important to get the response as a blob
         },);
         const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+        console.log('PDF URL:', url); // Log the URL for debugging
         setPdfPath(url);
           if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
    
@@ -1748,13 +1688,33 @@ const Restaurant: React.FC = () => {
     bar_code: any;
   }
 
-  useEffect(()=>{
-    const fetchData = async() =>{
-      const data = await GetSettings('TableColPerRows')
-      setTableColPerRows(data)
-    }
-    fetchData()
-  },[TableList,QueList])
+    const Settings = useSelector((state:RootState)=>state.global.globalSettings)
+
+    const [isLoaded,setisLoaded] = useState<boolean>(false)
+
+    useEffect(()=>{
+      if (!isLoaded){
+        const LoadSetting = async()=>{
+            const setting = await GetSettingsGlobal()
+            dispatch(setGlobalSettings(setting))
+            setTableColPerRows(setting.TableColPerRows)
+            setisLoaded(true)
+            fetchDataCtategory()
+            fetchDataProduct()
+            FetchPriceType()
+        }
+        LoadSetting()
+      }
+    },[isLoaded])
+
+
+  // useEffect(()=>{
+  //   const fetchData = async() =>{
+  //     const data = await GetSettings('TableColPerRows')
+  //     setTableColPerRows(data)
+  //   }
+  //   fetchData()
+  // },[TableList,QueList])
 
  const selectedProductData = (data:any) => {
   setAddOrderModal(true)
@@ -1964,7 +1924,7 @@ const Restaurant: React.FC = () => {
         sendExMessage(x)
 
       if (response.status==200){
-        console.log('added successfully')
+        // console.log('added successfully')
         // sendData();
       }
     }
@@ -2061,6 +2021,7 @@ const Restaurant: React.FC = () => {
       }
     }
     }catch{
+      dispatch(setGlobalIsLoading(false))
       console.error('error');
       
     }
@@ -2068,6 +2029,24 @@ const Restaurant: React.FC = () => {
   }
 
   // ***************** OTHER COMMAND BUTTON ******************/
+
+const ChangePriceType = () => {
+  setOrderTypeModal(false)
+  setOpenChangePriceTypeModal(true)
+  setOtherCommandOpenModal(false)
+}
+
+const SelectPriceType = async (price_name:string) => {
+  setOpenChangePriceTypeModal(false)
+  setNewPriceType(price_name)
+  dispatch(setGlobalIsLoading(true))
+  await fetchDataProductWithPriceName(price_name)
+  dispatch(setGlobalIsLoading(false))
+
+
+}
+
+
 
   const SusppendEntry = (e:any)=> {
     const { name, value } = e.target;
@@ -2089,8 +2068,9 @@ const Restaurant: React.FC = () => {
   }
 
   const SusppendTransaction =  async(data:any) => {
-    setLoadingPrint(true)
-    console.log('Data received from modal:', data);
+    dispatch(setGlobalIsLoading(true))
+    // setLoadingPrint(true)
+    // console.log('Data received from modal:', data);
     // setCustomerOrderInfo(data);
     setCustomerDineInModal(false);
 
@@ -2104,13 +2084,20 @@ const Restaurant: React.FC = () => {
           CashierID:CashierID,TerminalNo:TerminalNo}
         ,{withCredentials:true});
       if (response.status === 200) {
+          dispatch(setGlobalIsLoading(false))
+         if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+              const message = {
+                'message': "",
+                'TableNO':true,
+              };
+              chatSocket.send(JSON.stringify(message));}
         DeletePosExtendedAll()
         setCartItems([])
         setTableNo('')
         setOrderType('')
         setOrderTypeModal(true)
         setisSelected(null)
-        setLoadingPrint(false)
+        // setLoadingPrint(false)
         setSuspendEntryModal(false)
         setSuspendCustomerData({
           Customer :'',
@@ -2121,6 +2108,7 @@ const Restaurant: React.FC = () => {
 
       }
     } catch (error: any) {
+        dispatch(setGlobalIsLoading(false))
       if (error.response) {
         // The request was made and the server responded with a status code
         console.error('Server responded with a non-2xx status:', error.response.data);
@@ -2140,6 +2128,8 @@ const ShowCancellTransaction = () => {
   setOtherCommandOpenModal(false)
 }
 
+
+
   const CloseCancellTransactionModal = () => {
     setOpenlistOfTransactionModal(false)
     setOtherCommandOpenModal(false)
@@ -2147,7 +2137,7 @@ const ShowCancellTransaction = () => {
   }
 
   const SaveCancellTransaction = (data:any) => {
-    console.log('data',data)
+    // console.log('data',data)
     setOpenlistOfTransactionModal(false)
     setOrderTypeModal(true)
     setOrderTypeModal(true)
@@ -2309,7 +2299,7 @@ const logoutClick = async () => {
 
   const fetchPdFCashCount = async () => {
   try {
-
+setPdfPath('')
     const response = await axios.get(`${BASE_URL}/api/cash-count-pdf/`, {
     responseType: 'arraybuffer',
   });
@@ -2446,6 +2436,9 @@ const logoutClick = async () => {
   }
 
   const handleDineIn = () => {
+    setDiscountType('')
+    setshowTable(true)
+    setIsPayment(false)
       setOrderTypeModal(false)
       setOrderType('DINE IN')
       setTableNoModal(true);
@@ -2457,6 +2450,8 @@ const logoutClick = async () => {
     };
   
   const handleTakeOut = () => {
+      setDiscountType('')
+      setIsPayment(false)
       setTableNo('')
       setQueNo('')
       setOrderTypeModal(false)
@@ -2542,14 +2537,21 @@ const logoutClick = async () => {
 
    const CutomerInfoEntry = async (dataFromModal:any) => {
     // Handle the data received from the modal
-    setLoadingPrint(true)
-    console.log('Data received from modal:', dataFromModal);
+    // setLoadingPrint(true)
+    if (NewPriceType !==''){
+      fetchDataProduct()
+      setNewPriceType('')
+    }
+    dispatch(setGlobalIsLoading(true))
+
     setCustomerOrderInfo(dataFromModal);
     setCustomerDineInModal(false);
   
     const CashierID = localStorage.getItem('UserID');
     const TerminalNo = localStorage.getItem('TerminalNo');
-    // console.log(dictionary)
+    setQueNo(dataFromModal.QueNO)
+
+
    
     try {
       const response = await axios.post(`${BASE_URL}/api/add-sales-order/`,
@@ -2557,7 +2559,7 @@ const logoutClick = async () => {
           TerminalNo:TerminalNo,OrderType:OrderType},{withCredentials:true});
       if (response.status === 200) {
       
-        setLoadingPrint(false)
+        // setLoadingPrint(false)
           if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
           const message = {
             'message': "",
@@ -2565,8 +2567,11 @@ const logoutClick = async () => {
           };
           chatSocket.send(JSON.stringify(message));
         }
+        dispatch(setGlobalIsLoading(false))
+
         
         if (dataFromModal.PaymentType === 'Sales Order'){
+
         setSOCustomer(dataFromModal)
         fetchPdfSalesorderData()
         setIsPdfModalOpen(true)
@@ -2579,15 +2584,18 @@ const logoutClick = async () => {
         setOrderTypeModal(true)
    
       } else {
-        // Handle other response statuses if needed
-        setSOCustomer(dataFromModal)
-        printReceipt(dataFromModal,response.data.SOdata);
+        setIsPayment(true)
+        // setSOCustomer(dataFromModal)
+        // printReceipt(dataFromModal,response.data.SOdata);
+        fetchPdfSalesorderData()
+        setIsPdfModalOpen(true)
         setDineIn(false)
         setPaymentDiscountOpenModal(true)
         setCustomerOrderInfo([])
-      }
+     }
     } 
   }catch (error: any) {
+    dispatch(setGlobalIsLoading(false))
       if (error.response) {
         // The request was made and the server responded with a status code
         console.error('Server responded with a non-2xx status:', error.response.data);
@@ -2624,15 +2632,15 @@ const logoutClick = async () => {
 
 
 
-  /////************** CloseReprintTransactionModal ****************** */
+  /////**************REPRINT CloseReprintTransactionModal ****************** */
   const CloseReprintTransactionModal = () => {
   setReprintTransactionModal(false)
   }
 
 
+
   const ReprintTransactionReceipt = async (data: { DocNO: any; DocType: any; }) => {
 
-    console.log('asdasd',data)
     setReprintTransactionModal(false)
 
     try {
@@ -2643,11 +2651,11 @@ const logoutClick = async () => {
           DocType:data.DocType,
         },withCredentials:true})
       if (response.status==200) {
-
-        setCartItems(response.data.Data)
-        localStorage.setItem('cartData', JSON.stringify(response.data.Data));
-        localStorage.setItem('DataInfo', JSON.stringify(response.data.DataInfo));
-        setRefreshCart(prevState => !prevState);
+          fetchPdfReprintReceiptData(data.DocNO)
+        // setCartItems(response.data.Data)
+        // localStorage.setItem('cartData', JSON.stringify(response.data.Data));
+        // localStorage.setItem('DataInfo', JSON.stringify(response.data.DataInfo));
+        // setRefreshCart(prevState => !prevState);
       }
       
     } catch (error) {
@@ -2662,7 +2670,8 @@ const logoutClick = async () => {
   ///********************THIS SAVE THE DATA FOR CASH PAYMENT*****************************/
   const CutomerInfoEntryPaymnet = async (data: any) =>{
   setCustomeryPaymentModal(false)
-  setLoadingPrint(true)
+  // setLoadingPrint(true)
+  dispatch(setGlobalIsLoading(true))
   let customer:any = ''
   if (OrderType === 'TAKE OUT'){
     customer= ''
@@ -2832,7 +2841,7 @@ const logoutClick = async () => {
     }
 
       try {
-        console.log('AmountTenderedMultiple',AmountTenderedMultiple)
+
         const response = await axios.post(`${BASE_URL}/api/save-sales-order-payment/`,{data:cartItems,AmountTendered: PaymentType === 'MULTIPLE' ? AmountTenderedMultiple :AmountTendered,
                                                                                       TableNo:TableNo,CashierID:CashierID,
                                                                                       TerminalNo:TerminalNo,DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,doctype:doc_type,
@@ -2844,9 +2853,11 @@ const logoutClick = async () => {
                                                                                       TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,customer:customer,
                                                                                       AmountDue:formattedTotalDue,CashierName:CashierName,OrderType:OrderType,
                                                                                       DiscountData:DiscountData,DiscountType:DiscountType,DiscountDataList:DiscountDataList,QueNo:QueNo,doctype:doc_type,
-                                                                                      Discounted_by:Discounted_by},{withCredentials:true});
+                                                                                      Discounted_by:Discounted_by,ServiceChargeAmountD:ServiceChargeAmountD},{withCredentials:true});
             if (response1.status === 200) {
-              setLoadingPrint(false)
+
+              dispatch(setGlobalIsLoading(false))
+              // setLoadingPrint(false)
               //  PrintCashPaymentReceipt(response1.data);
               localStorage.removeItem('Discounted_by')
               setDiscountDataLits('')
@@ -2860,9 +2871,10 @@ const logoutClick = async () => {
               setDiscountType('')
               setOrderTypeModal(true)
               setisSelected(null)
+              setServiceChargeAmountD('0.00')
             } else {
+               dispatch(setGlobalIsLoading(false))
               // Handle other response statuses if needed
-              console.log('Request failed with status:', response.status);
             }
     
           } 
@@ -2889,8 +2901,9 @@ const logoutClick = async () => {
                                                                                           TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
                                                                                           ,DiscountDataList:DiscountDataList,OrderType:OrderType,CreditCard:CreditCard,doctype:doc_type, 
                                                                                           DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
-                                                                                          Discounted_by:Discounted_by},{withCredentials:true});
+                                                                                          Discounted_by:Discounted_by,ServiceChargeAmountD:ServiceChargeAmountD},{withCredentials:true});
             if (response1.status === 200) {
+               dispatch(setGlobalIsLoading(false))
               localStorage.removeItem('CreditCardPayment')
               setLoadingPrint(false)
 
@@ -2907,6 +2920,7 @@ const logoutClick = async () => {
               setOrderTypeModal(true)
               setisSelected(null)
               setTableColPerRows('')
+              setServiceChargeAmountD('0.00')
               if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
               const message = {
                 'message': "",
@@ -2915,6 +2929,7 @@ const logoutClick = async () => {
               chatSocket.send(JSON.stringify(message));
             }
             } else {
+               dispatch(setGlobalIsLoading(false))
               // Handle other response statuses if needed
               console.log('Request failed with status:', response.status);
             }
@@ -2947,11 +2962,11 @@ const logoutClick = async () => {
                                                                                           TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
                                                                                           ,DiscountDataList:DiscountDataList,OrderType:OrderType,DebitCard:DebitCard,doctype:doc_type,
                                                                                           DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
-                                                                                          Discounted_by:Discounted_by},{withCredentials:true});
+                                                                                          Discounted_by:Discounted_by,ServiceChargeAmountD:ServiceChargeAmountD},{withCredentials:true});
             if (response1.status === 200) {
               localStorage.removeItem('DebitCardPayment')
-              setLoadingPrint(false)
-    
+              // setLoadingPrint(false)
+              dispatch(setGlobalIsLoading(false))
               // PrintCreditCardPaymentReceipt(response1.data);
               setDiscountDataLits('')
               setDiscountData('')
@@ -2965,6 +2980,7 @@ const logoutClick = async () => {
               setOrderTypeModal(true)
               setisSelected(null)
               setTableColPerRows('')
+              setServiceChargeAmountD('0.00')
               if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
               const message = {
                 'message': "",
@@ -2973,6 +2989,7 @@ const logoutClick = async () => {
               chatSocket.send(JSON.stringify(message));
             }
             } else {
+               dispatch(setGlobalIsLoading(false))
               // Handle other response statuses if needed
               console.log('Request failed with status:', response.status);
             }
@@ -2988,7 +3005,7 @@ const logoutClick = async () => {
 
             let Charge:any = ''
             const ChargeArrayString = localStorage.getItem('Charge');
-            console.log('ChargeArrayString',ChargeArrayString)
+
             if (ChargeArrayString) {
               try {
                 // Parse the JSON string to convert it back to an array
@@ -3004,11 +3021,11 @@ const logoutClick = async () => {
                                                                                           TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
                                                                                           ,DiscountDataList:DiscountDataList,OrderType:OrderType,Charge:Charge,doctype:doc_type,
                                                                                           DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
-                                                                                          Discounted_by:Discounted_by},{withCredentials:true});
+                                                                                          Discounted_by:Discounted_by,ServiceChargeAmountD:ServiceChargeAmountD},{withCredentials:true});
             if (response1.status === 200) {
 
-
-              setLoadingPrint(false)
+              dispatch(setGlobalIsLoading(false))
+              // setLoadingPrint(false)
               // PrintChargePaymentReceipt(response1.data);
               setDiscountDataLits('')
               setDiscountData('')
@@ -3023,6 +3040,7 @@ const logoutClick = async () => {
               setisSelected(null)
               localStorage.removeItem('Charge')
               setTableColPerRows('')
+              setServiceChargeAmountD('0.00')
               if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
               const message = {
                 'message': "",
@@ -3031,10 +3049,12 @@ const logoutClick = async () => {
               chatSocket.send(JSON.stringify(message));
             }
             } else {
+               dispatch(setGlobalIsLoading(false))
               // Handle other response statuses if needed
               console.log('Request failed with status:', response.status);
             }
           } else {
+             dispatch(setGlobalIsLoading(false))
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
           }
@@ -3062,7 +3082,7 @@ const logoutClick = async () => {
               try {
                 // Parse the JSON string to convert it back to an array
                 DebitCard = JSON.parse(DebitCardArrayString);
-                console.log(DebitCard);
+       
               } catch (error) {
                 console.error("Error parsing JSON:", error);
               }
@@ -3127,8 +3147,9 @@ const logoutClick = async () => {
                                                                                       DiscountDataList:DiscountDataList,CreditCard:CreditCard,DebitCard:DebitCard,CashAmount:CashAmount,doctype:doc_type,
                                                                                       GiftCheck:GiftCheck,Online:Online,Other:Other,
                                                                                       DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
-                                                                                      Discounted_by:Discounted_by},{withCredentials:true});
+                                                                                      Discounted_by:Discounted_by,ServiceChargeAmountD:ServiceChargeAmountD},{withCredentials:true});
             if (response1.status === 200) {
+              dispatch(setGlobalIsLoading(false))
 
               // PrintCreditCardPaymentReceipt(response1.data);
               localStorage.removeItem('CreditCardPayment')
@@ -3139,7 +3160,7 @@ const logoutClick = async () => {
               localStorage.removeItem('CashAmount')
               setDiscountDataLits('')
               setDiscountData('')
-              setLoadingPrint(false)
+              // setLoadingPrint(false)
               setCartItems([])
               fetchPdfReceiptData(response1.data.data.OR)
               DeletePosExtendedAll()
@@ -3150,6 +3171,7 @@ const logoutClick = async () => {
               setOrderTypeModal(true)
               setisSelected(null)
               setTableColPerRows('')
+              setServiceChargeAmountD('0.00')
               if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
               const message = {
                 'message': "",
@@ -3158,11 +3180,13 @@ const logoutClick = async () => {
               chatSocket.send(JSON.stringify(message));
             }
             } else {
+              dispatch(setGlobalIsLoading(false))
               // Handle other response statuses if needed
               console.log('Request failed with status:', response.status);
             }
     
           } else {
+            dispatch(setGlobalIsLoading(false))
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
           }
@@ -3185,10 +3209,11 @@ const logoutClick = async () => {
                                                                                           TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
                                                                                           ,DiscountDataList:DiscountDataList,OrderType:OrderType,GiftCheck:GiftCheck,doctype:doc_type, 
                                                                                           DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
-                                                                                          Discounted_by:Discounted_by},{withCredentials:true});
+                                                                                          Discounted_by:Discounted_by,ServiceChargeAmountD:ServiceChargeAmountD},{withCredentials:true});
             if (response1.status === 200) {
               localStorage.removeItem('GiftCheckPayment')
-              setLoadingPrint(false)
+              // setLoadingPrint(false)
+               dispatch(setGlobalIsLoading(false))
 
               // PrintCreditCardPaymentReceipt(response1.data);
               setDiscountDataLits('')
@@ -3203,6 +3228,7 @@ const logoutClick = async () => {
               setOrderTypeModal(true)
               setisSelected(null)
               setTableColPerRows('')
+              setServiceChargeAmountD('0.00')
               if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
               const message = {
                 'message': "",
@@ -3211,11 +3237,13 @@ const logoutClick = async () => {
               chatSocket.send(JSON.stringify(message));
             }
             } else {
+               dispatch(setGlobalIsLoading(false))
               // Handle other response statuses if needed
               console.log('Request failed with status:', response.status);
             }
     
           } else {
+             dispatch(setGlobalIsLoading(false))
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
           }
@@ -3239,10 +3267,11 @@ const logoutClick = async () => {
                                                                                           TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
                                                                                           ,DiscountDataList:DiscountDataList,OrderType:OrderType,Online:Online,doctype:doc_type, 
                                                                                           DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
-                                                                                          Discounted_by:Discounted_by},{withCredentials:true});
+                                                                                          Discounted_by:Discounted_by,ServiceChargeAmountD:ServiceChargeAmountD},{withCredentials:true});
             if (response1.status === 200) {
+              dispatch(setGlobalIsLoading(false))
               localStorage.removeItem('OnlinePayment')
-              setLoadingPrint(false)
+              // setLoadingPrint(false)
 
               // PrintCreditCardPaymentReceipt(response1.data);
               setDiscountDataLits('')
@@ -3257,6 +3286,7 @@ const logoutClick = async () => {
               setOrderTypeModal(true)
               setisSelected(null)
               setTableColPerRows('')
+              setServiceChargeAmountD('0.00')
               if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
               const message = {
                 'message': "",
@@ -3265,11 +3295,13 @@ const logoutClick = async () => {
               chatSocket.send(JSON.stringify(message));
             }
             } else {
+               dispatch(setGlobalIsLoading(false))
               // Handle other response statuses if needed
               console.log('Request failed with status:', response.status);
             }
     
           } else {
+             dispatch(setGlobalIsLoading(false))
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
           }
@@ -3292,11 +3324,11 @@ const logoutClick = async () => {
                                                                                           TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName
                                                                                           ,DiscountDataList:DiscountDataList,OrderType:OrderType,Other:Other,doctype:doc_type, 
                                                                                           DiscountData:DiscountData,DiscountType:DiscountType,QueNo:QueNo,
-                                                                                          Discounted_by:Discounted_by},{withCredentials:true});
+                                                                                          Discounted_by:Discounted_by,ServiceChargeAmountD:ServiceChargeAmountD},{withCredentials:true});
             if (response1.status === 200) {
               localStorage.removeItem('OtherPayment')
-              setLoadingPrint(false)
-
+              // setLoadingPrint(false)
+              dispatch(setGlobalIsLoading(false))
               // PrintCreditCardPaymentReceipt(response1.data);
               setDiscountDataLits('')
               setDiscountData('')
@@ -3310,6 +3342,7 @@ const logoutClick = async () => {
               setOrderTypeModal(true)
               setisSelected(null)
               setTableColPerRows('')
+              setServiceChargeAmountD('0.00')
               if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
               const message = {
                 'message': "",
@@ -3318,11 +3351,13 @@ const logoutClick = async () => {
               chatSocket.send(JSON.stringify(message));
             }
             } else {
+              dispatch(setGlobalIsLoading(false))
               // Handle other response statuses if needed
               console.log('Request failed with status:', response.status);
             }
     
           } else {
+            dispatch(setGlobalIsLoading(false))
             // Handle other response statuses if needed
             console.log('Request failed with status:', response.status);
           }
@@ -3342,31 +3377,6 @@ const logoutClick = async () => {
             // Something else happened while setting up the request
             console.error('Error setting up the request:', error.message);
         } }
-
-    
-
-  //   try {
-  //     const response = await axios.post(`${BASE_URL}/api/save-cash-payment/`,{data:cartItems,AmountTendered:AmountTendered,CustomerPaymentData:data,
-  //       TableNo:TableNo,CashierID:CashierID,TerminalNo:TerminalNo,AmountDue:formattedTotalDue,CashierName:CashierName});
-  //     if (response.status === 200) {
-
-  //       PrintCashPaymentReceipt(response.data);
-  //     } else {
-  //       // Handle other response statuses if needed
-  //       console.log('Request failed with status:', response.status);
-  //     }
-  // } catch (error) {
-  //     if (error.response) {
-  //         // The request was made and the server responded with a status code
-  //         console.error('Server responded with a non-2xx status:', error.response.data);
-  //     } else if (error.request) {
-  //         // The request was made but no response was received
-  //         console.error('No response received:', error.request);
-  //     } else {
-  //         // Something else happened while setting up the request
-  //         console.error('Error setting up the request:', error.message);
-  //     }
-  // }
 
 
 
@@ -3439,7 +3449,8 @@ const logoutClick = async () => {
             setOrderTypeModal(true)
             setisSelected(null)
             DeletePosExtendedAll()
-             setTableOnprocess('')
+            setTableOnprocess('')
+            setServiceChargeAmountD('0')
            if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
               const message = {
                 'message': "",
@@ -3495,12 +3506,13 @@ const logoutClick = async () => {
 
   const settlebillData = async (data:any) => {
     // Implement your logic here for settlebillData
-    console.log('Settle bill data:', data.DiscountData);
+
     setSalesOrderListOpenModal(false)
     setTableNoModal(false)
     setDineIn(false)
     setTableNo(data.tableno)
     setPaymentOpenModal(true)
+    setServiceChargeAmountD(data.ServiceChargeAmountD)
     const DiscountType:string = data.DiscountType
 
 
@@ -3538,7 +3550,7 @@ const logoutClick = async () => {
           },withCredentials:true
       });
 
-    console.log(response.data)
+
     setCartItems1(response.data)
     setCartItems(response.data)
     
@@ -3575,7 +3587,7 @@ const logoutClick = async () => {
   }
 
   const Chargedata = async (data:any) => {
-  console.log('charge data',data)
+
   localStorage.setItem('Charge',JSON.stringify(data))
   setChargeToModal(false)
   setCustomeryPaymentModal(true)
@@ -3771,7 +3783,7 @@ const logoutClick = async () => {
   }
 
   const GiftCheckPaymentOk = (data:any) => {
-    console.log(data)
+
     localStorage.setItem('GiftCheckPayment',JSON.stringify(data))
     setGiftCheckPaymentModal(false)
     setGiftCheckPaymentEntryModal(true)
@@ -3967,7 +3979,7 @@ const logoutClick = async () => {
       reverseButtons: true
     }).then(async(result) => {
       if (result.isConfirmed) {
-
+        dispatch(setGlobalIsLoading(true))
         try{
 
           const response = await axios.post(`${BASE_URL}/api/cleared-table/`,
@@ -3977,9 +3989,18 @@ const logoutClick = async () => {
             setTableOnprocess(null)
             setTableNo('')
             setDineInOrderAndPay(false)
+             dispatch(setGlobalIsLoading(false))
+            if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+              const message = {
+                'message': "",
+                'TableNO':true,
+              };
+              chatSocket.send(JSON.stringify(message));
+            }
           }
 
         }catch{
+          dispatch(setGlobalIsLoading(false))
           showErrorAlert(`Error while Clearing table no ${TableOnprocess}`)
         }
   
@@ -4009,6 +4030,7 @@ const logoutClick = async () => {
    
 
   const GetSusppendData = async (data:any) => {
+    dispatch(setGlobalIsLoading(true))
   try {
   const response = await axios.get(`${BASE_URL}/api/susppend-sales-order/`,{
     params:{
@@ -4016,11 +4038,14 @@ const logoutClick = async () => {
     },withCredentials:true
   })
   if (response.status ==200){
+    
     setCartItems(response.data.listing)
     setTableOnprocess(data)
     setTableNo(data)
+     dispatch(setGlobalIsLoading(false))
   }
   }catch{
+    dispatch(setGlobalIsLoading(false))
     showErrorAlert(`Error While Fetching Susppend Transaction in Table ${data}`)
   }
   }
@@ -4141,7 +4166,7 @@ const logoutClick = async () => {
     }
       if (parseFloat(searchItemindex) <= TableList.length) {
         const index = TableList.findIndex((item:any)=> item.table_count === parseFloat(searchItemindex) && item.Paid === 'N');
-          console.log(index)
+
         if (index !== -1) {
           setSelectTypeOfTransaction(true)
           setTimeout(() => {
@@ -4177,7 +4202,7 @@ const logoutClick = async () => {
     } else {
   
         const index = QueList.findIndex(item => String(parseInt(item.q_no)) === QueNo);
-          console.log(index)
+
         if (index !== -1) {
           setSelectTypeOfTransaction(true)
           setTimeout(() => {
@@ -4213,7 +4238,7 @@ useEffect(() => {
   if (window.electronAPI?.onBeforeQuit) {
     window.electronAPI.onBeforeQuit(async () => {
       await closeSocket(); // gracefully close WebSocket
-      console.log('WS closed before app quit');
+
     });
   }
 }, []);
@@ -4226,9 +4251,10 @@ useEffect(() => {
         await openSocket(); // open WebSocket only now
         sendMessage({ action: "Login"});
         fecthTableList();
+        fecthQueList()
         const x = await SelectTableWebSocket()
         setChatSocket(x)
-        // fecthQueList()
+       
         }catch(error){
           console.log('Error')
         }
@@ -4279,42 +4305,82 @@ useEffect(() => {
   //     socket.close();
   //   };
   }, []); 
+useEffect(() => {
+  if (!chatSocket) return; // Don't run if socket isn't initialized
 
+  const fetchTimeout = { current: null as NodeJS.Timeout | null };
 
-  useEffect(() => {
-    if (!chatSocket) return; // Don't run if socket isn't initialized
+  const handleMessage = async (event: MessageEvent) => {
+    try {
+      const data = JSON.parse(event.data);
+      const TableRecieve = data.message;
 
-    const handleMessage = async (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data);
-        const TableRecieve = data.message;
-        console.log('Receive Selected Table' ,data)
-        if (TableRecieve) {
-          setTableOnprocess(TableRecieve);
-        } else {
-          setTableOnprocess(0);
+      // Only update state if value changed
+      setTableOnprocess((prev:any) => {
+        if (TableRecieve !== prev) {
+          // Debounce fetching lists to prevent rapid calls
+          if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
+          fetchTimeout.current = setTimeout(() => {
+            fecthTableList();
+            fecthQueList();
+          }, 300); // 300ms delay
+          return TableRecieve || 0;
         }
+        return prev; // No change → do nothing
+      });
+    } catch (err) {
+      console.error('Failed to parse WebSocket message:', err);
+    }
+  };
 
-        fecthTableList();
-        fecthQueList();
-      } catch (err) {
-        console.error('Failed to parse WebSocket message:', err);
-      }
-    };
+  const handleError = (error: Event) => {
+    console.error('WebSocket error:', error);
+  };
 
-    const handleError = (error: Event) => {
-      console.error('WebSocket error:', error);
-    };
+  chatSocket.addEventListener('message', handleMessage);
+  chatSocket.addEventListener('error', handleError);
 
-    chatSocket.addEventListener('message', handleMessage);
-    chatSocket.addEventListener('error', handleError);
+  return () => {
+    chatSocket.removeEventListener('message', handleMessage);
+    chatSocket.removeEventListener('error', handleError);
+    chatSocket.close();
+    if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
+  };
+}, [chatSocket]);
 
-    return () => {
-      chatSocket.removeEventListener('message', handleMessage);
-      chatSocket.removeEventListener('error', handleError);
-      chatSocket.close();
-    };
-  }, [chatSocket]);
+  // useEffect(() => {
+  //   if (!chatSocket) return; // Don't run if socket isn't initialized
+
+  //   const handleMessage = async (event: MessageEvent) => {
+  //     try {
+  //       const data = JSON.parse(event.data);
+  //       const TableRecieve = data.message;
+  //       if (TableRecieve) {
+  //         setTableOnprocess(TableRecieve);
+  //       } else {
+  //         setTableOnprocess(0);
+  //       }
+
+  //       fecthTableList();
+  //       fecthQueList();
+  //     } catch (err) {
+  //       console.error('Failed to parse WebSocket message:', err);
+  //     }
+  //   };
+
+  //   const handleError = (error: Event) => {
+  //     console.error('WebSocket error:', error);
+  //   };
+
+  //   chatSocket.addEventListener('message', handleMessage);
+  //   chatSocket.addEventListener('error', handleError);
+
+  //   return () => {
+  //     chatSocket.removeEventListener('message', handleMessage);
+  //     chatSocket.removeEventListener('error', handleError);
+  //     chatSocket.close();
+  //   };
+  // }, [chatSocket]);
 
 
 
@@ -4383,6 +4449,7 @@ useEffect(() => {
   const fecthTableList = () => {
     if (TableList.length != 0){
     setLoading(false)
+    dispatch(setGlobalIsLoading(true))
     }
         const apiUrl = `${BASE_URL}/api/table/count/?site_code=${SideCode}`; // Replace with your actual site code
         fetch(apiUrl, {
@@ -4397,21 +4464,24 @@ useEffect(() => {
             if (!response.ok) {
               throw new Error('Network response was not ok');
             }
+             
             return response.json();
           })
           .then(data => {
+            dispatch(setGlobalIsLoading(false))
             setTableList(data.tables);
             setLoading(false) // Assuming the response data has a 'tables' key
             // console.log('TaBLE LIST',data.tables)
           })
           .catch(error => {
+            dispatch(setGlobalIsLoading(false))
             console.error('There was a problem fetching the data:', error);
           });
   };
 
 
   const fecthQueList = () => {
-    if (TableList.length != 0){
+    if (QueList.length != 0){
     setLoading(false)
     }
         const apiUrl = `${BASE_URL}/api/que-list/?site_code=${SideCode}`; // Replace with your actual site code
@@ -4465,7 +4535,7 @@ useEffect(() => {
               totalDue = totalDue - (parseFloat(DiscountData.SLess20SCDiscount.replace(',' , '')) + parseFloat(DiscountData.SLessVat12.replace(',' , '')))
 
             }else if(DiscountType === 'ITEM'){
-              console.log('DiscountData',DiscountData)
+  
               let totalDisCount:any = 0
               if (DiscountData){
                 DiscountData.map((item:any) => {
@@ -4484,6 +4554,8 @@ useEffect(() => {
               }
             }
           }
+          totalDue += parseFloat(ServiceChargeAmountD)
+
           return totalDue.toFixed(2);
   };
         
@@ -4497,13 +4569,44 @@ useEffect(() => {
           setProducts(productsFromCategory);
   };
 
+  //************** PRICE TYPE LIST************************ */
+
+  const FetchPriceType =async () =>{
+     try {
+                dispatch(setGlobalIsLoading(true))
+                  const response = await axios.get(`${BASE_URL}/api/price-type-list/`,{
+                    withCredentials:true
+                  });
+                  setPricetypeList(response.data);
+                  dispatch(setGlobalIsLoading(false))
+              } catch (error: any) {
+                 dispatch(setGlobalIsLoading(false))
+                  if (error.response) {
+                    showErrorAlert(error.response.data)
+                      // The request was made and the server responded with a status code
+                      console.error('Server responded with a non-2xx status:', error.response.data);
+                  } else if (error.request) {
+                      // The request was made but no response was received
+                      console.error('No response received:', error.request);
+                  } else {
+                      // Something else happened while setting up the request
+                      console.error('Error setting up the request:', error.message);
+                  }
+
+              }
+  }
    
   //***************PRODUCT***************** */
-  useEffect(() => {
-        const fetchData = async () => {
+
+        const fetchDataProduct = async () => {
             try {
-                const response = await axios.get(`${BASE_URL}/api/product/`,{ withCredentials:true
+                // const response = await axios.get(`${BASE_URL}/api/product/`,{ withCredentials:true
+                  
+                // });
+                 const response = await axios.get(`${BASE_URL}/api/product-per-price-type/`,{ withCredentials:true
+                  
                 });
+                settmpProducts(response.data)
                 setProducts(response.data);
             } catch (error:any) {
                 if (error.response) {
@@ -4518,20 +4621,46 @@ useEffect(() => {
                 }
             }
         };
-        
-        fetchData();
-  }, []);
-    
 
+           const fetchDataProductWithPriceName = async (price_name:string) => {
+            try {
+                // const response = await axios.get(`${BASE_URL}/api/product/`,{ withCredentials:true
+                  
+                // });
+                 const response = await axios.get(`${BASE_URL}/api/product-per-price-type/`,{ 
+                  params:{price_name
+                  },withCredentials:true
+                  
+                });
+                settmpProducts(response.data)
+                setProducts(response.data);
+            } catch (error:any) {
+                if (error.response) {
+                    // The request was made and the server responded with a status code
+                    console.error('Server responded with a non-2xx status:', error.response.data);
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    console.error('No response received:', error.request);
+                } else {
+                    // Something else happened while setting up the request
+                    console.error('Error setting up the request:', error.message);
+                }
+            }
+        };
+ 
+        
     //***************CATEGORY***************** */
-  useEffect(() => {
-          const fetchData = async () => {
+
+          const fetchDataCtategory = async () => {
               try {
+                dispatch(setGlobalIsLoading(true))
                   const response = await axios.get(`${BASE_URL}/api/product/category/`,{
                     withCredentials:true
                   });
                   setCategory(response.data);
+                  dispatch(setGlobalIsLoading(false))
               } catch (error: any) {
+                 dispatch(setGlobalIsLoading(false))
                   if (error.response) {
                     showErrorAlert(error.response.data)
                       // The request was made and the server responded with a status code
@@ -4543,11 +4672,10 @@ useEffect(() => {
                       // Something else happened while setting up the request
                       console.error('Error setting up the request:', error.message);
                   }
+
               }
           };
           
-          fetchData();
-  }, []);
 
 
 
@@ -4657,17 +4785,22 @@ useEffect(() => {
                       OpenVireficationModal|| isModalOpened) {
                   return;
                     }
-            if (DineIn || userRank == 'Salesman') {
-              SaveOrderClick();
-            } else {
-              setIsKey(true);
-      
-              if (parseFloat(TotalDue) !== 0) {
-                PaymentClickControlS();
-              }
-      
-              setIsKey(false);
+            // if (DineIn || userRank == 'Salesman') {
+            if (!IsPayment){
+                SaveOrderClick();
+            }else{
+                 PaymentClickControlS();
             }
+              
+            // } else {
+            //   setIsKey(true);
+      
+            //   if (parseFloat(TotalDue) !== 0) {
+            //     PaymentClickControlS();
+            //   }
+      
+            //   setIsKey(false);
+          //  }
           } else if (e.key === 'Escape') {
             e.preventDefault();
 
@@ -5002,7 +5135,10 @@ useEffect(() => {
       setOrderTypeModal(true)
     }else if (VeryficationType === 'Refresh'){
 
-    }else{
+    }else if (VeryficationType === 'Delete Order'){
+
+    }
+    else{
       setPaymentOpenModal(true)
     }
 
@@ -5021,9 +5157,11 @@ useEffect(() => {
 
     if (VeryficationType=='Delete Order'){
        await onDelete()
+        dispatch(setGlobalVerifiedBy(''))
       setisSelected(null)
     } else if (VeryficationType ==='Reprint'){
       ReprintList()
+        dispatch(setGlobalVerifiedBy(''))
     }
     else if (VeryficationType == 'Senior'){
       OpenSeniorCitezenEntry();
@@ -5043,6 +5181,7 @@ useEffect(() => {
 
     if (VeryficationType == 'Refresh'){
         await RefreshModule();
+          dispatch(setGlobalVerifiedBy(''))
     }
     if (VeryficationType == 'Cancell Transaction'){
       ShowCancellTransaction()
@@ -5071,7 +5210,7 @@ dispatch(setGlobalIsLoading(false))
 
   const SaveSeniorCitezenDiscount = (data:any) => {
 
-    console.log(data)
+
     setDiscountData(data.SeniorDiscountData)
     setDiscountType('SC')
     setDiscountDataLits(data.SeniorNameList)
@@ -5110,7 +5249,7 @@ dispatch(setGlobalIsLoading(false))
 
   }
   const SaveItemDiscountEntry = (data:any) => {
-    console.log(data)
+
     setOpenItemDiscountModal(false)
     setDiscountData((prevDisEntry:any)=> [...prevDisEntry, data]);
     setDiscountType('ITEM')
@@ -5131,10 +5270,10 @@ dispatch(setGlobalIsLoading(false))
 
   }
   const SaveTradessDiscountEntry = (data:any) => {
-    console.log('trade discount',data)
+
     setOpenTradeDiscountModal(false)
 
-    console.log(data)
+
     setDiscountData(data)
     setDiscountType('Trade')
     setDiscountDataLits(data)
@@ -5159,9 +5298,9 @@ dispatch(setGlobalIsLoading(false))
 
   }
   const SaveTransactionDiscountEntry = (data:any) => {
-    console.log('Transaction discount',data)
+
     setOpenTransactionDiscountModal(false)
-    console.log(data)
+
     setDiscountData(data)
     setDiscountType('TRANSACTION')
     calculateTotalDue()
@@ -6076,8 +6215,6 @@ dispatch(setGlobalIsLoading(false))
       doc.write('</div>'); // Close the container div
       doc.close();
 
-      console.log('999') /// Dont delete
-      
     /* The above code is using setTimeout to execute a series of actions after a delay of 1000
     milliseconds. */
     setTimeout(() => {
@@ -7880,7 +8017,7 @@ dispatch(setGlobalIsLoading(false))
   const updateScreenSize = () => {
     setScreenWidth(window.innerWidth);
     setScreenHeight(window.innerHeight);
-    console.log(window.innerWidth)
+
     // setDevicePixelRatio(window.devicePixelRatio);
   };
 
@@ -7900,6 +8037,26 @@ dispatch(setGlobalIsLoading(false))
   },[OrderType,CustomerOrderInfo])
 
 
+
+///*********************SEARCH PRODUCT USING DESCRIPTION*********************** */
+
+useEffect(()=>{
+
+  if (isProductSearch && ProductSearch !==''){
+    const filtered = tmpProducts.filter((item:any)=> String(item.long_desc).toLocaleLowerCase().includes(ProductSearch.toLocaleLowerCase()))
+    if (filtered){
+      setProducts(filtered)
+    }else{
+      setProducts([])
+      
+    }
+    setTimeout(() => {
+       ProductSearchRef.current?.focus()
+    }, 100);
+   
+  }
+
+},[isProductSearch,ProductSearch])
 
 
   return (
@@ -7966,7 +8123,8 @@ dispatch(setGlobalIsLoading(false))
                       )}   
 
                       <div style={{display: categoryHide ? 'block':'none',height:'100%'}}>
-                      <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} IsModalOpen={IsModalOpen} />
+                      <CategoryGrid category={category} onReceiveProducts={handleProductsFromCategory} 
+                      IsModalOpen={IsModalOpen} ProductsList={tmpProducts}/>
                       </div>
 
                 </div>
@@ -7977,16 +8135,73 @@ dispatch(setGlobalIsLoading(false))
 
       <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
             <div className="Product">
+                  {isProductSearch ? (
+                    <Box  sx={{backgroundColor: '#007bff',
+                      display:'flex',
+                      padding:'7px',
+                      margin: '2px',
+                      borderRadius:'5px',
+                      flexDirection:'row',justifyContent:'space-arround',gap:'10px'}}
+                  >
+                      <input ref={ProductSearchRef}
+                      placeholder='Search Description...'
+                      value={ProductSearch}
+                      onChange={(e)=>setProductSearch(e.target.value)}
+                      style={{width:'90%'}}/>
+
+                      <Button onClick={()=>setisProductSearch(false) }
+                       style={{
+                        height:'40px',
+                        backgroundColor: 'blue',
+                        color: 'white',
+                        fontWeight:'900',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.3s ease',
+                      }}
+                        >
+                        <Typography sx={{
+                          color:'white'
+                        }
+                          
+                        }>Close</Typography>
+                      </Button>
+                    </Box>
+                  ):(
+                    <>
+                    <Box
+                  sx={{backgroundColor: '#007bff',textShadow: ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)',
+                  borderRadius: '5px',
+                  fontWeight: 'bold', textAlign: 'center',
+                      padding:'7px',
+                      margin: '2px',
+                  display:'flex',
+                  flexDirection:'row',justifyContent:'center'}}
+                    >
                 <Typography      
-              sx={{
-              fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.6rem' },
-              color: '#ffffff',backgroundColor: '#007bff',
-              padding: '10px',textShadow: ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)',
-              borderRadius: '5px',margin: '2px',
-              fontWeight: 'bold', textAlign: 'center',
-              justifyContent: 'space-between',}}>
-              Product Section
-                </Typography>
+                  sx={{
+                  fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.6rem' },
+                  color: '#ffffff',backgroundColor: '#007bff',textShadow: ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)',
+                  borderRadius: '5px',margin: '2px',
+                  fontWeight: 'bold', textAlign: 'center',
+                  justifyContent: 'space-between'}}>
+                  Product Section
+                  
+              </Typography>
+              <div style={{width:'20px',position:'relative',top:'12px',left:'30px',color:'white',fontSize:'20px',cursor:'pointer'}}>
+                  <FontAwesomeIcon icon={faSearch} 
+                  onClick={()=>setisProductSearch(true)}
+                  />
+              </div>
+            
+              </Box>
+              
+              </>
+            )}
+
+
               
 
         
@@ -8010,14 +8225,14 @@ dispatch(setGlobalIsLoading(false))
                     padding: '10px',textShadow: ' 0 0 3px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)',
                     borderRadius: '5px',margin: '2px',
                     fontWeight: 'bold', textAlign: 'center',}}>
-                      {QueNo !== '' ? 
-                      `TAKE OUT QUE NO. ${parseInt(QueNo)}`
+                      {String(QueNo) !== '' && String(QueNo) !== '0' ? 
+                      `TAKE OUT QUE NO. ${parseInt(String(QueNo))}`
                       :
                       (OrderType === 'TAKE OUT' ? 'TAKE OUT' : `${OrderType} Table No. ${TableNo}`)
                       }
                 </Typography>
               
-                <Transaction cartitems={cartItems} setcartitems={setCartItems} totaldue={calculateTotalDue()} EditOrderList={EditOrderList} DiscountData ={DiscountData} DiscountType ={DiscountType}/>
+                <Transaction cartitems={cartItems} setcartitems={setCartItems} totaldue={calculateTotalDue()} EditOrderList={EditOrderList} DiscountData ={DiscountData} DiscountType ={DiscountType} ServiceCharge={ServiceChargeAmountD}/>
 
                 <Typography sx={{
                 fontSize: { xs: '0.8rem', sm: '0.8rem', md: '.8rem', lg: '.9rem', xl: '1.2rem' },
@@ -8030,7 +8245,7 @@ dispatch(setGlobalIsLoading(false))
                     <div style={{ display: 'flex', flexDirection:'row',height:'50%' }}>
 
 
-                        {DineIn || userRank == 'Salesman' ? (
+                        {DineIn || userRank == 'Salesman' || !IsPayment ? (
 
                             <Button
                               style={{border: '1px solid #4a90e2', padding: '5px',height: '100%',
@@ -8249,7 +8464,7 @@ dispatch(setGlobalIsLoading(false))
 
 
 
-      {OrderTypeModal && (
+    {OrderTypeModal && (
                 <div className="modal-order">
                   <div className="modal-content" style={deviceType === 'Desktop' ? { width: '450px' ,display:'flex',flexDirection:'column' } : { width: '320px',display:'flex',flexDirection:'column' }}>
 
@@ -8292,852 +8507,887 @@ dispatch(setGlobalIsLoading(false))
 
                   </div>
                 </div>
-              )}
+     )}
 
 
- {isLoading ? <InProgressLoading/> : 
- <>
-      { tableNoModal && (
+  {isLoading ? <InProgressLoading/> : 
+      <>
+        { tableNoModal && (
+  
         <div className="modal" >
           <div className="modal-contentTable"  >
+                {isDesktop ? (        
+                          <>
+                            <h1>{showTable ? `SELECT TABLE ${TableNo}` : 'SELECT QUE NO.'} </h1>
+                            <input
+                            type="text"
+                            ref={showTable ? TableNoRef : QueNoRef}
+                            inputMode="numeric"
+                            placeholder={showTable ? 'Table No' : 'QUE NO.'}
+                            style={{ width: '100%', margin: '5px', textAlign: 'center' }}
+                            value={showTable ? TableNo : QueNo}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const isNumber = /^[0-9]*$/;
+                                if (isNumber.test(value)) {
+                                  (showTable ? setTableNo(e.target.value) : setQueNo(e.target.value)) } 
+                                }}
 
-      {/* <div onKeyDown={handleDivInput} tabIndex={0} ref={TableNoModalRef}> */}
+                            onKeyDown={(e) => TableNoHandleKeydown(e)}
+                          />
 
-
-          {isDesktop ? (        
-                    <>
-                      <h1>{showTable ? `SELECT TABLE ${TableNo}` : 'SELECT QUE NO.'} </h1>
-                      <input
-                      type="text"
-                      ref={showTable ? TableNoRef : QueNoRef}
-                      inputMode="numeric"
-                      placeholder={showTable ? 'Table No' : 'QUE NO.'}
-                      style={{ width: '100%', margin: '5px', textAlign: 'center' }}
-                      value={showTable ? TableNo : QueNo}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        const isNumber = /^[0-9]*$/;
-                          if (isNumber.test(value)) {
-                            (showTable ? setTableNo(e.target.value) : setQueNo(e.target.value)) } 
-                          }}
-
-                      onKeyDown={(e) => TableNoHandleKeydown(e)}
-                    />
-
-                    </>
-
-                      ):(
-                          <><h1>{showTable ? `SELECT TABLE ${TableNo}` : 'SELECT QUE NO.'}</h1>
-                          <div style={{margin:'5px',display:'flex',flexDirection:'row'}}>
-                            <input type="text" ref={TableNoRef} inputMode="numeric" placeholder="Table No" style={{width:'100%' ,margin:'5px'}} defaultValue={TableNo}  onChange={(e) => setTableNo(e.target.value)}/>
-                            <button className="btn" style={{width:'100%',height:'40px',margin:'5px'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
-                          </div></>
-                        
-                      )}
-
-
-            
-
-        {/* <div className='containertable' style={{display:'flex',flexDirection:'row'}}> */}
-
-        <Grid container spacing={2}>
-            <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
-              <div style={{overflow:'auto',height: '80%',width:'100%'}}>
-
-                <div style={{ display: 'grid', gridTemplateColumns: isDesktop? `repeat(${TableColPerRows}, minmax(15%, 1fr))`: `repeat(${TableColPerRows}, minmax(33%, 1fr))`, 
-                      gap: '2px' ,margin:'5px',overflow:'auto',height: '590px',
-                      border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'5px',borderRadius:'10px'}}>
-                {loading && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '37%',
-                    transform: 'translate(-50%, -50%)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                    zIndex: 999,
-                  }}
-                >
-                  <ClipLoader color="#4a90e2" loading={loading} size={50} />
-                </div>
-                )}
-                {showTable ? (
-                
-                      (TableList &&  TableList.map((item:any) => (
-                          <div key={item.table_count} className={item.Paid} onClick={() => SelectTable(item)}
-                            style={{border: '1px solid #4a90e2',padding: '4px',height: '100%', display: 'flex',flexDirection: 'column',justifyContent:'space-evenly',
-                              alignItems: 'center',borderRadius: '10px',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                              borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                              cursor:TableOnprocess === item.table_count ? 'not-allowed': 'pointer',
-                              backgroundColor: item.Susppend === 'YES' || item.dinein_order_and_pay ==='Y' ? 'red' :TableOnprocess === item.table_count ? 'yellow' : item.Paid  === 'N' ? 'blue' : '', }}>
-                              <Typography key={item.table_count} style={{ textShadow: '0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)', transform: 'translateZ(5px)' , 
-                                fontSize: item.Susppend === 'YES' ? '10px' : TableOnprocess === item.table_count ? '10px':'20px'
-                              ,fontWeight:'bold' ,color: item.Susppend === 'YES' || item.dinein_order_and_pay ==='Y' ? 'white': TableOnprocess === item.table_count ? 'blue':item.Paid  === 'N' ? 'white':'blue' }}>
-                              {item.dinein_order_and_pay ==='Y'? `Billed ${item.table_count}`: item.Susppend === 'YES' ? `Suspend ${item.table_count}`  :TableOnprocess === item.table_count ? `On going ${item.table_count}` : item.table_count} </Typography>
-                              <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-
-                          </div>
-                            )))
+                          </>
 
                             ):(
+                                <><h1>{showTable ? `SELECT TABLE ${TableNo}` : 'SELECT QUE NO.'}</h1>
+                                <div style={{margin:'5px',display:'flex',flexDirection:'row'}}>
+                                  <input type="text" ref={TableNoRef} inputMode="numeric" placeholder="Table No" style={{width:'100%' ,margin:'5px'}} defaultValue={TableNo}  onChange={(e) => setTableNo(e.target.value)}/>
+                                  <button className="btn" style={{width:'100%',height:'40px',margin:'5px'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
+                                </div></>
+                              
+                            )}
+
+          <Grid container spacing={2}>
+              <Grid item xs={12} md={7} style={{ height: '100%',width:'100%'}}>
+                <div style={{overflow:'auto',height: '80%',width:'100%'}}>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: isDesktop? `repeat(${TableColPerRows}, minmax(15%, 1fr))`: `repeat(${TableColPerRows}, minmax(33%, 1fr))`, 
+                                  gap: '2px' ,margin:'5px',overflow:'auto',height: '590px',
+                                  border: '2px solid #4a90e2',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',padding:'5px',borderRadius:'10px'}}>
+                            {loading && (
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '37%',
+                                transform: 'translate(-50%, -50%)',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                zIndex: 999,
+                              }}
+                            >
+                              <ClipLoader color="#4a90e2" loading={loading} size={50} />
+                            </div>
+                            )}
+
+             
+                            {showTable ? (
                             
-                              (QueList && QueList.map(item => (
-                                <div  key={item.q_no} className={item.Paid} onClick={() => SelectQue(item)}
-                                  style={{border: '1px solid #4a90e2',padding: '5px',height: '100px', display: 'flex',flexDirection: 'column',
-                                    alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
-                                    borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
-                                    backgroundColor:item.Paid  === 'N' ? 'blue' : '', }}>
-                    
-                                    <p key={item.q_no} style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'20px' ,fontWeight:'bold' ,color:'white'}}>
-                                            {String(parseInt(item.q_no))}</p>
-                                    <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                    
-                                </div>
-                                  )))
+                                  (TableList &&  TableList.map((item:any) => (
+                                      <div key={item.table_count} className={item.Paid} onClick={() => SelectTable(item)}
+                                        style={{border: '1px solid #4a90e2',padding: '4px',height: '100%', display: 'flex',flexDirection: 'column',justifyContent:'space-evenly',
+                                          alignItems: 'center',borderRadius: '10px',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                                          borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                                          cursor:TableOnprocess === item.table_count ? 'not-allowed': 'pointer',
+                                          backgroundColor: item.Susppend === 'YES' || item.dinein_order_and_pay ==='Y' ? 'red' :TableOnprocess === item.table_count ? 'yellow' : item.Paid  === 'N' ? 'blue' : '', }}>
+                                          <Typography key={item.table_count} style={{ textShadow: '0 0 1px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,2)', transform: 'translateZ(5px)' , 
+                                            fontSize: item.Susppend === 'YES' ? '10px' : TableOnprocess === item.table_count ? '10px':'20px'
+                                          ,fontWeight:'bold' ,color: item.Susppend === 'YES' || item.dinein_order_and_pay ==='Y' ? 'white': TableOnprocess === item.table_count ? 'blue':item.Paid  === 'N' ? 'white':'blue' }}>
+                                          {item.dinein_order_and_pay ==='Y'? `Billed ${item.table_count}`: item.Susppend === 'YES' ? `Suspend ${item.table_count}`  :TableOnprocess === item.table_count ? `On going ${item.table_count}` : item.table_count} </Typography>
+                                          <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+
+                                      </div>
+                                        )))
+
+                                      ):(
+                                        
+                            (QueList && QueList.map(item => (
+                                            <div  key={item.q_no} className={item.Paid} onClick={() => SelectQue(item)}
+                                              style={{border: '1px solid #4a90e2',padding: '5px',height: '150px', display: 'flex',flexDirection: 'column',justifyContent:'space-evenly',
+                                                alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+                                                borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                                                backgroundColor:item.Paid  === 'N' ? 'blue' : '', }}>
+                                
+                                                <p key={item.q_no} style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)', transform: 'translateZ(5px)' ,fontSize:'20px' ,fontWeight:'bold' ,color:'white'}}>
+                                                        {String(parseInt(item.q_no))}</p>
+                                                <img src= {table} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                                
+                                            </div>
+                                   )))
 
                             )}
-                </div>
-              </div>
-            </Grid>
-
-
-            <Grid item xs={12} md={5} style={{ height: '100%',width:'100%'}}>
-            {isDesktop && (
-              
-              <div className="num-pad" style={{margin:'5px'}}>
-              <div className="num-pad-row">
-                <button className="num-pad-key" onClick={() => handleInput('1')}>1</button>
-                <button className="num-pad-key" onClick={() => handleInput('2')}>2</button>
-                <button className="num-pad-key" onClick={() => handleInput('3')}>3</button>
-              </div>
-              <div className="num-pad-row">
-                <button className="num-pad-key" onClick={() => handleInput('4')}>4</button>
-                <button className="num-pad-key" onClick={() => handleInput('5')}>5</button>
-                <button className="num-pad-key" onClick={() => handleInput('6')}>6</button>
-              </div>
-              <div className="num-pad-row">
-                <button className="num-pad-key" onClick={() => handleInput('7')}>7</button>
-                <button className="num-pad-key" onClick={() => handleInput('8')}>8</button>
-                <button className="num-pad-key" onClick={() => handleInput('9')}>9</button>
-              </div>
-              <div className="num-pad-row" >
-              <button className="num-pad-key" style={{ width: '33%'}} onClick={() => handleBackspace()}>
-        
-                <Typography      
-              sx={{
-                fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.3rem' }}}>
-                        Back
-                </Typography>
-                </button>
-                <button className="num-pad-key" style={{ width: '33%'}}  onClick={() => handleInput('0')}>0</button>
-                <button className="num-pad-key" style={{ width: '33%'}}  onClick={ChangeViewToQue}>
-                <Typography      
-              sx={{
-                fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.3rem' }}}>
-                    {showTable ? 'Que No':'Table No'}
-                </Typography>
-          
-                  </button>
-            
-              </div>
-              <div className="num-pad-row">
-                <button className="num-pad-key" onClick={CloseTableNo} style={{width:'33%'}}>
-
-                  <Typography      
-              sx={{
-                fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.3rem' }}}>
-                        Close
-                </Typography>
-                  </button>
-                <button className="num-pad-key" style={{width:'33%'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
-                <button className="num-pad-key" style={{ width: '33%'}} onClick={clearInput}> 
-                
-                <Typography      
-              sx={{
-                fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.5rem' }}}>
-                  Clear 
-                </Typography>
-              </button>
-              </div>
-            </div>
-            )}
-            
-            
-            </Grid>
-          </Grid>
-          </div>
-          </div>
-        
-        // </div>
-      )}
-
-      {PaymentOpenModal && (
-              <div className="modal" >
-                <div className="modal-content" style={{width:'1000px'}}>
-                <h1> SELECT PAYMENT</h1>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(120px, 1fr))', gap: '5px' ,margin:'5px'}}>
-
-
-                  <div className='PaymentModalButton'
-                    tabIndex={0}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,CashPaymentRef,CashPaymentRef,CreditCardPaymentRef,0)}
-                    onClick={CashPayment} ref={CashPaymentRef}>
-
-                    <p> Cash Payment</p>
-                    <img src= {cash} />
-                  </div>
-                    
-
-                  <div className='PaymentModalButton'   
-                    tabIndex={1}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,CashPaymentRef,CreditCardPaymentRef,EPSPaymentRef,1)}
-                    ref={CreditCardPaymentRef}
-                    onClick={OpenCreditCardPayment}>
-
-                    <p>Credit Card</p>
-                    <img src= {credit}/>
-                  </div>
-
-                  <div className='PaymentModalButton'
-                    tabIndex={2}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,CreditCardPaymentRef,EPSPaymentRef,MultiplePaymentRef,2)}
-                    ref={EPSPaymentRef}
-                    onClick={OpenDebitCardPayment}>
-
-                    <p>EPS</p>
-                    <img src= {epsCard} />
-                  </div>
-
-                  <div className='PaymentModalButton'    
-                    onClick={OpenMultiplePayment}
-                    tabIndex={3}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,EPSPaymentRef,MultiplePaymentRef,ChargePaymentRef,3)}
-                    ref={MultiplePaymentRef}
-                    >
-
-                    <p>Multiple Payment</p>
-                    <img src= {Multiple}/>
-                  </div>
-                    
-
-                  <div  className='PaymentModalButton'
-                    tabIndex={4}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,MultiplePaymentRef,ChargePaymentRef,ClosePaymentRef,4)}
-                    ref={ChargePaymentRef}
-                    onClick={OpenChargeModal}>
-
-                    <p> Charge</p>
-                    <img src= {ChargeRoom} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                  </div>
-
-                <div  className='PaymentModalButton'
-                    tabIndex={5}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,ChargePaymentRef,GiftCheckPaymentRef,OnlinePaymentRef,4)}
-                    ref={GiftCheckPaymentRef}
-                    onClick={OpenGiftCheckPayment}>
-
-                    <p> Gift Check</p>
-                    <img src= {giftC} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                  </div>
-
-                   <div  className='PaymentModalButton'
-                    tabIndex={6}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,GiftCheckPaymentRef,OnlinePaymentRef,OtherPaymentRef,4)}
-                    ref={OnlinePaymentRef}
-                    onClick={OpenOnlinePayment}>
-
-                    <p> Online Payment</p>
-                    <img src= {OtherP} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                  </div>
-          
-                <div  className='PaymentModalButton'
-                    tabIndex={7}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,OnlinePaymentRef,OtherPaymentRef,ClosePaymentRef,4)}
-                    ref={OtherPaymentRef}
-                    onClick={OpenOtherPayment}>
-
-                    <p> Other Payment</p>
-                    <img src= {OtherP} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
-                  </div>
-
-                  <div className='PaymentModalButton'
-                    tabIndex={8}
-                    onKeyDown={(e)=> PaymentModalHandleKeydown(e,OtherPaymentRef,ClosePaymentRef,CashPaymentRef,5)}
-                    ref={ClosePaymentRef}
-                    onClick={CloseModal} >
-
-                    <p> Close</p>
-                    <img src= {CloseImage} />
-                  </div>
-
-                </div>
-
-                    {/* {(OrderType === 'TAKE OUT' || CustomerOrderInfo.PaymentType === 'Order and Pay') &&  */}
-                  {PaymentDiscountOpenModal && (
-                    <><h1> SELECT DISCOUNT</h1>
-                        <div className='PaymentModalContainer'>
-
-                          <div className='PaymentModalButton'
-                            onClick={(e) => OpenVireficationEntry('Senior')} >
-                            <p>Senior Citezin Discount</p>
-                            <img src={Senior}/>
-                          </div>
-
-                          <div className='PaymentModalButton'>
-                            <p> PWD Discount</p>
-                            <img src={pwdD} />
-                          </div>
-
-                          <div className='PaymentModalButton'
-                              onClick={(e) => OpenVireficationEntry('Trade')}>
-                            <p>Trade Discount</p>
-                            <img src={tradeD} />
-                          </div>
-
-
-                          <div className='PaymentModalButton'
-                          onClick={(e) => OpenVireficationEntry('Transaction')}>
-                            <p>Transaction Discount</p>
-                            <img src={transactD}/>
-                          </div>
-
-                          <div className='PaymentModalButton'
-                          onClick={(e) => OpenVireficationEntry('Item')}>
-                            <p>Item Discount</p>
-                            <img src={itemD}/>
-                          </div>
-
-
-
-
-                          <div className='PaymentModalButton'
-                            onClick={CloseModal}>
-                            <p>Close</p>
-                            <img src={CloseImage}  />
-                          </div>
-
-                        </div></> 
-                      )}
-
-        
-                  
-              </div>
-              </div>
-      )}
-
-      {OtherCommandOpenModal && (
-              <div className="modal" >
-                <div className="modal-content">
-                <h1>  SELECT TRANSACTION</h1>
-                <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, minmax(100px, 1fr))': 'repeat(3, minmax(33%, 1fr))' , gap: '5px' ,margin:'5px'}}>
-
-            {userRank == 'Cashier' && (
-                  <>
-                        {/* <div className='otherCommandButton'>
-                          <p> Item Discount</p>
-                          <img src={itemD}/>
-                        </div> */}
-                      
-                          {OrderTypeModal === false &&
-                          <div className='otherCommandButton' style={{pointerEvents: cartItems.length === 0 ? 'none':'auto'}}
-                            onClick={()=>setSuspendEntryModal(true)}>
-                              <p> Suspend Transaction</p>
-                              <img src={SuspendImage}/>
-                          </div>
-                          }
-
-                          <div className={otherCommandButton}>                      
-                            <p> Return</p>
-                            <img src={ReturnImage}/>
-                          </div>
-
-                          <div className={otherCommandButton}
-                          onClick={()=>ShowCancellTransaction()}
-                          >                      
-                            <p>Cancel Transaction</p>
-                            <img src={CancelTransImage}/>
-                          </div>
-
-
-                          <div className={otherCommandButton}
-                          onClick={()=>EndShiftHandleClick()}
-                          >
-                            <p> Cash Count</p>
-                            <img src={CashCountImage}/>
-                          </div>
-                          
-                          <div className={otherCommandButton}
-                            onClick={()=>CashPullout()}>
-                            <p> Cash Pull-Out</p>
-                            <img src={CashPullOutImage} />
-                          </div>
-                          
-                          <div className={otherCommandButton}
-                          onClick={()=>Lockterminal()}>
-                            <p>Lock Terminal</p>
-                            <img src={LockTerImage}/>
-                          </div></>
-                    ) }
-                  <div className={otherCommandButton}
-                    onClick={CloseTerminal}>
-                    <p>Close Terminal</p>
-                    <img src= {ChargeRoom}/>
-                  </div>
-
-                  <div className='otherCommandButton'  
-                    onClick={CloseModal} >
-                    <p> Close</p>
-                    <img src= {CloseImage}/>
                   </div>
                 </div>
-
-          </div>
-              </div>
-      )}
-
-
-      {SelectTypeOfTransaction && (
-              <div className="modal" >
-                  
-                <div className="modal-content" style={{width:'100%' ,display:'flex',flexDirection:'column' }}>
-                <h1>Select Type of Transaction</h1>
-
-                {DineInOrderAndPay ? (           
-                      <>
-
-                      <Button className="button-take-out" 
-                      onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,TransferTableRef,ClearTableRef,CloseSelectTransTypeRef,3)}
-                      ref={ClearTableRef}
-                      onClick={Cleartable}>
-                        <Typography      
-                          sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '1.8rem' },
-                          color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                          borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
-                        CLEAR TABLE
-                        </Typography>
-                      </Button>
-
-                    <Button className="button-dine-in-close" 
-                    onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,ClearTableRef,CloseSelectTransTypeRef,AddOrderRef,4)}
-                    ref={CloseSelectTransTypeRef}
-                    style={{backgroundColor:'red'}} onClick={CloseModal}>
-                      <Typography      
-                        sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                        color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                        borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
-                      Close
-                      </Typography>
-                    </Button>
-                    </>
-                ):(
-                  <>
-                  
-                  <Button className="button-dine-in" 
-                    onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,AddOrderRef,SettleOrderRef,0)}
-                    ref={AddOrderRef}
-                    onClick={AddOrdertable}>
-                      <Typography      
-                        sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                        color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                        borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
-                        Add Order
-                      </Typography>
-                  </Button>
-                  { userRank == 'Cashier' &&(
-                  <Button className="button-take-out" 
-                    onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,SettleOrderRef,TransferTableRef,1)}
-                    ref={SettleOrderRef}
-                    onClick={SettleOrdertable}>
-                      <Typography      
-                        sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '1.8rem' },
-                        color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                        borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
-                      View | Settle Order
-                      </Typography>
-                      
-                  </Button>
-
-                )}
-
-                  <Button className="button-dine-in" 
-                    onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,SettleOrderRef,TransferTableRef,CloseSelectTransTypeRef,2)}
-                    ref={TransferTableRef}
-                    onClick={TransferOrdertable}>
-                      <Typography      
-                        sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                        color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                        borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
-                      Transfer table
-                      </Typography>
-                      
-                  </Button>
-                  <Button className="button-dine-in-close" 
-                    onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,ClearTableRef,CloseSelectTransTypeRef,AddOrderRef,4)}
-                    ref={CloseSelectTransTypeRef}
-                    style={{backgroundColor:'red'}} onClick={CloseModal}>
-                      <Typography      
-                        sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                        color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                        borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
-                      Close
-                      </Typography>
-                    
-                  </Button>
-
-
-                  
-                  </>
-
-                )}
-
-
-
-
-                </div>
-              </div>
-      )}
-
-      {AddOrderModal && (
-        
-        <div className="modal">
-          <div className="modal-content-Addcart">
-          <Grid container spacing={2} >
-
-            <Grid item xs={12} md={6}>
-        
-                <div className='add-order-container'>
-
-
-              <Typography      
-                  sx={{
-                  fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.2rem', lg: '1.4rem', xl: '1.6rem' },
-                  color: '#0d12a1',
-                  textShadow: '1px 1px 2px rgba(13, 18, 161, 0.7)',
-                  borderRadius: '5px',
-                  fontWeight: 'bold', textAlign: 'center',}}>
-                {selectedProduct?.product.long_desc}
-              </Typography>
-              <div className='img-container'>
-              <img src={selectedProduct?.product.prod_img === null ? clientLogo : 'data:image/jpeg;base64,' + selectedProduct?.product.prod_img} alt={selectedProduct?.product.bar_code} className='img-element' />
-              </div>
-                      <Typography      
-                  sx={{
-                  fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
-                  color: '#0d12a1',
-                  borderRadius: '5px',
-                  fontWeight: 'bold', textAlign: 'center',}}>
-                Price: {parseFloat(selectedProduct?.product.reg_price).toFixed(2)}
-                </Typography>
-              <div className="input-group" style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
-              <button className="btn-minus" style={{backgroundColor:'white',color:'red' ,border:'solid',marginTop:'0'}} onClick={MinusQuantity} ><FontAwesomeIcon icon={faMinus}/> </button>
-                  <input type="number" ref={inputRef}  inputMode="numeric"  placeholder="Quantity" value={quantity} onChange={handleQuantityChange} 
-                  style={{width:'70%' ,fontWeight:'bold',textAlign:'center',height:'40px',margin:'0',padding:'0'}}
-                  onKeyDown={(event) => HandleAddtocart(event)}
-                  />
-                  <button className="btn-add" style={{backgroundColor:'white',color:'blue' ,border:'solid',marginTop:'0'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  style={{ verticalAlign: 'middle' }}/></button>
-              </div>
-
-              <p className='TotalDue'>Total: {calculateTotal()}</p>
-
-                <div className='add-order-button' style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-                  <button 
-                      style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} 
-                        onClick={CloseAddOrderModal} className="btn-close"> <FontAwesomeIcon icon={faClose} 
-                        />Close
-                  </button>
-                
-                  <button 
-                    style={{color:'white',backgroundColor:'blue',width:'50%',textAlign:'center', borderRadius:'5px',
-                    display: 'inline-block'}} onClick={addtocarts}>  <FontAwesomeIcon icon={faShoppingCart} 
-                    /> Add to Cart
-                  </button>
-                
-                </div>
-              </div>
               </Grid>
 
-              <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
-                  <div className="num-pad-payment" style={{width:'100%'}}>
-                    <div className="num-pad-row">
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('1')}>1</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('2')}>2</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('3')}>3</button>
-                    </div>
-                    <div className="num-pad-row">
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('4')}>4</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('5')}>5</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('6')}>6</button>
-                    </div>
 
-                    <div className="num-pad-row">
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('7')}>7</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('8')}>8</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('9')}>9</button>
-                    </div>
-                    <div className="num-pad-row">
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('0')}>0</button>
-                      <button className="num-pad-key" onClick={() => setQuantity(0)}
-                      style={{fontSize:'30px'}}
-                        >Clear
-                      </button>
-                    </div>
+              <Grid item xs={12} md={5} style={{ height: '100%',width:'100%'}}>
+                        {isDesktop && (
+                          <div className="num-pad" style={{margin:'5px'}}>
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={() => handleInput('1')}>1</button>
+                            <button className="num-pad-key" onClick={() => handleInput('2')}>2</button>
+                            <button className="num-pad-key" onClick={() => handleInput('3')}>3</button>
+                          </div>
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={() => handleInput('4')}>4</button>
+                            <button className="num-pad-key" onClick={() => handleInput('5')}>5</button>
+                            <button className="num-pad-key" onClick={() => handleInput('6')}>6</button>
+                          </div>
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={() => handleInput('7')}>7</button>
+                            <button className="num-pad-key" onClick={() => handleInput('8')}>8</button>
+                            <button className="num-pad-key" onClick={() => handleInput('9')}>9</button>
+                          </div>
+                          <div className="num-pad-row" >
+                          <button className="num-pad-key" style={{ width: '33%'}} onClick={() => handleBackspace()}>
+                    
+                            <Typography      
+                          sx={{
+                            fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.3rem' }}}>
+                                    Back
+                            </Typography>
+                            </button>
+                            <button className="num-pad-key" style={{ width: '33%'}}  onClick={() => handleInput('0')}>0</button>
+                            <button className="num-pad-key" style={{ width: '33%'}}  onClick={ChangeViewToQue}>
+                            <Typography      
+                          sx={{
+                            fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.3rem' }}}>
+                                {showTable ? 'Que No':'Table No'}
+                            </Typography>
+                      
+                              </button>
+                        
+                          </div>
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={CloseTableNo} style={{width:'33%'}}>
 
-                  </div>
-
-                  </Grid>
-            </Grid>
+                              <Typography      
+                          sx={{
+                            fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.3rem' }}}>
+                                    Close
+                            </Typography>
+                              </button>
+                            <button className="num-pad-key" style={{width:'33%'}} onClick={() => SelectTableOk(TableNo)}>OK</button>
+                            <button className="num-pad-key" style={{ width: '33%'}} onClick={clearInput}> 
+                            
+                            <Typography      
+                          sx={{
+                            fontSize: { xs: '1.2rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.5rem' }}}>
+                              Clear 
+                            </Typography>
+                          </button>
+                          </div>
+                        </div>
+                        )}
+                        
+                        
+                </Grid>
+          </Grid>
           </div>
       </div>
+              
+              // </div>
+            )}
+
+            {PaymentOpenModal && (
+                    <div className="modal" >
+                      <div className="modal-content-select-payment" style={{width:'1000px'}}>
+                      <h1> SELECT PAYMENT</h1>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(120px, 1fr))', gap: '5px' ,margin:'5px'}}>
 
 
-      )}
+                        <div className='PaymentModalButton'
+                          tabIndex={0}
+                          onKeyDown={(e)=> PaymentModalHandleKeydown(e,CashPaymentRef,CashPaymentRef,CreditCardPaymentRef,0)}
+                          onClick={CashPayment} ref={CashPaymentRef}>
 
-      {EditOrderModal && (
-                  <div className="modal">
-                    <div className="modal-content-Addcart">
-                    <Grid container spacing={2} >
+                          <p> Cash Payment</p>
+                          <img src= {cash} />
+                        </div>
+                          
 
-                      <Grid item xs={12} md={6}>
+                        <div className='PaymentModalButton'   
+                          tabIndex={1}
+                          onKeyDown={(e)=> PaymentModalHandleKeydown(e,CashPaymentRef,CreditCardPaymentRef,EPSPaymentRef,1)}
+                          ref={CreditCardPaymentRef}
+                          onClick={OpenCreditCardPayment}>
+
+                          <p>Credit Card</p>
+                          <img src= {credit}/>
+                        </div>
+
+                        <div className='PaymentModalButton'
+                          tabIndex={2}
+                          onKeyDown={(e)=> PaymentModalHandleKeydown(e,CreditCardPaymentRef,EPSPaymentRef,MultiplePaymentRef,2)}
+                          ref={EPSPaymentRef}
+                          onClick={OpenDebitCardPayment}>
+
+                          <p>EPS</p>
+                          <img src= {epsCard} />
+                        </div>
+
+                        <div className='PaymentModalButton'    
+                          onClick={OpenMultiplePayment}
+                          tabIndex={3}
+                          onKeyDown={(e)=> PaymentModalHandleKeydown(e,EPSPaymentRef,MultiplePaymentRef,ChargePaymentRef,3)}
+                          ref={MultiplePaymentRef}
+                          >
+
+                          <p>Multiple Payment</p>
+                          <img src= {Multiple}/>
+                        </div>
+                          
+
+                        <div  className='PaymentModalButton'
+                          tabIndex={4}
+                          onKeyDown={(e)=> PaymentModalHandleKeydown(e,MultiplePaymentRef,ChargePaymentRef,ClosePaymentRef,4)}
+                          ref={ChargePaymentRef}
+                          onClick={OpenChargeModal}>
+
+                          <p> Charge</p>
+                          <img src= {ChargeRoom} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                        </div>
+
+                      <div  className='PaymentModalButton'
+                          tabIndex={5}
+                          onKeyDown={(e)=> PaymentModalHandleKeydown(e,ChargePaymentRef,GiftCheckPaymentRef,OnlinePaymentRef,4)}
+                          ref={GiftCheckPaymentRef}
+                          onClick={OpenGiftCheckPayment}>
+
+                          <p> Gift Check</p>
+                          <img src= {giftC} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                        </div>
+
+                        <div  className='PaymentModalButton'
+                          tabIndex={6}
+                          onKeyDown={(e)=> PaymentModalHandleKeydown(e,GiftCheckPaymentRef,OnlinePaymentRef,OtherPaymentRef,4)}
+                          ref={OnlinePaymentRef}
+                          onClick={OpenOnlinePayment}>
+
+                          <p> Online Payment</p>
+                          <img src= {OtherP} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                        </div>
+                
+                      <div  className='PaymentModalButton'
+                          tabIndex={7}
+                          onKeyDown={(e)=> PaymentModalHandleKeydown(e,OnlinePaymentRef,OtherPaymentRef,ClosePaymentRef,4)}
+                          ref={OtherPaymentRef}
+                          onClick={OpenOtherPayment}>
+
+                          <p> Other Payment</p>
+                          <img src= {OtherP} style={{ maxWidth: '80%', maxHeight: '60px', marginBottom: '10px', flex: '0 0 auto' }} />
+                        </div>
+
+                        <div className='PaymentModalButton'
+                          tabIndex={8}
+                          onKeyDown={(e)=> PaymentModalHandleKeydown(e,OtherPaymentRef,ClosePaymentRef,CashPaymentRef,5)}
+                          ref={ClosePaymentRef}
+                          onClick={CloseModal} >
+
+                          <p> Close</p>
+                          <img src= {CloseImage} />
+                        </div>
+
+                      </div>
+
+                          {/* {(OrderType === 'TAKE OUT' || CustomerOrderInfo.PaymentType === 'Order and Pay') &&  */}
+                        {PaymentDiscountOpenModal && (
+                          <><h1> SELECT DISCOUNT</h1>
+                              <div className='PaymentModalContainer'>
+
+                                <div className='PaymentModalButton'
+                                  onClick={(e) => OpenVireficationEntry('Senior')} >
+                                  <p>Senior Citezin Discount</p>
+                                  <img src={Senior}/>
+                                </div>
+
+                                <div className='PaymentModalButton'>
+                                  <p> PWD Discount</p>
+                                  <img src={pwdD} />
+                                </div>
+
+                                <div className='PaymentModalButton'
+                                    onClick={(e) => OpenVireficationEntry('Trade')}>
+                                  <p>Trade Discount</p>
+                                  <img src={tradeD} />
+                                </div>
+
+
+                                <div className='PaymentModalButton'
+                                onClick={(e) => OpenVireficationEntry('Transaction')}>
+                                  <p>Transaction Discount</p>
+                                  <img src={transactD}/>
+                                </div>
+
+                                <div className='PaymentModalButton'
+                                onClick={(e) => OpenVireficationEntry('Item')}>
+                                  <p>Item Discount</p>
+                                  <img src={itemD}/>
+                                </div>
+
+
+
+
+                                <div className='PaymentModalButton'
+                                  onClick={CloseModal}>
+                                  <p>Close</p>
+                                  <img src={CloseImage}  />
+                                </div>
+
+                              </div></> 
+                            )}
+
+              
+                        
+                    </div>
+                    </div>
+            )}
+
+            {OtherCommandOpenModal && (
+                    <div className="modal" >
+                      <div className="modal-content">
+                      <h1>  SELECT TRANSACTION</h1>
+                      <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, minmax(100px, 1fr))': 'repeat(3, minmax(33%, 1fr))' , gap: '5px' ,margin:'5px'}}>
+
+                  {userRank == 'Cashier' && (
+                        <>
+
+                               
+                                {OrderTypeModal === false &&
+                                  <>
+                                 <div className='otherCommandButton'
+                                  onClick={ChangePriceType}>
+                                    <p> Change Price Type</p>
+                                    <img src={SuspendImage}/>
+                                </div>
+
+                                <div className='otherCommandButton' style={{pointerEvents: cartItems.length === 0 ? 'none':'auto'}}
+                                  onClick={()=>setSuspendEntryModal(true)}>
+                                    <p> Suspend Transaction</p>
+                                    <img src={SuspendImage}/>
+                                </div></>
+                                }
+
+                                <div className={otherCommandButton}>                      
+                                  <p> Return</p>
+                                  <img src={ReturnImage}/>
+                                </div>
+
+                                <div className={otherCommandButton}
+                                onClick={()=>ShowCancellTransaction()}
+                                >                      
+                                  <p>Cancel Transaction</p>
+                                  <img src={CancelTransImage}/>
+                                </div>
+
+
+                                <div className={otherCommandButton}
+                                onClick={()=>EndShiftHandleClick()}
+                                >
+                                  <p> Cash Count</p>
+                                  <img src={CashCountImage}/>
+                                </div>
+                                
+                                <div className={otherCommandButton}
+                                  onClick={()=>CashPullout()}>
+                                  <p> Cash Pull-Out</p>
+                                  <img src={CashPullOutImage} />
+                                </div>
+                                
+                                <div className={otherCommandButton}
+                                onClick={()=>Lockterminal()}>
+                                  <p>Lock Terminal</p>
+                                  <img src={LockTerImage}/>
+                                </div></>
+                          ) }
+                        <div className={otherCommandButton}
+                          onClick={CloseTerminal}>
+                          <p>Close Terminal</p>
+                          <img src= {ChargeRoom}/>
+                        </div>
+
+                        <div className='otherCommandButton'  
+                          onClick={CloseModal} >
+                          <p> Close</p>
+                          <img src= {CloseImage}/>
+                        </div>
+                      </div>
+
+                </div>
+                    </div>
+            )}
+
+
+            {SelectTypeOfTransaction && (
+                    <div className="modal" >
+                        
+                      <div className="modal-content" style={{width:'100%' ,display:'flex',flexDirection:'column' }}>
+                      <h1>Select Type of Transaction</h1>
+
+                      {DineInOrderAndPay ? (           
+                            <>
+
+                            <Button className="button-take-out" 
+                            onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,TransferTableRef,ClearTableRef,CloseSelectTransTypeRef,3)}
+                            ref={ClearTableRef}
+                            onClick={Cleartable}>
+                              <Typography      
+                                sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '1.8rem' },
+                                color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                                borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                              CLEAR TABLE
+                              </Typography>
+                            </Button>
+
+                          <Button className="button-dine-in-close" 
+                          onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,ClearTableRef,CloseSelectTransTypeRef,AddOrderRef,4)}
+                          ref={CloseSelectTransTypeRef}
+                          style={{backgroundColor:'red'}} onClick={CloseModal}>
+                            <Typography      
+                              sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                              color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                              borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                            Close
+                            </Typography>
+                          </Button>
+                          </>
+                      ):(
+                        <>
+                        
+                        <Button className="button-dine-in" 
+                          onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,AddOrderRef,SettleOrderRef,0)}
+                          ref={AddOrderRef}
+                          onClick={AddOrdertable}>
+                            <Typography      
+                              sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                              color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                              borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                              Add Order
+                            </Typography>
+                        </Button>
+                        { userRank == 'Cashier' &&(
+                        <Button className="button-take-out" 
+                          onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,AddOrderRef,SettleOrderRef,TransferTableRef,1)}
+                          ref={SettleOrderRef}
+                          onClick={SettleOrdertable}>
+                            <Typography      
+                              sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '1.8rem' },
+                              color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                              borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                            View | Settle Order
+                            </Typography>
+                            
+                        </Button>
+
+                      )}
+
+                        <Button className="button-dine-in" 
+                          onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,SettleOrderRef,TransferTableRef,CloseSelectTransTypeRef,2)}
+                          ref={TransferTableRef}
+                          onClick={TransferOrdertable}>
+                            <Typography      
+                              sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                              color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                              borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                            Transfer table
+                            </Typography>
+                            
+                        </Button>
+                        <Button className="button-dine-in-close" 
+                          onKeyDown={(e)=> SelectTransTypeHandleKeydown(e,ClearTableRef,CloseSelectTransTypeRef,AddOrderRef,4)}
+                          ref={CloseSelectTransTypeRef}
+                          style={{backgroundColor:'red'}} onClick={CloseModal}>
+                            <Typography      
+                              sx={{fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                              color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                              borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                            Close
+                            </Typography>
+                          
+                        </Button>
+
+
+                        
+                        </>
+
+                      )}
+
+
+
+
+                      </div>
+                    </div>
+            )}
+
+            {AddOrderModal && (
+              
+              <div className="modal">
+                <div className="modal-content-Addcart">
+                <Grid container spacing={2} >
+
+                  <Grid item xs={12} md={6}>
+              
                       <div className='add-order-container'>
-                      <Typography      
+
+
+                    <Typography      
                         sx={{
                         fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.2rem', lg: '1.4rem', xl: '1.6rem' },
                         color: '#0d12a1',
                         textShadow: '1px 1px 2px rgba(13, 18, 161, 0.7)',
                         borderRadius: '5px',
                         fontWeight: 'bold', textAlign: 'center',}}>
-                        {selectedProduct?.product.long_desc}
+                      {selectedProduct?.product.long_desc}
+                    </Typography>
+                    <div className='img-container'>
+                    <img src={selectedProduct?.product.prod_img === null ? clientLogo : 'data:image/jpeg;base64,' + selectedProduct?.product.prod_img} alt={selectedProduct?.product.bar_code} className='img-element' />
+                    </div>
+                            <Typography      
+                        sx={{
+                        fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
+                        color: '#0d12a1',
+                        borderRadius: '5px',
+                        fontWeight: 'bold', textAlign: 'center',}}>
+                      Price: {parseFloat(selectedProduct?.product.reg_price).toFixed(2)}
                       </Typography>
-                  <div className='img-container2'>
-                  <img src={selectedProduct?.product.prod_img === null ? clientLogo : 'data:image/jpeg;base64,' + selectedProduct?.product.prod_img} alt={selectedProduct?.product.bar_code} className='img-element' />
-                    {/* <img src={selectedProduct?.product.prod_img} alt={selectedProduct?.product.bar_code} className='img-element2' /> */}
-                </div>
-                  <Typography      
-                    sx={{
-                    fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
-                    color: '#0d12a1', borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
-                    Price: {parseFloat(selectedItemIndexData?.selectedItem.price).toFixed(2)}
-                  </Typography>
+                    <div className="input-group" style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
+                    <button className="btn-minus" style={{backgroundColor:'white',color:'red' ,border:'solid',marginTop:'0'}} onClick={MinusQuantity} ><FontAwesomeIcon icon={faMinus}/> </button>
+                        <input type="number" ref={inputRef}  inputMode="numeric"  placeholder="Quantity" value={quantity} onChange={handleQuantityChange} 
+                        style={{width:'70%' ,fontWeight:'bold',textAlign:'center',height:'40px',margin:'0',padding:'0'}}
+                        onKeyDown={(event) => HandleAddtocart(event)}
+                        />
+                        <button className="btn-add" style={{backgroundColor:'white',color:'blue' ,border:'solid',marginTop:'0'}} onClick={addQuantity}> <FontAwesomeIcon icon={faPlus}  style={{ verticalAlign: 'middle' }}/></button>
+                    </div>
 
-                  {/* <p className='Price' >Price: {parseFloat(selectedItemIndexData?.selectedItem.price).toFixed(2)}</p> */}
-                  <div className="input-group" style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
-              
-                  <button className="btn-minus" style={{backgroundColor:'white',color:'red' ,border:'solid',marginTop:'0'}} onClick={MinusQuantity} >
-                      <FontAwesomeIcon icon={faMinus}  />
+                    <p className='TotalDue'>Total: {calculateTotal()}</p>
 
-                      </button>
-        
-                      <input ref={inputRef}
-                            type="number"
-                            inputMode="numeric"
-                            placeholder="Quantity"
-                            value={quantity}
-                            onChange={handleQuantityChange}
-                            onKeyDown={(event) => HandleUpdatetocart(event)}
-                            style={{
-                              width: '70%',
-                              fontWeight: 'bold',
-                              textAlign: 'center',
-                            }}
-                          />
-                      <button className="btn-add" style={{backgroundColor:'white',color:'blue' ,border:'solid',marginTop:'0'}} onClick={addQuantity}>
-                      <FontAwesomeIcon icon={faPlus} />
-
-                      </button>
+                      <div className='add-order-button' style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+                        <button 
+                            style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} 
+                              onClick={CloseAddOrderModal} className="btn-close"> <FontAwesomeIcon icon={faClose} 
+                              />Close
+                        </button>
                       
-                  </div>
-                  <p className='TotalDue'>Total: {calculateTotal()}</p>
+                        <button 
+                          style={{color:'white',backgroundColor:'blue',width:'50%',textAlign:'center', borderRadius:'5px',
+                          display: 'inline-block'}} onClick={addtocarts}>  <FontAwesomeIcon icon={faShoppingCart} 
+                          /> Add to Cart
+                        </button>
+                      
+                      </div>
+                    </div>
+                    </Grid>
 
-                  <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'100%',textAlign:'center', display: 'inline-block',marginTop:'10px'}} onClick={onUpdateToCart}> 
-                      <FontAwesomeIcon icon={faShoppingCart} />Update to Cart </button>
-                  <div className='add-order-button' style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-                    <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={onClose} className="btn-close"> <FontAwesomeIcon icon={faClose} /> Close</button>
-                    <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={()=> OpenVireficationEntry('Delete Order')} className="btn-close"> <FontAwesomeIcon icon={faTrashAlt} /> Delete </button>
-                  </div>
+                    <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
+                        <div className="num-pad-payment" style={{width:'100%'}}>
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('1')}>1</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('2')}>2</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('3')}>3</button>
+                          </div>
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('4')}>4</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('5')}>5</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('6')}>6</button>
+                          </div>
+
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('7')}>7</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('8')}>8</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('9')}>9</button>
+                          </div>
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('0')}>0</button>
+                            <button className="num-pad-key" onClick={() => setQuantity(0)}
+                            style={{fontSize:'30px'}}
+                              >Clear
+                            </button>
+                          </div>
+
+                        </div>
+
+                        </Grid>
+                  </Grid>
                 </div>
-                  </Grid>
-
-                  <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
-                  <div className="num-pad-payment" style={{width:'100%'}}>
-                    <div className="num-pad-row">
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('1')}>1</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('2')}>2</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('3')}>3</button>
-                    </div>
-                    <div className="num-pad-row">
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('4')}>4</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('5')}>5</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('6')}>6</button>
-                    </div>
-
-                    <div className="num-pad-row">
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('7')}>7</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('8')}>8</button>
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('9')}>9</button>
-                    </div>
-                    <div className="num-pad-row">
-                      <button className="num-pad-key" onClick={() => setQuantityEntry('0')}>0</button>
-                      <button className="num-pad-key" onClick={() => setQuantity(0)}
-                    style={{fontSize:'30px'}}
-                        >Clear
-                      </button>
-                    </div>
-
-                  </div>
-
-                  </Grid>
-                  </Grid>
-                  </div>
-              </div>
-      )}
+            </div>
 
 
-      {CloseTerminalModal && (
-              <div className="modal" >
-                  
-                <div className="modal-content" style={{width:'50%' ,display:'flex',flexDirection:'column' }}>
-               
-                { userRank =='Cashier' &&(
-                  <Button className="btn"  style={{backgroundColor:'red'}}
-                      onClick={EndShiftHandleClick}>
-                    <Typography      
-                        sx={{
-                        fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                        color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                        borderRadius: '5px',
-                        fontWeight: 'bold', textAlign: 'center',}}>
-                        End Shift
-                      </Typography>
-                    </Button>
-                )}
+            )}
 
-                  <Button className="btn" style={{backgroundColor:'#007bff'}}
-                  onClick={logoutClick}>
+            {EditOrderModal && (
+                        <div className="modal">
+                          <div className="modal-content-Addcart">
+                          <Grid container spacing={2} >
+
+                            <Grid item xs={12} md={6}>
+                            <div className='add-order-container'>
+                            <Typography      
+                              sx={{
+                              fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.2rem', lg: '1.4rem', xl: '1.6rem' },
+                              color: '#0d12a1',
+                              textShadow: '1px 1px 2px rgba(13, 18, 161, 0.7)',
+                              borderRadius: '5px',
+                              fontWeight: 'bold', textAlign: 'center',}}>
+                              {selectedProduct?.product.long_desc}
+                            </Typography>
+                        <div className='img-container2'>
+                        <img src={selectedProduct?.product.prod_img === null ? clientLogo : 'data:image/jpeg;base64,' + selectedProduct?.product.prod_img} alt={selectedProduct?.product.bar_code} className='img-element' />
+                          {/* <img src={selectedProduct?.product.prod_img} alt={selectedProduct?.product.bar_code} className='img-element2' /> */}
+                      </div>
                         <Typography      
-                        sx={{
-                        fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                        color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                        borderRadius: '5px',
-                        fontWeight: 'bold', textAlign: 'center',}}>
-                        Logout
-                      </Typography>
-                    </Button>
-                  <Button className="btn" style={{backgroundColor:'red'}}
-                    onClick={CloseLogout}>
-                          <Typography      
                           sx={{
-                          fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                          color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-                          borderRadius: '5px',
-                          fontWeight: 'bold', textAlign: 'center',}}>
-                          Cancel
+                          fontSize: { xs: '1.2rem', sm: '1.0rem', md: '1.0rem', lg: '1.1rem', xl: '1.2rem' },
+                          color: '#0d12a1', borderRadius: '5px',fontWeight: 'bold', textAlign: 'center',}}>
+                          Price: {parseFloat(selectedItemIndexData?.selectedItem.price).toFixed(2)}
                         </Typography>
-                    </Button>
-                </div>
-              </div>
-      )}
 
-      {ChangeModal && (
-              <div className="modal" > 
-                <div className="modal-content">
-                  <div className='Change-Container'>
-                    <div className='change-subcontainer'>
-                      <label style={{fontSize:'30px',color:'white'}}>Amount Tendered:</label>
-                      <p style={{fontSize:'30px',fontWeight:'bold',textAlign:'end'}}>
-                      {parseFloat(AmountTendered).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</p>
-                    </div>
-                    <div className='change-subcontainer'>
-                      <label style={{fontSize:'30px',color:'white'}}>Amount Due:</label>
-                      <p style={{fontSize:'30px',fontWeight:'bold',textAlign:'end'}}>
-                      {parseFloat(AmountDue).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</p>
-                    </div>
-          
-                    <div className='change-subcontainer'>
-                      <label style={{fontSize:'30px',color:'white'}}>Change:</label>
-                      <p style={{fontSize:'30px',fontWeight:'bold',textAlign:'end'}}>
-                      {ChangeAmount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</p>
-                    </div>
+                        {/* <p className='Price' >Price: {parseFloat(selectedItemIndexData?.selectedItem.price).toFixed(2)}</p> */}
+                        <div className="input-group" style={{display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
+                    
+                        <button className="btn-minus" style={{backgroundColor:'white',color:'red' ,border:'solid',marginTop:'0'}} onClick={MinusQuantity} >
+                            <FontAwesomeIcon icon={faMinus}  />
 
-                  <button className="btn" style={{width:'100%'}} onClick={ChangeModalClose}>OK</button>
-                  </div>
+                            </button>
+              
+                            <input ref={inputRef}
+                                  type="number"
+                                  inputMode="numeric"
+                                  placeholder="Quantity"
+                                  value={quantity}
+                                  onChange={handleQuantityChange}
+                                  onKeyDown={(event) => HandleUpdatetocart(event)}
+                                  style={{
+                                    width: '70%',
+                                    fontWeight: 'bold',
+                                    textAlign: 'center',
+                                  }}
+                                />
+                            <button className="btn-add" style={{backgroundColor:'white',color:'blue' ,border:'solid',marginTop:'0'}} onClick={addQuantity}>
+                            <FontAwesomeIcon icon={faPlus} />
+
+                            </button>
+                            
+                        </div>
+                        <p className='TotalDue'>Total: {calculateTotal()}</p>
+
+                        <button className="btn-add-cart" style={{color:'white',backgroundColor:'blue',width:'100%',textAlign:'center', display: 'inline-block',marginTop:'10px'}} onClick={onUpdateToCart}> 
+                            <FontAwesomeIcon icon={faShoppingCart} />Update to Cart </button>
+                        <div className='add-order-button' style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+                          <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={onClose} className="btn-close"> <FontAwesomeIcon icon={faClose} /> Close</button>
+                          <button style={{color:'white',backgroundColor:'red',width:'50%',textAlign:'center', display: 'inline-block'}} onClick={()=> OpenVireficationEntry('Delete Order')} className="btn-close"> <FontAwesomeIcon icon={faTrashAlt} /> Delete </button>
+                        </div>
+                      </div>
+                        </Grid>
+
+                        <Grid item xs={12} md={6} style={{ height: '100%',width:'100%'}}>
+                        <div className="num-pad-payment" style={{width:'100%'}}>
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('1')}>1</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('2')}>2</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('3')}>3</button>
+                          </div>
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('4')}>4</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('5')}>5</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('6')}>6</button>
+                          </div>
+
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('7')}>7</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('8')}>8</button>
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('9')}>9</button>
+                          </div>
+                          <div className="num-pad-row">
+                            <button className="num-pad-key" onClick={() => setQuantityEntry('0')}>0</button>
+                            <button className="num-pad-key" onClick={() => setQuantity(0)}
+                          style={{fontSize:'30px'}}
+                              >Clear
+                            </button>
+                          </div>
+
+                        </div>
+
+                        </Grid>
+                        </Grid>
+                        </div>
+                    </div>
+            )}
+
+
+            {CloseTerminalModal && (
+                    <div className="modal" >
+                        
+                      <div className="modal-content" style={{width:'50%' ,display:'flex',flexDirection:'column' }}>
+                    
+                      { userRank =='Cashier' &&(
+                        <Button className="btn"  style={{backgroundColor:'red'}}
+                            onClick={EndShiftHandleClick}>
+                          <Typography      
+                              sx={{
+                              fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                              color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                              borderRadius: '5px',
+                              fontWeight: 'bold', textAlign: 'center',}}>
+                              End Shift
+                            </Typography>
+                          </Button>
+                      )}
+
+                        <Button className="btn" style={{backgroundColor:'#007bff'}}
+                        onClick={logoutClick}>
+                              <Typography      
+                              sx={{
+                              fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                              color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                              borderRadius: '5px',
+                              fontWeight: 'bold', textAlign: 'center',}}>
+                              Logout
+                            </Typography>
+                          </Button>
+                        <Button className="btn" style={{backgroundColor:'red'}}
+                          onClick={CloseLogout}>
+                                <Typography      
+                                sx={{
+                                fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
+                                color: '#ffffff',backgroundColor: 'red',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                                borderRadius: '5px',
+                                fontWeight: 'bold', textAlign: 'center',}}>
+                                Cancel
+                              </Typography>
+                          </Button>
+                      </div>
+                    </div>
+            )}
+
+            {ChangeModal && (
+                    <div className="modal" > 
+                      <div className="modal-content">
+                        <div className='Change-Container'>
+                          <div className='change-subcontainer'>
+                            <label style={{fontSize:'30px',color:'white'}}>Amount Tendered:</label>
+                            <p style={{fontSize:'30px',fontWeight:'bold',textAlign:'end'}}>
+                            {parseFloat(AmountTendered).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</p>
+                          </div>
+                          <div className='change-subcontainer'>
+                            <label style={{fontSize:'30px',color:'white'}}>Amount Due:</label>
+                            <p style={{fontSize:'30px',fontWeight:'bold',textAlign:'end'}}>
+                            {parseFloat(AmountDue).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</p>
+                          </div>
                 
-                </div>
-              </div>
-      )}
-        
-      {SuspendEntryModal && (
-        <div className='modal'>
-            <div className='modal-content'>
-              <h1>Customer Entry</h1>
-              <div className='card'>
-                <div className='susppendEntry'>
-                  <div className='form-group'>
-                    <label>Customer Name</label>
-                    <input ref={suspendCustomerRef} value={SuspendCustomerData.Customer}
-                    name="Customer" autoComplete='off'
-                    onChange={SusppendEntry}
-                    onClick={()=>showOnScreenKeybaord('SuspendCustomer')}
-                    />
-                  </div>
+                          <div className='change-subcontainer'>
+                            <label style={{fontSize:'30px',color:'white'}}>Change:</label>
+                            <p style={{fontSize:'30px',fontWeight:'bold',textAlign:'end'}}>
+                            {ChangeAmount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</p>
+                          </div>
 
-                  <div className='form-group'>
-                  <label>Customer Address</label>
-                  <input ref={suspendCustomeraddressRef} value={SuspendCustomerData.CusAddress}
-                  name="CusAddress"
-                  autoComplete='off'
-                  onChange={SusppendEntry}
-                  onClick={()=>showOnScreenKeybaord('SuspendAddress')}
-                  />
+                        <button className="btn" style={{width:'100%'}} onClick={ChangeModalClose}>OK</button>
+                        </div>
+                      
+                      </div>
+                    </div>
+            )}
+              
+            {SuspendEntryModal && (
+              <div className='modal'>
+                  <div className='modal-content' style={{width:'500px'}}>
+                    <h1>Suspend Customer Entry</h1>
+                    <div className='card'>
+                      <div className='susppendEntry'>
+                        <div className='form-group'>
+                          <label style={{fontSize:'20px'}}>Customer Name</label>
+                          <TextField ref={suspendCustomerRef} value={SuspendCustomerData.Customer}
+                          name="Customer" autoComplete='off'
+                          onChange={SusppendEntry}
+                          onClick={()=>showOnScreenKeybaord('SuspendCustomer')}
+                          />
+                        </div>
+
+                        <div className='form-group'>
+                        <label style={{fontSize:'20px'}}>Customer Address</label>
+                        <TextField ref={suspendCustomeraddressRef} value={SuspendCustomerData.CusAddress}
+                        name="CusAddress"
+                        autoComplete='off'
+                        onChange={SusppendEntry}
+                        onClick={()=>showOnScreenKeybaord('SuspendAddress')}
+                        />
+                    
+
+                        </div>
+
+                        <div className='Button-Container'>
+                          <Button className='ok' onClick={()=> SaveSusppendCustomer()}>Suspend</Button>
+                          <Button className='cancel' onClick={()=>{ setSuspendEntryModal(false);setSuspendCustomerData({
+                            Customer :'',
+                            CusAddress:'',
+                          })}}>Cancel</Button>
+                        </div>
+                      </div>
+
+                    </div>
+                </div>
+
+                
+              </div>
+            )}
+
+            {OpenLockModal && (
+              <div className='modal'>
+                <div className='modal-content' >
+                  <h1>Unlock Terminal</h1>
+                    <div className='Lock-Container'>
+                      <div className='form-group'>
+                        <label>Username</label>
+                        <input type='text' ref={LockUsernameRef} value={LockUsername} onChange={(e)=>setLockUsername(e.target.value)} readOnly disabled/>
+                      </div>
+                      <div className='form-group'>
+                        <label>Password</label>
+                        <input type='password'  ref={LockPasswordRef} value={LockPassword} onChange={(e)=>setLockPassword(e.target.value)}
+                        onClick={()=>showOnScreenKeybaord('LockPassword')}
+                        />
+                      </div>
+                      <div className='Button-Container'>
+                        <button onClick={()=>unLockterminal()}>Unlock</button>
+                      </div>
+                    </div>
+                </div>
+
+
+              </div>
+            )}
+            {pdfPath && (
+                <PdfModal open={isPdfModalOpen} handleClose={ClosePdfModal} pdfPath={pdfPath} />
+              )}
               
 
-                  </div>
+              {OpenChangePriceTypeModal && (
+                  
+              <div className="modal">
+                <div className="modal-content" style={{width:'500px'}}>
+                   <h1>Select Type Price Type</h1>
+                      <div className='' style={{display:'flex',flexDirection:'column',justifyContent:'space-evenly',alignContent:'center',
+                      alignItems:'center',maxHeight:'400px',overflow:'auto'
 
-                  <div className='Button-Container'>
-                    <button className='ok' onClick={()=> SaveSusppendCustomer()}>Suspend</button>
-                    <button className='cancel' onClick={()=>{ setSuspendEntryModal(false);setSuspendCustomerData({
-                      Customer :'',
-                      CusAddress:'',
-                    })}}>Cancel</button>
-                  </div>
+                      }}>
+
+
+
+                      {PricetypeList && PricetypeList.map((item:any,index:number)=>(
+                      <button className="button-dine-in" onClick={()=> SelectPriceType(item.pricetype_name)}  style={{width:'100%' }}>
+                          <Typography      
+                          sx={{fontSize: { xl: '1rem' },
+                          color: '#ffffff',backgroundColor: '#007bff',textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                          borderRadius: '5px',fontWeight: 'bold', textAlign: 'center'}}>
+                          {item.pricetype_name}
+                        </Typography>
+                    </button>
+                      ))}
+                          
+                        
+                    
+                    </div>
+                     <button 
+                        style={{width:'100%',color:'white',backgroundColor:'red',textAlign:'center', display: 'inline-block'}} 
+                         onClick={()=>setOpenChangePriceTypeModal(false)} className="btn-close"> <FontAwesomeIcon icon={faClose} 
+                              />Close
+                    </button>
                 </div>
-
-              </div>
-          </div>
-
-          
-        </div>
-      )}
-
-      {OpenLockModal && (
-        <div className='modal'>
-          <div className='modal-content' >
-            <h1>Unlock Terminal</h1>
-              <div className='Lock-Container'>
-                <div className='form-group'>
-                  <label>Username</label>
-                  <input type='text' ref={LockUsernameRef} value={LockUsername} onChange={(e)=>setLockUsername(e.target.value)} readOnly disabled/>
-                </div>
-                <div className='form-group'>
-                  <label>Password</label>
-                  <input type='password'  ref={LockPasswordRef} value={LockPassword} onChange={(e)=>setLockPassword(e.target.value)}
-                  onClick={()=>showOnScreenKeybaord('LockPassword')}
-                  />
-                </div>
-                <div className='Button-Container'>
-                  <button onClick={()=>unLockterminal()}>Unlock</button>
-                </div>
-              </div>
-          </div>
-
-
-        </div>
-      )}
-      {pdfPath && (
-          <PdfModal open={isPdfModalOpen} handleClose={ClosePdfModal} pdfPath={pdfPath} />
-        )}</>}
+            </div>
+              )}
+              
+              </>}
 
   
 

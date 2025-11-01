@@ -4,6 +4,11 @@ import { Tab } from "react-tabs";
 import { Table } from "@mui/material";
 import './css/AcctTileSLName.css';
 import { GetAccountTitle, GetSLAccount } from "../global";
+import { setGlobalIsLoading } from "../globalSlice";
+import { RootState } from "../store";
+import { useSelector,useDispatch } from "react-redux";
+import { InProgressLoading } from "../Loader/Loader";
+
 
 interface acctDataSL {
     handleClose:()=>void;
@@ -13,15 +18,19 @@ interface acctDataSL {
 }
 
 const AcctTileSLName:React.FC <acctDataSL> = ({handleClose,Transaction,currentvalue,DataSend})=>{
+    const dispatch = useDispatch()
+    const isLoading = useSelector((state:RootState)=>state.global.globalIsLoading)
     const [eventnameH,seteventnameH] = useState<any>('')
     const [SlType ,setSlType] = useState<any>('')
     const [acctTitleH,setacctTitleH] = useState<any>('')
     const [openAcctitleModal,setopenAcctitleModal] = useState<boolean>(false)
     const [AcctTitleList,setAcctTitleList] = useState<any>([])
+     const [TmpAcctTitleList,setTmpAcctTitleList] = useState<any>([])
     const [AccTitleSearch,setAccTitleSearch] = useState<any>('')
     const [selectedItemIndex,setselectedItemIndex] = useState<any>(null)
 
     const [SLAccountList,setSLAccountList] = useState<any>([])
+    const [TmpSLAccountList,setTmpSLAccountList] = useState<any>([])
     const [openSLAccountModal,setopenSLAccountModal] = useState<boolean>(false)
     const [SLAccountSearch,setSLAccountSearch] = useState<any>('')
     const [slnameH,setslnameH] = useState<any>('')
@@ -35,30 +44,46 @@ const AcctTileSLName:React.FC <acctDataSL> = ({handleClose,Transaction,currentva
 
 useEffect(() => {
         const fetchData = async () => {
+            try{
+
+                dispatch(setGlobalIsLoading(true))
             if (Transaction === 'Account Title') {
                 setopenAcctitleModal(true);
+                
                 const x = await GetAccountTitle('');
                     setAcctTitleList(x);
+                     setTmpAcctTitleList(x);
+                    dispatch(setGlobalIsLoading(false))
             } else if (Transaction === 'SL Account') {
                 setopenSLAccountModal(true);
                 setSlType(currentvalue.sl_type)
                 const x = await GetSLAccount(currentvalue.sl_type,'');
                 setSLAccountList(x);
-                console.log(x);
+                setTmpSLAccountList(x)
+                dispatch(setGlobalIsLoading(false))
+            }  
+                
+        }catch{
+                dispatch(setGlobalIsLoading(false))
             }
        
-        };
+        };     
     
         fetchData(); // Call the asynchronous function immediately   
 }, []);
+
 
 
 useEffect(() => {
     const fetchData = async () => {
         if (Transaction === 'Account Title') {
             setopenAcctitleModal(true);
-            const x = await GetAccountTitle(AccTitleSearch);
+            // const x = await GetAccountTitle(AccTitleSearch);
+                const x = TmpAcctTitleList.filter((item:any)=>item.subsidiary_acct_title.toLocaleLowerCase().includes(AccTitleSearch.toLocaleLowerCase()))
+               if (x){
                 setAcctTitleList(x);
+               }
+                
         } else if (Transaction === 'SL Account') {
             setopenSLAccountModal(true);
             setSlType(currentvalue.sl_type)
@@ -75,7 +100,6 @@ useEffect(() => {
 
 
 const ClickAccountTitle = (index:any) => {
-    console.log('account')
     setselectedItemIndex(index)
     const selected = AcctTitleList[index];
 
@@ -161,21 +185,26 @@ const handleKeys2 = (event:any) => {
     return(
         <div className="modal">
             <div className="modal-contentSL">
-                <div className="card">
+                <div className="card" >
                     <div className="SL-container">
+
+              
                         {/* <h2>{Transaction}</h2> */}
                     {openAcctitleModal &&  (
+                        
                             <div className='modal'>
-                            <div className='modal-content-waiter'>
+                            <div className='modal-content-waiter' style={{width:'800px',height:'580px'}}>
                             <div className='card'>
                                 <h1>Select Account Title</h1>
-                                <input
+                                <input style={{marginTop:'5px'}}
+                                placeholder="Search..."
                                 ref={AccTitleSearchRef}
                                 value={AccTitleSearch}
                                 onChange={(e) => setAccTitleSearch(e.target.value)}
                                 onKeyDown={(e) => handleKeys2(e)}
                                 />
                             <div className='AcctTitle-Container' style={{overflow:'auto',height:'330px'}}>
+                                  {isLoading && <InProgressLoading/>}
                                 <Table id="table-list" className='table-list AcctTitle' onKeyDown={(event) => handleKeys2(event)} ref={AcctTitleListRef}>
                                 <thead>
                                     <tr>
@@ -206,8 +235,8 @@ const handleKeys2 = (event:any) => {
                                 </div>
                             </div>
                             <div className='Button-Container'>
-                                <button onClick={() => handleClose()}>Close</button>
-                                <button onClick={() => ClickClear()}>Clear</button>
+                                <button style={{height:'50px'}} onClick={() => handleClose()}>Close</button>
+                                <button style={{height:'50px',backgroundColor:'red'}}  onClick={() => ClickClear()}>Clear</button>
                             </div>
                             </div>
 
@@ -218,18 +247,20 @@ const handleKeys2 = (event:any) => {
                     {openSLAccountModal &&  (
 
                     <div className='modal'>
-                    <div className='modal-content-waiter'>
+                    <div className='modal-content-waiter' style={{height:'600px',width:'700px'}}>
 
                     <div className='card'>
                         <h1>Select Subsidiary Account</h1>
                         <input
+                        style={{marginTop:'5px'}}
+                        placeholder="Search..."
                         ref={SLAccountSearchRef}
                         value={SLAccountSearch}
                         onChange={(e) => setSLAccountSearch(e.target.value)}
                         onKeyDown={(e) => handleKeys2(e)}
                         />
-                    <div className='Waiterlist-Container'>
-
+                    <div className='Waiterlist-Container' >
+                             {isLoading && <InProgressLoading/>}
                         <Table id="table-list" className='table-list AcctTitle' onKeyDown={(event) => handleKeys2(event)} ref={SLAccountListRef}>
                             <thead>
                                 <tr>
@@ -283,8 +314,8 @@ const handleKeys2 = (event:any) => {
                         </div>
                     </div>
                     <div className='Button-Container'>
-                        <button onClick={() => handleClose()}>Close</button>
-                        <button onClick={() => ClickClear()}>Clear</button>
+                        <button style={{height:'50px'}} onClick={() => handleClose()}>Close</button>
+                        <button style={{height:'50px',backgroundColor:'red'}} onClick={() => ClickClear()}>Clear</button>
                     </div>
                     </div>
 

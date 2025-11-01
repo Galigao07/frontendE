@@ -15,7 +15,16 @@ import Grid from '@mui/material/Grid';
 import { Button, Table, Typography } from '@mui/material';
 import showErrorAlert from '../SwalMessage/ShowErrorAlert';
 import showSuccessAlert from '../SwalMessage/ShowSuccessAlert';
+import { setGlobalIsLoading } from "../globalSlice";
+import { RootState } from "../store";
+import { useSelector,useDispatch } from "react-redux";
+import { InProgressLoading } from "../Loader/Loader";
+import { useScreenSize } from '../ScreenHeightContext';
+
 const ProductPrintCategory: React.FC = () => {
+    const dispatch = useDispatch()
+    const isLoading = useSelector((state:RootState)=>state.global.globalIsLoading)
+    const { width, height, orientation } = useScreenSize();
     const [categories, setCategories] = useState<any>([]);
     const [printer, setprinter] = useState<any>([]);
     const [Datalist, setDatalist] = useState<any>([]);
@@ -153,7 +162,7 @@ const CloseModal = () => {
 
 const GetPrinter = async() => {
         try {
-            const response = await axios.get(`${BASE_URL}/api/printer-list/`);
+            const response = await axios.get(`${BASE_URL}/api/printer-list/`,{withCredentials:true});
             setprinter(response.data);
             setOpenPrinterModal(true)
         } catch(error) {
@@ -220,33 +229,34 @@ const handleCheckboxChange = (index: number) => {
         <>
         <Grid container style={{justifyContent:'start',}}>
         
-            <Grid item xs={12} sm={8} md={6} lg={6} style={{margin:'10px',padding: '5px',
-                alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
+            <Grid  style={{margin:'10px',padding: '5px',
+                alignItems: 'center',borderRadius: '10px',cursor: 'pointer',
+                boxShadow: '0 0 1px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                 borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
+                height:height - 70,width:'100%'
                 }}>
 
-                <div style={{display:'flex',flexDirection:'row',width:'100%',textAlign:'end'}}>
+
 
                         
-                <div style={{width:'100%'}}>
+                <div style={{display:'flex',flexDirection:'row',width:'100%'}}>
                 <Typography
                             variant="h2" // Adjust variant as needed (h1, h2, h3, etc.)
                             sx={{
                             fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+                            textShadow: '1px 1px 1px rgba(0, 0, 0, 0.5)',
                             borderRadius: '10px',
                             color: 'blue',
-                            fontWeight:'bold'
+                            fontWeight:'bold',
+                            width:'100%'
                             }} > Product Print Category
                 </Typography>
-                </div>
 
-                <div style={{margin:'5px',textAlign:'end',width:'70%'}}>
-                <FontAwesomeIcon icon={faPlus} style={{fontSize:'25px',marginRight:'20px',color:'blue'}} onClick={AddPrinterSetup}></FontAwesomeIcon>
+               <FontAwesomeIcon icon={faPlus} style={{fontSize:'25px',marginRight:'20px',color:'blue'}} onClick={AddPrinterSetup}></FontAwesomeIcon>
                 <FontAwesomeIcon icon={faPrint} style={{fontSize:'25px',marginRight:'20px',color:'blue'}} onClick={AddPrinterSetup}></FontAwesomeIcon>
-            </div>
-            </div>
-            <div className="Product-printer" style={{ overflow: 'auto' ,height:'250px',width:'100%', border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '1px' }}>
+     
+                </div>
+            <div className="Product-printer" style={{ overflow: 'auto' ,height:height-130,width:'100%', border: '1px solid #ccc', borderRadius: '10px', boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.1)', margin: '1px' }}>
 
                 <Table className="Prod-printer list" sx={{
                                 fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' },
@@ -283,8 +293,8 @@ const handleCheckboxChange = (index: number) => {
 
             {OpenAddSetupPrinter && (
                  <div className="modal">
-                 <div className="modal-content">
-                            <Grid item xs={12} sm={12} md={12} lg={12} style={{margin:'0px',padding: '0px', display: 'flex',flexDirection: 'column',width:'300px',
+                 <div className="modal-content" style={{width:'500px'}}>
+                            <Grid item  style={{margin:'0px',padding: '0px', display: 'flex',flexDirection: 'column',
                             alignItems: 'center',borderRadius: '10px',cursor: 'pointer',boxShadow: '0 0 5px rgba(74, 144, 226, 0.3) inset',borderStyle: 'solid',
                             borderWidth: '2px',borderColor: '#4a90e2 #86b7ff #86b7ff #4a90e2',
                             }}>
@@ -293,10 +303,10 @@ const handleCheckboxChange = (index: number) => {
                                 align="center"
                                 sx={{
                                 fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem', lg: '1.8rem', xl: '2rem' },
-                                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
                                 borderRadius: '10px',
                                 padding: '10px',
-                                color: 'red !important',
+                                color: 'blue',
+                                textShadow: '1px 1px 1px rgba(0, 0, 0, 0.5)',
                                 fontWeight:'bold'
                                 }} > {isEdit ? 'Update Product Print Category':'Add New Product Print Category'}
                             </Typography>

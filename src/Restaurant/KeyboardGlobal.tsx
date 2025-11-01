@@ -19,6 +19,7 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,currentv,setvalue}) => 
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
     const modalRef = useRef<HTMLDivElement>(null);
     const dragAreaRef = useRef(null);
+    const [isLoaded, setIsLoaded] = useState(false);
 
  const handleMouseDown = (event:any) => {
         event.preventDefault();
@@ -59,40 +60,17 @@ const OnScreenKeyboard :React.FC <value> = ({handleclose,currentv,setvalue}) => 
     }, [isDragging]);
 
     useEffect(() => {
+        if (!isLoaded){
         setinputData(currentv)
+        setIsLoaded(true);
 
         setTimeout(() => {
             if (inputRef.current){
                 inputRef.current.focus()
             }
-        }, 100);
+        }, 100);}
 
-    },[currentv])
-
-    const changeInput = () => {
-        if (isLetter === true){
-            setisLetter(false)
-
-            if (modalRef.current){
-                modalRef.current.style.width = '32%'
-            }
-
-        }else{
-            setisLetter(true)
-            if (modalRef.current){
-                modalRef.current.style.width = '68%'
-            }
-
-        }
-    setTimeout(() => {
-            if (inputRef.current){
-                inputRef.current.focus()
-                inputRef.current.select()
-            }
-        }, 100);
-    }
-
-
+    },[isLoaded])
 
 
     const SendData = () => {
